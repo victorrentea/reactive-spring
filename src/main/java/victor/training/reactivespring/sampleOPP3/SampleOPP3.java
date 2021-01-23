@@ -19,6 +19,22 @@ public class SampleOPP3 {
    private CancelPickingJobProducer cancelPickingJobProducer;
    private PickingTaskRepository pickingTaskRepository;
 
+   public static void main(String[] args) {
+
+      List<Integer> l = Flux.just("a", "b", "a")
+          .flatMap(s -> {
+             if (s == "a") {
+                return Mono.just(1);
+             } else {
+                return Mono.error(new RuntimeException());
+             }
+          })
+          .collectList()
+          .block();
+      System.out.println(l);
+   }
+
+
    private Mono<List<PickingTask>> createPickingTasks(final LocationId locationId, final Collection<PickList> pickLists, final PickingJob pickingJob) {
       Function<CountryConfig, Mono<List<PickingTask>>> f = countryConfiguration -> {
          final PickListFilter pickListFilter = newPickListFilter(locationId);
@@ -26,14 +42,18 @@ public class SampleOPP3 {
 
          return Flux.fromIterable(pickLists)
              .flatMap(pickList -> filterPickList(locationId, pickingJob, pickList, pickListFilter))
+             // Mono in error might terminate the entire flow
              .map(filteredPickList -> mapToPickListAndPrintMarkTuple(filteredPickList, pickingJob))
              .collectList()
+             // TODO victor collect varible here
              .filter(pickListsAndPrintMarks -> !pickListsAndPrintMarks.isEmpty())
              .flatMap(pickListsAndPrintMarks -> pickingTaskService.createSortedPickingTasks(pickListsAndPrintMarks, pickingJobId, countryConfiguration))
              .flatMap(pickingTaskService::savePickingTasks)
+
+               // TODO victor collect here. Nu ar fi fost suficient ca repo sa returneze inapoi lista data sa fie persistenta? sau din DB poate veni o alta lista ?
              .thenMany(pickingTaskRepository.findAllByLocationIdAndPickingJobId(locationId, pickingJobId))
              .doOnNext(pt -> LOGGER.debug("Retrieved picking task {} for picking job {} in location {}", pt.getId(), pickingJobId, locationId))
-             .switchIfEmpty(Mono.defer(() -> {
+             .switchIfEmpty(Mono.defer(() -> { // TODO switch if empty aici e necesar ca esti in fucntia de flow centrala, nu intr-un asincrona
                 // if no picking task has been created then the job must be cancelled
                 return cancelPickingJobProducer.publishCancelPickingJob(pickingJob, PickingJobCancelReason.NO_PICKINGTASK_CREATED_ON_JOB_START)
                     .doOnError(e -> LOGGER.error(e.getMessage(), e))
@@ -65,7 +85,7 @@ public class SampleOPP3 {
              final Boolean itemsAlreadyPicked = pickListAndItemsAlreadyPicked.getT2();
 
              return Mono.justOrEmpty(filteredPickList)
-                 .switchIfEmpty(Mono.defer(() -> {
+                 .switchIfEmpty(Mono.defer(() -> { // TODO victor if(isPresent) ce avea?
                     // if one of the job's pick list is filtered out, but no item is already picked, then the whole job must be cancelled
                     return publishCancelPickingJobIfNoItemsAlreadyPicked(itemsAlreadyPicked, pickingJob, PickingJobCancelReason.PICKLIST_FILTERED_OUT_ON_JOB_START)
                         .doOnError(e -> LOGGER.error(e.getMessage(), e))
