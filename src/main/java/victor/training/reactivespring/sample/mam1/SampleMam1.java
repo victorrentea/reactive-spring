@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
+import reactor.kafka.receiver.KafkaReceiver;
+import reactor.kafka.receiver.ReceiverRecord;
 
 import javax.annotation.PostConstruct;
 import java.util.Objects;
@@ -11,21 +13,21 @@ import java.util.UUID;
 
 import static victor.training.reactivespring.sample.mam1.Analyser.hasInvalidContent;
 
-public class Sample1 {
-   private static final Logger LOGGER = LoggerFactory.getLogger(Sample1.class);
-   private ColectorReceiver collectorReceiver;
+public class SampleMam1 {
+   private static final Logger LOGGER = LoggerFactory.getLogger(SampleMam1.class);
+   private KafkaReceiver<UUID, MasterItem> collectorReceiver;
    private ItemStateHandler itemStateHandler;
    private Disposable disposable;
    private KafkaItemRepository repository;
-//   1. Flux-ul in microserviciul Analyser
 
+//   1. Flux-ul in microserviciul Analyser
    @PostConstruct
    public void setUpFlux() {
       disposable = collectorReceiver.receive()
           .flatMap(this::determineState)
           .filterWhen(this::saveItem)
           .groupBy(item -> item.state)
-          .flatMap(flux -> Objects.requireNonNull(flux.key()).sender.apply(itemStateHandler, flux))
+          .flatMap(flux -> flux.key().sender.apply(itemStateHandler, flux))
           .subscribe(this::success, Analyser::logError);
    }
 
@@ -42,13 +44,15 @@ public class Sample1 {
       receiverRecord.receiverOffset().acknowledge();
 
       MasterItem kafkaItem = receiverRecord.value();
-      if(hasInvalidContent(kafkaItem, true)) return Mono.just(new ItemWithState(kafkaItem, ItemState.INVALID_DATA));
+      if(hasInvalidContent(kafkaItem, true)) {
+         return Mono.just(new ItemWithState(kafkaItem, ItemState.INVALID_DATA));
+      }
       // if there are no valid GTINs, numberOfGtins() returns 0.
-      return kafkaItem.numberOfGtins() == 1 ?
+      return kafkaItem.numberOfGtins() == 1 ? // TODO victor if()
           repository.findById(kafkaItem.getMasterKey())
               .map(analyserItem -> new ItemWithState(kafkaItem, analyserItem))
-              // no response means NEW or MONITOR
-              .switchIfEmpty(Mono.fromSupplier(() -> new ItemWithState(kafkaItem)))
+              // no response means NEW or MONITOR TODO victor explain in code?
+              .switchIfEmpty(Mono.fromSupplier(() -> new ItemWithState(kafkaItem))) // TODO victor: .just
               .onErrorResume(ex -> {
                  int attempt = kafkaItem.getAttempt();
                  LOGGER.error("{}, {}: error finding item.", receiverRecord.key(), attempt, ex);
@@ -56,7 +60,7 @@ public class Sample1 {
                  return Mono.empty();
               }) :
           // no (valid) GTIN or more than one distinct GTIN means ERROR
-          Mono.just(new ItemWithState(kafkaItem, ItemState.ERROR));
+          Mono.just(new ItemWithState(kafkaItem, ItemState.ERROR)); // TODO victor factory method ?
    }
 
 //2.1. Obiectul ItemWithState folosit mai sus, in determineState.
@@ -74,9 +78,8 @@ public class Sample1 {
     */
 
 
-//3. Salvarea in baza de date
-
-   Mono<Boolean> saveItem(ItemWithState item) {
+   //3. Salvarea in baza de date
+   Mono<Boolean>  saveItem(ItemWithState item) {
       // here we exactly have one gtin
       var masterItem = item.kafkaItem;
       var masterKey = masterItem.getMasterKey();
