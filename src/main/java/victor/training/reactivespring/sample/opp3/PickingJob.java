@@ -1,4 +1,4 @@
-package victor.training.reactivespring.sampleOPP3;
+package victor.training.reactivespring.sample.opp3;
 
 public class PickingJob {
    public PickingJobId getId() {

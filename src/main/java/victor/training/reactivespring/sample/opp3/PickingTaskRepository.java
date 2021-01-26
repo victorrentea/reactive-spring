@@ -1,7 +1,6 @@
-package victor.training.reactivespring.sampleOPP3;
+package victor.training.reactivespring.sample.opp3;
 
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class PickingTaskRepository {

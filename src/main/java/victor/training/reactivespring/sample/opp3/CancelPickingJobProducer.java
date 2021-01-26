@@ -1,4 +1,4 @@
-package victor.training.reactivespring.sampleOPP3;
+package victor.training.reactivespring.sample.opp3;
 
 import reactor.core.publisher.Mono;
 

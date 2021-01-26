@@ -1,4 +1,4 @@
-package victor.training.reactivespring.sampleOPP3;
+package victor.training.reactivespring.sample.opp3;
 
 public class JobStatusUpdateException extends Throwable {
    public JobStatusUpdateException(Object p0, String s, PickingJobId id, Object id1, LocationId locationId, Object description) {

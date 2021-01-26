@@ -1,0 +1,96 @@
+package victor.training.reactivespring.sample.mam1;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
+
+import javax.annotation.PostConstruct;
+import java.util.Objects;
+import java.util.UUID;
+
+import static victor.training.reactivespring.sample.mam1.Analyser.hasInvalidContent;
+
+public class Sample1 {
+   private static final Logger LOGGER = LoggerFactory.getLogger(Sample1.class);
+   private ColectorReceiver collectorReceiver;
+   private ItemStateHandler itemStateHandler;
+   private Disposable disposable;
+   private KafkaItemRepository repository;
+//   1. Flux-ul in microserviciul Analyser
+
+   @PostConstruct
+   public void setUpFlux() {
+      disposable = collectorReceiver.receive()
+          .flatMap(this::determineState)
+          .filterWhen(this::saveItem)
+          .groupBy(item -> item.state)
+          .flatMap(flux -> Objects.requireNonNull(flux.key()).sender.apply(itemStateHandler, flux))
+          .subscribe(this::success, Analyser::logError);
+   }
+
+   private void success(UUID uuid) {
+
+   }
+
+
+//2. determineState se foloseste pe un record primit pe topicul de kafka. Se fac o parte din verificari.
+//   In toate cazurile, se creaza un ItemWIthState.
+
+   Mono<ItemWithState> determineState(ReceiverRecord<UUID, MasterItem> receiverRecord) {
+      LOGGER.info("{}: received from collector", receiverRecord.key());
+      receiverRecord.receiverOffset().acknowledge();
+
+      MasterItem kafkaItem = receiverRecord.value();
+      if(hasInvalidContent(kafkaItem, true)) return Mono.just(new ItemWithState(kafkaItem, ItemState.INVALID_DATA));
+      // if there are no valid GTINs, numberOfGtins() returns 0.
+      return kafkaItem.numberOfGtins() == 1 ?
+          repository.findById(kafkaItem.getMasterKey())
+              .map(analyserItem -> new ItemWithState(kafkaItem, analyserItem))
+              // no response means NEW or MONITOR
+              .switchIfEmpty(Mono.fromSupplier(() -> new ItemWithState(kafkaItem)))
+              .onErrorResume(ex -> {
+                 int attempt = kafkaItem.getAttempt();
+                 LOGGER.error("{}, {}: error finding item.", receiverRecord.key(), attempt, ex);
+//                 MAMEvent.error(attempt, ex);
+                 return Mono.empty();
+              }) :
+          // no (valid) GTIN or more than one distinct GTIN means ERROR
+          Mono.just(new ItemWithState(kafkaItem, ItemState.ERROR));
+   }
+
+//2.1. Obiectul ItemWithState folosit mai sus, in determineState.
+
+
+
+
+//2.2. Pentru cazul in care avem un item vechi, caruia ii facem update, vom folosi determineFor(KafkaItem, AnalyserItem) pentru a incerca sa iisetam statusul
+//   Tot aici, in functie de predicatele pentru fiecare status, se executa o anumita metoda (in principiu trimiteri pe topicuri de kafka ca tre alte microservicii)
+
+   /**
+    * If the item is already known, it is in the state UPDATE, otherwise it is in
+    * the NEW state.  If the GTIN has changed, it is rejected and its state is
+    * REJECTED.  If the GTIN is missing, it is rejected and its state is ERROR.
+    */
+
+
+//3. Salvarea in baza de date
+
+   Mono<Boolean> saveItem(ItemWithState item) {
+      // here we exactly have one gtin
+      var masterItem = item.kafkaItem;
+      var masterKey = masterItem.getMasterKey();
+      var attempt = masterItem.getAttempt();
+      LOGGER.info("{}, {}: gtin = {} saving state = {}", masterKey, attempt, masterItem.getGtin(), item.state);
+      return item.state == ItemState.NEW ? // monitor items are not saved, either.
+          repository.save(item.persistentItem)
+              .map(result -> Boolean.TRUE)
+              .onErrorResume(ex -> {
+                 LOGGER.error("{}, {}: error saving item.", masterKey, attempt, ex);
+//                 MAMEvent.error(attempt, ex);
+                 return Mono.empty();
+              }) :
+          Mono.just(Boolean.TRUE);
+   }
+
+}
