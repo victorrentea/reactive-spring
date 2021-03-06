@@ -53,7 +53,7 @@ public class SampleMam1 {
               .map(analyserItem -> new ItemWithState(kafkaItem, analyserItem))
               // no response means NEW or MONITOR TODO victor explain in code?
               .switchIfEmpty(Mono.fromSupplier(() -> new ItemWithState(kafkaItem))) // TODO victor: .just
-              .onErrorResume(ex -> {
+              .onErrorResume(ex -> { // todo victor a dmai devreme
                  int attempt = kafkaItem.getAttempt();
                  LOGGER.error("{}, {}: error finding item.", receiverRecord.key(), attempt, ex);
 //                 MAMEvent.error(attempt, ex);
@@ -87,7 +87,7 @@ public class SampleMam1 {
       LOGGER.info("{}, {}: gtin = {} saving state = {}", masterKey, attempt, masterItem.getGtin(), item.state);
       return item.state == ItemState.NEW ? // monitor items are not saved, either.
           repository.save(item.persistentItem)
-              .map(result -> Boolean.TRUE)
+              .map(result -> Boolean.TRUE) // TODO victor de ce nu
               .onErrorResume(ex -> {
                  LOGGER.error("{}, {}: error saving item.", masterKey, attempt, ex);
 //                 MAMEvent.error(attempt, ex);
