@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "xxxapi/product/.*"
+  },
+  "response": {
+    "status": 200,
+
+    "jsonBody":
+      {
+        "id": "{{request.pathSegments.[2]}}",
+        "active": true
+      },
+
+    "transformers": ["response-template"],
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
