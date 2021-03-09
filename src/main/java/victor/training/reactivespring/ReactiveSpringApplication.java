@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
-@EnableMongoRepositories
-@EnableReactiveMongoRepositories
+
 @SpringBootApplication
 public class ReactiveSpringApplication {
 

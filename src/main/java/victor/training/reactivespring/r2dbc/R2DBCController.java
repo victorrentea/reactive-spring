@@ -17,7 +17,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 @RestController
 @RequestMapping("sql")
 @RequiredArgsConstructor
-public class ReactiveRDBController {
+public class R2DBCController {
    private final UserRepository userRepository;
 
    @GetMapping(value = "flux", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
