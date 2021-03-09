@@ -26,7 +26,7 @@ public class Part05MergeTest {
 //========================================================================================
 
 	@Test
-	public void mergeWithInterleave() {
+	public void mergeFluxWithInterleave() {
 		Flux<User> flux = workshop.mergeFluxWithInterleave(repositoryWithDelay.findAll(), repository.findAll());
 		StepVerifier.create(flux)
 				.expectNext(MARIE, MIKE, User.SKYLER, User.JESSE, User.WALTER, User.SAUL)
@@ -36,7 +36,7 @@ public class Part05MergeTest {
 //========================================================================================
 
 	@Test
-	public void mergeWithNoInterleave() {
+	public void mergeFluxWithNoInterleave() {
 		Flux<User> flux = workshop.mergeFluxWithNoInterleave(repositoryWithDelay.findAll(), repository.findAll());
 		StepVerifier.create(flux)
 				.expectNext(User.SKYLER, User.JESSE, User.WALTER, User.SAUL, MARIE, MIKE)
@@ -46,7 +46,7 @@ public class Part05MergeTest {
 //========================================================================================
 
 	@Test
-	public void multipleMonoToFlux() {
+	public void createFluxFromMultipleMono() {
 		Mono<User> skylerMono = repositoryWithDelay.findFirst();
 		Mono<User> marieMono = repository.findFirst();
 		Flux<User> flux = workshop.createFluxFromMultipleMono(skylerMono, marieMono);

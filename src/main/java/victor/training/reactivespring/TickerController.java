@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
-public class Controller {
+public class TickerController {
    private ConnectableFlux<Long> hotFlux;
 
    @PostConstruct
@@ -29,13 +29,3 @@ public class Controller {
       return hotFlux.map(Objects::toString);
    }
 }
-
-//
-//interface CustomerRepo extends ReactiveCrudRepository<Customer, Long> {
-//
-//}
-//class Customer {
-//   @Id
-//   private Long id;
-//   private String name;
-//}

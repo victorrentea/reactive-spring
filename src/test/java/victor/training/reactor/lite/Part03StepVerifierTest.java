@@ -36,21 +36,21 @@ public class Part03StepVerifierTest {
 //========================================================================================
 
 	@Test
-	public void expectElementsThenComplete() {
+	public void expectFooBarComplete() {
 		workshop.expectFooBarComplete(Flux.just("foo", "bar"));
 	}
 
 //========================================================================================
 
 	@Test
-	public void expect2ElementsThenError() {
+	public void expectFooBarError() {
 		workshop.expectFooBarError(Flux.just("foo", "bar").concatWith(Mono.error(new RuntimeException())));
 	}
 
 //========================================================================================
 
 	@Test
-	public void expectElementsWithThenComplete() {
+	public void expectSkylerJesseComplete() {
 		workshop.expectSkylerJesseComplete(Flux.just(new User("swhite", null, null), new User("jpinkman", null, null)));
 	}
 	@Test
@@ -61,14 +61,14 @@ public class Part03StepVerifierTest {
 //========================================================================================
 
 	@Test
-	public void count() {
+	public void expect10Elements() {
 		workshop.expect10Elements(Flux.interval(Duration.ofSeconds(1)).take(10));
 	}
 
 //========================================================================================
 
 	@Test
-	public void countWithVirtualTime() {
+	public void expect3600Elements() {
 		workshop.expect3600Elements(() -> Flux.interval(Duration.ofSeconds(1)).take(3600));
 	}
 

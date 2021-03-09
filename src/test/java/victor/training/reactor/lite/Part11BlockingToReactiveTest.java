@@ -35,7 +35,7 @@ public class Part11BlockingToReactiveTest {
 //========================================================================================
 
 	@Test
-	public void slowPublisherFastSubscriber() {
+	public void blockingRepositoryToFlux() {
 		BlockingUserRepository repository = new BlockingUserRepository();
 		Flux<User> flux = workshop.blockingRepositoryToFlux(repository);
 		assertThat(repository.getCallCount()).isEqualTo(0).withFailMessage("The call to findAll must be deferred until the flux is subscribed");
@@ -47,7 +47,7 @@ public class Part11BlockingToReactiveTest {
 //========================================================================================
 
 	@Test
-	public void fastPublisherSlowSubscriber() {
+	public void fluxToBlockingRepository() {
 		ReactiveRepository<User> reactiveRepository = new ReactiveUserRepository();
 		BlockingUserRepository blockingRepository = new BlockingUserRepository(new User[]{});
 		Mono<Void> complete = workshop.fluxToBlockingRepository(reactiveRepository.findAll(), blockingRepository);

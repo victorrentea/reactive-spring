@@ -43,7 +43,7 @@ public class Part06RequestTest {
 //========================================================================================
 
 	@Test
-	public void requestAll() {
+	public void requestAllExpectFour() {
 		Flux<User> flux = repository.findAll();
 		StepVerifier verifier = workshop.requestAllExpectFour(flux);
 		verifier.verify();
@@ -52,7 +52,7 @@ public class Part06RequestTest {
 //========================================================================================
 
 	@Test
-	public void requestOneByOne() {
+	public void requestOneExpectSkylerThenRequestOneExpectJesse() {
 		Flux<User> flux = repository.findAll();
 		StepVerifier verifier = workshop.requestOneExpectSkylerThenRequestOneExpectJesse(flux);
 		verifier.verify();
@@ -61,7 +61,7 @@ public class Part06RequestTest {
 //========================================================================================
 
 	@Test
-	public void experimentWithLog() {
+	public void fluxWithLog() {
 		logConsole = new ByteArrayOutputStream();
 		System.setOut(new PrintStream(logConsole));
 
@@ -97,7 +97,7 @@ public class Part06RequestTest {
 //========================================================================================
 
 	@Test
-	public void experimentWithDoOn() {
+	public void fluxWithDoOnPrintln() {
 		Flux<User> flux = workshop.fluxWithDoOnPrintln();
 
 		//setting up the logConsole here should ensure we only capture console logs from the Flux
