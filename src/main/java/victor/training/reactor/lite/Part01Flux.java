@@ -31,8 +31,10 @@ public class Part01Flux {
 	// TODO keep: manual emit
 
 	// TODO Return a Flux that contains 2 values "foo" and "bar" without using an array or a collection
-	Flux<String> fooBarFluxFromValues1() {
-		return Flux.just("foo", "bar");
+	Flux<String> fooBarFluxFromValues() {
+		return Flux.just("foo", "bar")
+			.doOnNext(s -> System.out.println("Vad " + s))
+			.doOnComplete(()-> System.out.println("GATA!"));
 		// idem cu
 //		return Flux.create(sink -> {
 //			sink.next("foo");
@@ -40,7 +42,7 @@ public class Part01Flux {
 //			sink.complete();
 //		});
 	}
-	Flux<String> fooBarFluxFromValues() {
+	Flux<String> fooBarFluxFromValuesAsync() {
 //		return Flux.just("foo", "bar");
 		Flux<String> flux = Flux.create(sink -> {
 

@@ -8,34 +8,41 @@ import reactor.core.publisher.Mono;
  * @author Sebastien Deleuze
  * @see <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html">Mono Javadoc</a>
  */
-public class Part02Mono {
+public class Part02Mono { // ~ CompletableFuture
 
 //========================================================================================
 
 	// TODO Return an empty Mono
 	Mono<String> emptyMono() {
-		return null;
+		return Mono.empty();
 	}
 
 //========================================================================================
 
 	// TODO Return a Mono that never emits any signal
 	Mono<String> monoWithNoSignal() {
-		return null;
+		return Mono.never();
 	}
 
 //========================================================================================
 
 	// TODO Return a Mono that contains a "foo" value
 	Mono<String> fooMono() {
-		return null;
+		return Mono.just("foo");
+	}
+
+	// TODO Return a Mono that contains a "foo" value
+	Mono<String> fooMonoManual() {
+		return Mono.create(sink -> {
+			sink.success("foo");
+		});
 	}
 
 //========================================================================================
 
 	// TODO Create a Mono that emits an IllegalStateException
 	Mono<String> errorMono() {
-		return null;
+		return Mono.error(new IllegalStateException());
 	}
 
 }

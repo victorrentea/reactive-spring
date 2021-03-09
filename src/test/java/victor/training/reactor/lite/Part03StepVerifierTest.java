@@ -53,6 +53,10 @@ public class Part03StepVerifierTest {
 	public void expectElementsWithThenComplete() {
 		workshop.expectSkylerJesseComplete(Flux.just(new User("swhite", null, null), new User("jpinkman", null, null)));
 	}
+	@Test
+	public void expectElementsWithThenCompleteBlock() {
+		workshop.expectSkylerJesseCompleteBlock(Flux.just(new User("swhite", null, null), new User("jpinkman", null, null)));
+	}
 
 //========================================================================================
 

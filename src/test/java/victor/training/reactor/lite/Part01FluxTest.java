@@ -29,7 +29,13 @@ public class Part01FluxTest {
 	@Test
 	public void fromValues() {
 		Flux<String> flux = workshop.fooBarFluxFromValues();
-		System.out.println("Returned");
+		StepVerifier.create(flux)
+				.expectNext("foo", "bar")
+				.verifyComplete();
+	}
+	@Test
+	public void fromValuesAsync() {
+		Flux<String> flux = workshop.fooBarFluxFromValuesAsync();
 		StepVerifier.create(flux)
 				.expectNext("foo", "bar")
 				.verifyComplete();

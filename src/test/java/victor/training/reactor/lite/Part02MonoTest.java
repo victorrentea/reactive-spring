@@ -47,6 +47,14 @@ public class Part02MonoTest {
 				.verifyComplete();
 	}
 
+	@Test
+	public void fromValueManual() {
+		Mono<String> mono = workshop.fooMonoManual();
+		StepVerifier.create(mono)
+				.expectNext("foo")
+				.verifyComplete();
+	}
+
 //========================================================================================
 
 	@Test
