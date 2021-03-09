@@ -21,7 +21,7 @@ public class Part04TransformTest {
 //========================================================================================
 
 	@Test
-	public void transformMono() {
+	public void findFirst() {
 		Mono<User> mono = repository.findFirst();
 		StepVerifier.create(workshop.capitalizeOne(mono))
 				.expectNext(new User("SWHITE", "SKYLER", "WHITE"))
@@ -31,7 +31,7 @@ public class Part04TransformTest {
 //========================================================================================
 
 	@Test
-	public void transformFlux() {
+	public void capitalizeMany() {
 		Flux<User> flux = repository.findAll();
 		StepVerifier.create(workshop.capitalizeMany(flux))
 				.expectNext(
@@ -45,7 +45,7 @@ public class Part04TransformTest {
 //========================================================================================
 
 	@Test
-	public void  asyncTransformFlux() {
+	public void  asyncCapitalizeMany() {
 		Flux<User> flux = repository.findAll();
 		StepVerifier.create(workshop.asyncCapitalizeMany(flux))
 				.expectNext(

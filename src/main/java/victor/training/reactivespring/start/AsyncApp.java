@@ -1,6 +1,7 @@
 package victor.training.reactivespring.start;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 
+import static java.lang.System.currentTimeMillis;
+
 @EnableAsync
 @SpringBootApplication
 public class AsyncApp {
@@ -21,34 +24,39 @@ public class AsyncApp {
 		SpringApplication.run(AsyncApp.class, args).close(); // Note: .close added to stop executors after CLRunner finishes
 	}
 
-	@Bean
-	public ThreadPoolTaskExecutor executor() {
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(1);
-		executor.setMaxPoolSize(1);
-		executor.setQueueCapacity(500);
-		executor.setThreadNamePrefix("bar-");
-		executor.initialize();
-		executor.setWaitForTasksToCompleteOnShutdown(true);
-		return executor;
-	}
-
+//	@Bean
+//	public ThreadPoolTaskExecutor barExecutor() {
+//		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+//		executor.setCorePoolSize(2);
+//		executor.setMaxPoolSize(2);
+//		executor.setQueueCapacity(500);
+//		executor.setThreadNamePrefix("bar-");
+//		executor.initialize();
+//		executor.setWaitForTasksToCompleteOnShutdown(true);
+//		return executor;
+//	}
 }
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 class Drinker implements CommandLineRunner {
-	@Autowired
-	private Barman barman;
+	private final Barman barman;
 
-	// TODO [1] inject and use a ThreadPoolTaskExecutor.submit
-	// TODO [2] make them return a CompletableFuture + @Async + asyncExecutor bean
-	// TODO [3] Messaging...
+	// TODO [1] Executors
+	// TODO [2] ThreadPoolTaskExecutor (spring)
+	// TODO [3] @Async
+	// TODO [4] HTTP
+	// TODO [5] Errors
 	public void run(String... args) throws Exception {
 		log.debug("Submitting my order");
+		long t0 = currentTimeMillis();
+
 		Beer beer = barman.getOneBeer();
 		Vodka vodka = barman.getOneVodka();
-		log.debug("Got my order! Thank you lad! " + Arrays.asList(beer, vodka));
+
+		long t1 = currentTimeMillis();
+		log.debug("Got my order in {} : {}", t1-t0, Arrays.asList(beer, vodka));
 	}
 }
 
@@ -70,10 +78,10 @@ class Barman {
 
 @Data
 class Beer {
-	public static final String type = "blond";
+	public final String type = "blond";
 }
 
 @Data
 class Vodka {
-	public static final String type = "deadly";
+	public final String type = "deadly";
 }

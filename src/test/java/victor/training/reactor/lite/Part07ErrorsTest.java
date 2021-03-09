@@ -66,7 +66,7 @@ public class Part07ErrorsTest {
 //========================================================================================
 
 	@Test
-	public void handleCheckedExceptions() {
+	public void capitalizeMany() {
 		Flux<User> flux = workshop.capitalizeMany(Flux.just(User.SAUL, User.JESSE));
 
 		StepVerifier.create(flux)

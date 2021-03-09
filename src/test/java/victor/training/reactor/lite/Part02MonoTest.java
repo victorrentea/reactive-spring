@@ -19,7 +19,7 @@ public class Part02MonoTest {
 //========================================================================================
 
 	@Test
-	public void empty() {
+	public void emptyMono() {
 		Mono<String> mono = workshop.emptyMono();
 		StepVerifier.create(mono)
 				.verifyComplete();
@@ -28,7 +28,7 @@ public class Part02MonoTest {
 //========================================================================================
 
 	@Test
-	public void noSignal() {
+	public void monoWithNoSignal() {
 		Mono<String> mono = workshop.monoWithNoSignal();
 		StepVerifier
 				.create(mono)
@@ -40,7 +40,7 @@ public class Part02MonoTest {
 //========================================================================================
 
 	@Test
-	public void fromValue() {
+	public void fooMono() {
 		Mono<String> mono = workshop.fooMono();
 		StepVerifier.create(mono)
 				.expectNext("foo")
@@ -50,7 +50,7 @@ public class Part02MonoTest {
 //========================================================================================
 
 	@Test
-	public void error() {
+	public void errorMono() {
 		Mono<String> mono = workshop.errorMono();
 		StepVerifier.create(mono)
 				.verifyError(IllegalStateException.class);

@@ -49,7 +49,7 @@ public class Part09AdaptTest {
 //========================================================================================
 
 	@Test
-	public void adaptToFlowable() {
+	public void fromFluxToFlowable() {
 		Flux<User> flux = repository.findAll();
 		Flowable<User> flowable = workshop.fromFluxToFlowable(flux);
 		StepVerifier.create(workshop.fromFlowableToFlux(flowable))
@@ -60,7 +60,7 @@ public class Part09AdaptTest {
 //========================================================================================
 
 	@Test
-	public void adaptToObservable() {
+	public void fromFluxToObservable() {
 		Flux<User> flux = repository.findAll();
 		Observable<User> observable = workshop.fromFluxToObservable(flux);
 		StepVerifier.create(workshop.fromObservableToFlux(observable))
@@ -71,7 +71,7 @@ public class Part09AdaptTest {
 //========================================================================================
 
 	@Test
-	public void adaptToSingle() {
+	public void fromMonoToSingle() {
 		Mono<User> mono = repository.findFirst();
 		Single<User> single = workshop.fromMonoToSingle(mono);
 		StepVerifier.create(workshop.fromSingleToMono(single))
@@ -82,7 +82,7 @@ public class Part09AdaptTest {
 //========================================================================================
 
 	@Test
-	public void adaptToCompletableFuture() {
+	public void fromMonoToCompletableFuture() {
 		Mono<User> mono = repository.findFirst();
 		CompletableFuture<User> future = workshop.fromMonoToCompletableFuture(mono);
 		StepVerifier.create(workshop.fromCompletableFutureToMono(future))

@@ -23,10 +23,3 @@ public class ReactiveSpringApplication {
 }
 
 
-@RestController
-class Res {
-	@GetMapping
-	Publisher<String> get() {
-		return Flux.interval(Duration.ofMillis(500)).map(i -> " "+ i);
-	}
-}

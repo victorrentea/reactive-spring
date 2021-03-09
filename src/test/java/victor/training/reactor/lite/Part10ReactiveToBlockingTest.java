@@ -24,7 +24,7 @@ public class Part10ReactiveToBlockingTest {
 //========================================================================================
 
 	@Test
-	public void mono() {
+	public void monoToValue() {
 		Mono<User> mono = repository.findFirst();
 		User user = workshop.monoToValue(mono);
 		assertThat(user).isEqualTo(User.SKYLER);
@@ -33,7 +33,7 @@ public class Part10ReactiveToBlockingTest {
 //========================================================================================
 
 	@Test
-	public void flux() {
+	public void fluxToValues() {
 		Flux<User> flux = repository.findAll();
 		Iterable<User> users = workshop.fluxToValues(flux);
 		Iterator<User> it = users.iterator();
