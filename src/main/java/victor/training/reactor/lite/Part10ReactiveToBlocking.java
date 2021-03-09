@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
  *
  * @author Sebastien Deleuze
  */
-public class Part10ReactiveToBlocking {
+public class 	Part10ReactiveToBlocking {
 
 //========================================================================================
 
