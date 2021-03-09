@@ -5,9 +5,9 @@
     <title>Document</title>
 </head>
 <body>
+Hello. See console.
 <script type="application/javascript">
-
-    let eventSource = new EventSource("//tick");
+    let eventSource = new EventSource("tick");
     eventSource.onmessage = function (event) {
         console.log(event);
     };
