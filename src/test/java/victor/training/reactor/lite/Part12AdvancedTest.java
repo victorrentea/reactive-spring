@@ -1,5 +1,6 @@
 package victor.training.reactor.lite;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -7,6 +8,7 @@ import reactor.test.StepVerifier;
 import victor.training.reactivespring.start.ThreadUtils;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,4 +57,46 @@ public class Part12AdvancedTest {
           .verifyComplete();
       assertThat(duration).isGreaterThan(Duration.ofMillis(900));
    }
+
+   private String captureThread(String workType) {
+      return workType + ":" + Thread.currentThread().getName();
+   }
+   @Test
+   public void threadHopping() {
+      List<String> steps =new ArrayList<>();
+
+      Runnable readTask = () -> steps.add(captureThread("READ"));
+      Runnable cpuTask = () -> steps.add(captureThread("CPU"));
+      Runnable writeTask = () -> steps.add(captureThread("WRITE"));
+
+      Mono<Void> mono = workshop.threadHopping(readTask, cpuTask, writeTask);
+
+      StepVerifier.create(mono).verifyComplete();
+
+      Assertions.assertThat(steps.toString())
+          .contains("READ:boundedElastic")
+          .contains("CPU:parallel")
+          .contains("WRITE:boundedElastic");
+   }
+
+   @Test
+   public void threadHoppingHard() {
+      List<String> steps =new ArrayList<>();
+
+      Runnable readTask = () -> steps.add(captureThread("READ"));
+      Runnable cpuTask = () -> steps.add(captureThread("CPU"));
+      Runnable writeTask = () -> steps.add(captureThread("WRITE"));
+
+      Mono<Void> sourceMono = Mono.fromRunnable(readTask);
+      Mono<Void> mono = workshop.threadHoppingHard(sourceMono, cpuTask);
+      Mono<Void> finalMono = mono.then(Mono.fromRunnable(writeTask));
+
+      StepVerifier.create(finalMono).verifyComplete();
+
+      Assertions.assertThat(steps.toString())
+          .contains("READ:boundedElastic")
+          .contains("CPU:parallel")
+          .contains("WRITE:boundedElastic");
+   }
+
 }
