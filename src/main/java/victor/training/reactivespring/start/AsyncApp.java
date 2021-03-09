@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @EnableAsync
 @SpringBootApplication
@@ -45,10 +49,25 @@ class Drinker implements CommandLineRunner {
 	// TODO [2] make them return a CompletableFuture + @Async + asyncExecutor bean
 	// TODO [3] Messaging...
 	public void run(String... args) throws Exception {
-		log.debug("Submitting my order");
-		Beer beer = barman.getOneBeer();
+		log.info("Submitting my order");
+
+		ExecutorService pool = Executors.newFixedThreadPool(2);
+
+		Future<Beer> futureBeer = pool.submit(new Callable<Beer>() {
+			@Override
+			public Beer call() throws Exception {
+				return barman.getOneBeer();
+			}
+		});
+
+		log.info("Fata pleaca cu comanda");
 		Vodka vodka = barman.getOneVodka();
-		log.debug("Got my order! Thank you lad! " + Arrays.asList(beer, vodka));
+
+		Beer beer = futureBeer.get(); // threadul main nu se blocheaza de loc aici: acea procesare asincrona deja e gata cand ajungi aici
+
+
+
+		log.info("Got my order! Thank you lad! " + Arrays.asList(beer, vodka));
 	}
 }
 
@@ -56,14 +75,13 @@ class Drinker implements CommandLineRunner {
 @Service
 class Barman {
 	public Beer getOneBeer() {
-		 log.debug("Pouring Beer...");
-		 ThreadUtils.sleep(1000);
+		 log.info("Pouring Beer...");
+		 ThreadUtils.sleep(1000); // network call
 		 return new Beer();
 	 }
-	
 	 public Vodka getOneVodka() {
-		 log.debug("Pouring Vodka...");
-		 ThreadUtils.sleep(1000);
+		 log.info("Pouring Vodka...");
+		 ThreadUtils.sleep(1000); // DB call, file read
 		 return new Vodka();
 	 }
 }
