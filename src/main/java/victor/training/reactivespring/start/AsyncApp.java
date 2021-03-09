@@ -51,6 +51,25 @@ class Drinker implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		log.info("Submitting my order");
 
+
+		// NICIODATA nu faci threaduri noi new Thread()
+		// 1. e costisitor (milisecunde grele)
+		// 2. PERICULOS: daca incerci for i=0..10000 new Thread(sleep (1s)).start()
+		 	// threadurile din Java se mapeaza 1:1 pe threaduri din OS >>>>>>> Problema majora a limbajului Java
+
+		// NodeJS - 1 thread
+		// JS/TS async/await
+		// Kotlin - corutine ~ async-await
+		// Si Java incearca de vreo 7 ani Project Loom. Pana e gata, trebuie sa menajam threadurile din Java.
+//		new Thread(() -> {
+//
+//		}).start();
+
+		// *********************************
+		//        NU IROSIM THREADURI
+		// *********************************
+
+
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 
 		Future<Beer> futureBeer = pool.submit(barman::getOneBeer);
