@@ -7,7 +7,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @EnableAsync
 @SpringBootApplication
@@ -99,10 +95,10 @@ class Drinker implements CommandLineRunner {
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 
 //		Future<Beer> futureBeer = pool.submit(barman::getOneBeer);
-		Future<Beer> futureBeer = CompletableFuture.supplyAsync(barman::getOneBeer, pool);
+		CompletableFuture<Beer> futureBeer = CompletableFuture.supplyAsync(barman::getOneBeer, pool);
 
 //		Future<Vodka> futureVodka = pool.submit(barman::getOneVodka);
-		Future<Vodka> futureVodka = CompletableFuture.supplyAsync(barman::getOneVodka);
+		CompletableFuture<Vodka> futureVodka = CompletableFuture.supplyAsync(barman::getOneVodka);
 
 
 		//	Executors workflow DONE
@@ -113,13 +109,36 @@ class Drinker implements CommandLineRunner {
 		// aici sunt 3 treaduri in rulare: main doarme si alte 2 lucreaza pentru main
 
 		log.info("Fata pleaca cu comanda");
-		Vodka vodka = futureVodka.get(); // cat timp sta main aici: 1s asteptand pe unul dintre worker threads sa termine
 
-		Beer beer = futureBeer.get(); // cat timp sta main aici: 0s - worker #2 deja a terminat
+		// Breaking news: pe CompletableFuture este INTERZIS/bad practice sa faci .get()
 
+//		Vodka vodka = futureVodka.get(); // cat timp sta main aici: 1s asteptand pe unul dintre worker threads sa termine
+//		Beer beer = futureBeer.get(); // cat timp sta main aici: 0s - worker #2 deja a terminat
 
+//		futureVodka
+//			.thenApply(v -> System.out.println("Beau" + v))
+//			.thenAccept(v -> System.out.println("Beau" + v))
 
-		log.info("Got my order! Thank you lad! " + Arrays.asList(beer, vodka));
+		CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
+
+		DillyDilly dilly = futureDilly.get();
+		log.info("Got my order! Thank you lad! " + dilly);
+	}
+}
+
+// Vinul dupa Bere e placere,
+// Berea dupa vin e un Chin
+
+@Slf4j
+class DillyDilly {
+	private final Beer beer;
+	private final Vodka vodka;
+
+	DillyDilly(Beer beer, Vodka vodka) {
+		log.info("Amestec bauturi ");
+		ThreadUtils.sleep(1000);
+		this.beer = beer;
+		this.vodka = vodka;
 	}
 }
 
