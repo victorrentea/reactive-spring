@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
 @Slf4j
-class Service {
+class Pitfalls {
 	Mono<String> create(String s) {
 		return Mono
 			.delay(ofMillis(50), boundedElastic()).thenReturn("Create " + s)
@@ -34,6 +34,9 @@ class Service {
 // 3. .block() doesn't allow cancelling subscription  TODO doOnNext(... .block())
 // 4. subscribe() doesn't throw TODO try { .subscribe() }
 // 5. TODO: chain create():s -> update(s); return s.length ; Propagate subscription; Hint: thenReturn
+
 // 6. Out-of-band Shared State: @see RaceVariables
 // 7. Mutate argument @see RaceArguments
 // 8. flux.flatMap(Mono) might explode parallelism
+// 9. Leaking Flux : when toIterable, there's no cancel()
+// 10. Standalone flux with no error handling, just subscribe() crashes at any exception
