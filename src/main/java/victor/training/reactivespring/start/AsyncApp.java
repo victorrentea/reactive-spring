@@ -53,19 +53,16 @@ class Drinker implements CommandLineRunner {
 
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 
-		Future<Beer> futureBeer = pool.submit(new Callable<Beer>() {
-			@Override
-			public Beer call() throws Exception {
-				return barman.getOneBeer();
-			}
-		});
+		Future<Beer> futureBeer = pool.submit(barman::getOneBeer);
+
+		Future<Vodka> futureVodka = pool.submit(barman::getOneVodka);
+
+		// aici sunt 3 treaduri in rulare: main doarme si alte 2 lucreaza pentru main
 
 		log.info("Fata pleaca cu comanda");
-		Vodka vodka = barman.getOneVodka();
+		Vodka vodka = futureVodka.get(); // cat timp sta main aici: 1s asteptand pe unul dintre worker threads sa termine
 
-		Beer beer = futureBeer.get(); // threadul main nu se blocheaza de loc aici: acea procesare asincrona deja e gata cand ajungi aici
-
-
+		Beer beer = futureBeer.get(); // cat timp sta main aici: 0s - worker #2 deja a terminat
 
 		log.info("Got my order! Thank you lad! " + Arrays.asList(beer, vodka));
 	}
