@@ -45,6 +45,7 @@ public class SampleMam2_Deduplicator
           // TODO Victor in loc sa folosim enum-ul pentru a tine logica, nu o putem pune in DeduplicatorItem.get
           .groupBy(Tuple2::getT1, Tuple2::getT2)
           // Grouping key is a BaseItemSender
+
           .flatMap(flux -> flux.key().sendAll(flux))
           .subscribe(this::success, SampleMam2_Deduplicator::logError);
    }
