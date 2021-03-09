@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @EnableAsync
 @SpringBootApplication
@@ -92,13 +95,14 @@ class Drinker implements CommandLineRunner {
 		//        NU IROSIM THREADURI
 		// *********************************
 
-//		ExecutorService pool = Executors.newFixedThreadPool(2);
+
+		ExecutorService pool = Executors.newFixedThreadPool(2);
 
 //		Future<Beer> futureBeer = pool.submit(barman::getOneBeer);
-		Future<Beer> futureBeer = barman.getOneBeer();
+		Future<Beer> futureBeer = CompletableFuture.supplyAsync(barman::getOneBeer, pool);
 
 //		Future<Vodka> futureVodka = pool.submit(barman::getOneVodka);
-		Future<Vodka> futureVodka = barman.getOneVodka();
+		Future<Vodka> futureVodka = CompletableFuture.supplyAsync(barman::getOneVodka);
 
 
 		//	Executors workflow DONE
@@ -113,6 +117,8 @@ class Drinker implements CommandLineRunner {
 
 		Beer beer = futureBeer.get(); // cat timp sta main aici: 0s - worker #2 deja a terminat
 
+
+
 		log.info("Got my order! Thank you lad! " + Arrays.asList(beer, vodka));
 	}
 }
@@ -120,17 +126,15 @@ class Drinker implements CommandLineRunner {
 @Slf4j
 @Service
 class Barman {
-	@Async("beerExecutor")
-	public CompletableFuture<Beer> getOneBeer() {
+	public Beer getOneBeer() {
 		 log.info("Pouring Beer...");
 		 ThreadUtils.sleep(1000); // network call
-		 return CompletableFuture.completedFuture(new Beer());
+		 return new Beer();
 	 }
-	 @Async("vodkaExecutor")
-	 public CompletableFuture<Vodka> getOneVodka() {
+	 public Vodka getOneVodka() {
 		 log.info("Pouring Vodka...");
 		 ThreadUtils.sleep(1000); // DB call, file read
-		 return CompletableFuture.completedFuture(new Vodka());
+		 return new Vodka();
 	 }
 }
 
