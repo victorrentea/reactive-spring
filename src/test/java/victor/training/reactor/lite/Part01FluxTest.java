@@ -29,6 +29,7 @@ public class Part01FluxTest {
 	@Test
 	public void fromValues() {
 		Flux<String> flux = workshop.fooBarFluxFromValues();
+		System.out.println("Returned");
 		StepVerifier.create(flux)
 				.expectNext("foo", "bar")
 				.verifyComplete();
@@ -51,6 +52,14 @@ public class Part01FluxTest {
 		Flux<String> flux = workshop.errorFlux();
 		StepVerifier.create(flux)
 				.verifyError(IllegalStateException.class);
+	}
+
+	@Test
+	public void fooBarFluxThenError() {
+		Flux<String> flux = workshop.fooBarFluxThenError();
+		StepVerifier.create(flux)
+				.expectNext("foo", "bar")
+				.verifyError(IllegalArgumentException.class);
 	}
 
 //========================================================================================
