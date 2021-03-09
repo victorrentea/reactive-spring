@@ -3,16 +3,15 @@ package victor.training.reactivespring.start;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 
@@ -20,7 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 @SpringBootApplication
 public class AsyncApp {
 	public static void main(String[] args) {
-		SpringApplication.run(AsyncApp.class, args).close(); // Note: .close added to stop executors after CLRunner finishes
+		SpringApplication.run(AsyncApp.class, args); // Note: .close added to stop executors after CLRunner finishes
 	}
 
 	@Bean
@@ -60,69 +59,37 @@ public class AsyncApp {
 }
 
 @Slf4j
-@Component
-class Drinker implements CommandLineRunner {
+@RestController
+class Drinker {
 	@Autowired
 	private Barman barman;
 
-	// TODO [1] inject and use a ThreadPoolTaskExecutor.submit
-	// TODO [2] make them return a CompletableFuture + @Async + asyncExecutor bean
-	// TODO [3] Messaging...
-	public void run(String... args) throws Exception {
+	ExecutorService pool = Executors.newFixedThreadPool(2);
+
+	@GetMapping("drink")
+	public CompletableFuture<DillyDilly> getDrink() throws ExecutionException, InterruptedException {
 		log.info("Submitting my order " + barman.getClass());
-
-
-		// NICIODATA nu faci threaduri noi new Thread()
-		// 1. e costisitor (milisecunde grele)
-		// 2. PERICULOS: daca incerci for i=0..10000 new Thread(sleep (1s)).start()
-		 	// threadurile din Java se mapeaza 1:1 pe threaduri din OS >>>>>>> Problema majora a limbajului Java
-
-		// NodeJS - 1 thread
-		// JS/TS async/await
-		// Kotlin - corutine ~ async-await
-		// Si Java incearca de vreo 7 ani Project Loom. Pana e gata, trebuie sa menajam threadurile din Java.
-//		new Thread(() -> {
-//
-//		}).start();
-
-
 
 		// *********************************
 		//        NU IROSIM THREADURI
 		// *********************************
 
 
-		ExecutorService pool = Executors.newFixedThreadPool(2);
-
-//		Future<Beer> futureBeer = pool.submit(barman::getOneBeer);
 		CompletableFuture<Beer> futureBeer = CompletableFuture.supplyAsync(barman::getOneBeer, pool);
 
-//		Future<Vodka> futureVodka = pool.submit(barman::getOneVodka);
 		CompletableFuture<Vodka> futureVodka = CompletableFuture.supplyAsync(barman::getOneVodka);
 
 
 		//	Executors workflow DONE
-		// TODO CompletableFuture Fara SPring
+		// CompletableFuture Fara SPring DONE
 		// TODO Ex handling
 		// TODO Full Ex non-blocking
 
-		// aici sunt 3 treaduri in rulare: main doarme si alte 2 lucreaza pentru main
-
 		log.info("Fata pleaca cu comanda");
 
-		// Breaking news: pe CompletableFuture este INTERZIS/bad practice sa faci .get()
-
-//		Vodka vodka = futureVodka.get(); // cat timp sta main aici: 1s asteptand pe unul dintre worker threads sa termine
-//		Beer beer = futureBeer.get(); // cat timp sta main aici: 0s - worker #2 deja a terminat
-
-//		futureVodka
-//			.thenApply(v -> System.out.println("Beau" + v))
-//			.thenAccept(v -> System.out.println("Beau" + v))
-
 		CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
-
-		DillyDilly dilly = futureDilly.get();
-		log.info("Got my order! Thank you lad! " + dilly);
+	log.info("Ma intorc in thread pool");
+		return futureDilly;
 	}
 }
 
@@ -130,6 +97,7 @@ class Drinker implements CommandLineRunner {
 // Berea dupa vin e un Chin
 
 @Slf4j
+@Data
 class DillyDilly {
 	private final Beer beer;
 	private final Vodka vodka;
@@ -159,10 +127,10 @@ class Barman {
 
 @Data
 class Beer {
-	public static final String type = "blond";
+	public final String type = "blond";
 }
 
 @Data
 class Vodka {
-	public static final String type = "deadly";
+	public final String type = "deadly";
 }
