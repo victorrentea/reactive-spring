@@ -88,7 +88,8 @@ class Drinker {
 		log.info("Fata pleaca cu comanda");
 
 		CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
-	log.info("Ma intorc in thread pool");
+
+		log.info("Ma intorc in thread pool");
 		return futureDilly;
 	}
 }
