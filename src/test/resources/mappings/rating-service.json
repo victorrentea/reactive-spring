@@ -1,17 +1,14 @@
 {
   "request": {
     "method": "GET",
-    "urlPathPattern": "/api/product/.*"
+    "urlPathPattern": "/api/rating/.*"
   },
   "response": {
     "status": 200,
 
     "jsonBody":
       {
-        "id": 1,
-        "name": "Product",
-        "active": true,
-        "resealed": true
+        "rating": 4
       },
     "fixedDelayMilliseconds": 100,
 

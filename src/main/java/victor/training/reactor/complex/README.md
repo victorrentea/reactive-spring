@@ -20,7 +20,7 @@
 
 ## Enhance Data
 - Complement the Product with rating fetched from a REST API call to RatingService 
-- Before doing the previous call, check an external cache (ExternalCacheClient#tryCache). 
+- Before doing the previous call, check an external cache (ExternalCacheClient#lookupInCache). 
   If the returned Mono is empty, perform the call, otherwise use the cached rating.
   
-- After the call to RatingService completes, put the rating back in cache (ExternalCacheClient#putCache)
+- After the call to RatingService completes, put the rating back in cache (ExternalCacheClient#putInCache)

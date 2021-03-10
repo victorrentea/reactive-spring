@@ -7,11 +7,13 @@
     "status": 200,
     "jsonBody": [
       {
+        "id": 1,
         "name": "Product1",
         "active": true,
         "resealed": true
       },
       {
+        "id": 2,
         "name": "Product2",
         "active": true,
         "resealed": false

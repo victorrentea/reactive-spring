@@ -94,7 +94,7 @@ class ExternalAPIs {
       return WebClient.create().get().uri("http://localhost:9999/api/product/1")
           .retrieve()
           .bodyToMono(ProductDto.class)
-         .map(dto -> new Product(dto.getName(), dto.isActive(),dto.isResealed()))
+         .map(dto -> dto.toEntity())
       ;
    }
    @SneakyThrows
@@ -103,10 +103,9 @@ class ExternalAPIs {
       return WebClient.create().post().uri("http://localhost:9999/api/product/many").body(Mono.just(productIds), new ParameterizedTypeReference<List<Long>>() {})
           .retrieve()
           .bodyToFlux(ProductDto.class)
-            .map(dto -> new Product(dto.getName(), dto.isActive(), dto.isResealed()))
+            .map(dto -> dto.toEntity())
       ;
    }
-
 
 
 }
@@ -114,6 +113,7 @@ class ExternalAPIs {
 @Data
 @AllArgsConstructor
 class Product {
+   private Long id;
    private String name;
    private boolean active;
    private boolean resealed;
@@ -122,7 +122,13 @@ class Product {
 
 @Data
 class ProductDto {
+   private Long id;
    private String name;
    private boolean active;
    private boolean resealed;
+
+
+   public Product toEntity() {
+      return new Product(this.id, getName(), isActive(), isResealed());
+   }
 }
