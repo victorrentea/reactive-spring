@@ -13,6 +13,8 @@ import victor.training.reactivespring.start.ThreadUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 @Slf4j
 public class ComplexFlow {
@@ -22,7 +24,8 @@ public class ComplexFlow {
       log.info("Start");
 // Mono si Flux sunt Publisheri
 
-      List<Long> productIds = Arrays.asList(1L,2L);
+//      List<Long> productIds = Arrays.asList(1L,2L);
+      List<Long> productIds = LongStream.range(1,10_000).boxed().collect(Collectors.toList());
 
       Mono<List<Product>> listMono = mainFlow(productIds);
 

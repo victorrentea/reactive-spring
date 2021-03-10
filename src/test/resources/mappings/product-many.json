@@ -1,18 +1,21 @@
 {
   "request": {
     "method": "GET",
-    "urlPathPattern": "/api/product/.*"
+    "urlPathPattern": "/api/product/many"
   },
   "response": {
     "status": 200,
-
-    "jsonBody":
+    "jsonBody": [
       {
-        "name": "Product",
+        "name": "Product1",
         "active": true
       },
+      {
+        "name": "Product2",
+        "active": true
+      }
+    ],
     "fixedDelayMilliseconds": 100,
-
     "headers": {
       "Content-Type": "application/json"
     }
