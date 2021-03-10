@@ -33,6 +33,8 @@ public class ComplexFlow {
           .doOnNext(list -> log.info("Peeking : " + list))
           .subscribe(list -> log.info("Result: " + list))
       ;
+
+
       log.info("Gata");
       ThreadUtils.sleep(30000);
    }
@@ -45,6 +47,7 @@ public class ComplexFlow {
          ;
    }
    public static Mono<Product> convertBlockingToReactive(Long productId) {
+      // TODO cum ii dau cu 10 threaduri nu cu 120 = 10 x #CPU
       return Mono
           .defer(() -> ExternalAPI.getProductDetails(productId))
           .subscribeOn(Schedulers.boundedElastic())
