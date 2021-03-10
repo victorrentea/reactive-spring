@@ -39,10 +39,12 @@ public class ComplexFlow {
       ThreadUtils.sleep(30000);
    }
 
+
+   // De ex: daca vii cu 10K de id-uri, faci total 50 de requesturi HTTP fiecare carand dus-intors 200 id-uri/date ;
+   // in plus, niciodata nu vei avea mai mult de 10 requesturi simultane deschise cu API-ul lor, datorita  #productApiCallScheduler
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
-
-          .buffer(2)
+          .buffer(200)
           .flatMap(productId -> convertBlockingToReactive(productId))
          .collectList()
          ;
