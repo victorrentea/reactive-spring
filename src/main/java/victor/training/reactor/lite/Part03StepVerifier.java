@@ -96,6 +96,16 @@ public class Part03StepVerifier {
 			.verifyComplete();
 	}
 
+	public void ideea(Supplier<Flux> fluxSupplier) {
+		try {
+			// hackuieste time
+			fluxSupplier.get(); //
+		} finally {
+			//			un-hack time
+		}
+
+	}
+
 	private void fail() {
 		throw new AssertionError("workshop not implemented");
 	}

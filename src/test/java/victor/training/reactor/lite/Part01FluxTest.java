@@ -33,13 +33,13 @@ public class Part01FluxTest {
 				.expectNext("foo", "bar")
 				.verifyComplete();
 	}
-	@Test
-	public void fromValuesAsync() {
-		Flux<String> flux = workshop.fooBarFluxFromValuesAsync();
-		StepVerifier.create(flux)
-				.expectNext("foo", "bar")
-				.verifyComplete();
-	}
+//	@Test
+//	public void fooBarFluxFromValuesAsync() {
+//		Flux<String> flux = workshop.fooBarFluxFromValuesAsync();
+//		StepVerifier.create(flux)
+//				.expectNext("foo", "bar")
+//				.verifyComplete();
+//	}
 
 //========================================================================================
 
@@ -60,13 +60,13 @@ public class Part01FluxTest {
 				.verifyError(IllegalStateException.class);
 	}
 
-	@Test
-	public void fooBarFluxThenError() {
-		Flux<String> flux = workshop.fooBarFluxThenError();
-		StepVerifier.create(flux)
-				.expectNext("foo", "bar")
-				.verifyError(IllegalArgumentException.class);
-	}
+//	@Test
+//	public void fooBarFluxThenError() {
+//		Flux<String> flux = workshop.fooBarFluxThenError();
+//		StepVerifier.create(flux)
+//				.expectNext("foo", "bar")
+//				.verifyError(IllegalArgumentException.class);
+//	}
 
 //========================================================================================
 
