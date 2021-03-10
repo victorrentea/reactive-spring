@@ -10,6 +10,7 @@ import reactor.util.retry.Retry;
 import victor.training.reactivespring.sample.mam1.MasterItem;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BobControllerClient {
@@ -26,10 +27,10 @@ public class BobControllerClient {
    public Mono<DeduplicatorItem> readAssortmentState(MasterItem masterItem) {
 
       // this is valid and never null here (since checked by Analyser)
-      var gtin = masterItem.getGtin();
+      Object gtin = masterItem.getGtin();
 
-      var masterKey = masterItem.getMasterKey();
-      var attempt = masterItem.getAttempt();
+      UUID masterKey = masterItem.getMasterKey();
+      int attempt = masterItem.getAttempt();
       LOGGER.info("{}, {}: looking up BoB id {} at {}/bob/{}/... (requestCount {})",
           masterKey, attempt, gtin, keyProviderUrl, keyProviderCountry,
           requestCount.incrementAndGet());
