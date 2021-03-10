@@ -11,7 +11,7 @@
         "name": "Product",
         "active": true
       },
-    "fixedDelayMilliseconds": 3000,
+    "fixedDelayMilliseconds": 1000,
 
     "headers": {
       "Content-Type": "application/json"

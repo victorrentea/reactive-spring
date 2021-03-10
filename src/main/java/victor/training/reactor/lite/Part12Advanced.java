@@ -3,7 +3,9 @@ package victor.training.reactor.lite;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import victor.training.reactivespring.start.ThreadUtils;
 
+import java.io.FileReader;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -48,16 +50,37 @@ public class Part12Advanced {
 
    //========================================================================================
 
-   // TODO Run readTask and writeTask on the Schedulers#boundedElastic and cpuTask on the Schedulers#parallel
-   public Mono<Void> threadHopping(Runnable readTask, Runnable cpuTask, Runnable writeTask) {
+   // TODO Run readTask and writeTask on the Schedulers#boundedElastic
+   //  and cpuTask on the Schedulers#parallel
+   public Mono<Object> threadHopping(Runnable readTask, Runnable cpuTask, Runnable writeTask) {
       return Mono.fromRunnable(readTask)
+          .subscribeOn(Schedulers.boundedElastic())
+
+//          .publishOn(Schedulers.parallel())
+//          .map( e -> {
+//             int s = new FileReader("A").read();
+//             try {
+//                Thread.sleep(1000);
+//             } catch (InterruptedException interruptedException) {
+//                interruptedException.printStackTrace();
+//             }
+//             return e;
+//          })
+
+
+          .publishOn(Schedulers.parallel()) ///----
           .then(Mono.fromRunnable(cpuTask))
+
+          .publishOn(Schedulers.boundedElastic()) //----
           .then(Mono.fromRunnable(writeTask));
    }
 
    // TODO the same as above, but the read and write happen in the caller (before and after you are invoked) - see the test
-   public Mono<Void> threadHoppingHard(Mono<Void> sourceMono, Runnable cpuTask) {
+   public Mono<?> threadHoppingHard(Mono<Void> sourceMono, Runnable cpuTask) {
       return sourceMono
-          .then(Mono.fromRunnable(cpuTask));
+          .subscribeOn(Schedulers.boundedElastic())
+          .publishOn(Schedulers.parallel())
+          .then(Mono.fromRunnable(cpuTask))
+          .publishOn(Schedulers.boundedElastic());
    }
 }

@@ -69,7 +69,7 @@ public class Part12AdvancedTest {
       Runnable cpuTask = () -> steps.add(captureThread("CPU"));
       Runnable writeTask = () -> steps.add(captureThread("WRITE"));
 
-      Mono<Void> mono = workshop.threadHopping(readTask, cpuTask, writeTask);
+      Mono<?> mono = workshop.threadHopping(readTask, cpuTask, writeTask);
 
       StepVerifier.create(mono).verifyComplete();
 
@@ -88,7 +88,7 @@ public class Part12AdvancedTest {
       Runnable writeTask = () -> steps.add(captureThread("WRITE"));
 
       Mono<Void> sourceMono = Mono.fromRunnable(readTask);
-      Mono<Void> mono = workshop.threadHoppingHard(sourceMono, cpuTask);
+      Mono<?> mono = workshop.threadHoppingHard(sourceMono, cpuTask);
       Mono<Void> finalMono = mono.then(Mono.fromRunnable(writeTask));
 
       StepVerifier.create(finalMono).verifyComplete();
