@@ -24,3 +24,5 @@
   If the returned Mono is empty, perform the call, otherwise use the cached rating.
   
 - After the call to RatingService completes, put the rating back in cache (ExternalCacheClient#putInCache)
+
+TODO cache + rating  ||  auditarea celor resealed.

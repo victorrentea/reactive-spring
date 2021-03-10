@@ -65,9 +65,10 @@ public class ComplexFlow {
                  log.debug("Put" + product.getId());
                  Mono.defer(() -> ExternalCacheClient.putInCache(product.getId(), product.getRating()))
                      .subscribeOn(Schedulers.boundedElastic())
-                     .subscribe(v->{}, e -> {
-                        e.printStackTrace();
-                     });
+                     .subscribe();
+//                     .subscribe(v->{}, e -> {
+//                        e.printStackTrace();
+//                     });
               })
 
               .collectList()
