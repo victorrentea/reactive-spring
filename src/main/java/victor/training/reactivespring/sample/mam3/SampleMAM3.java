@@ -47,7 +47,7 @@ public class SampleMAM3 {
    @PostMapping(value = "DETAILED_ITEM_INFO_BY_MIRAKL_ID_RESOURCE", consumes = MediaType.APPLICATION_JSON_VALUE)
    public final Mono<ResponseEntity<ItemInfoResponse>> detailedItemInfoByMiraklId(@RequestBody(required = false) List<String> miraklIdsList) {
       LOGGER.info("GET_INFO_MESSAGE" +  miraklIdsList); //
-      var itemsOnError = new HashSet<String>();
+      HashSet<String> itemsOnError = new HashSet<String>();
       MultiSet<String> miraklIds = new HashMultiSet<>();// TODO victor similar to sorted ? or sorted by hashCode()? De ce ?
       miraklIds.addAll(miraklIdsList);
 

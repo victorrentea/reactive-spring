@@ -26,7 +26,7 @@ class ItemWithState {
     */
    ItemWithState(MasterItem kafkaItem, ItemState state) {
       this.kafkaItem = kafkaItem;
-      var gtin = kafkaItem.getGtin();
+      Object gtin = kafkaItem.getGtin();
       persistentItem = new AnalyserItem(kafkaItem.getMasterKey(), gtin);
       this.state = state;
    }

@@ -65,7 +65,7 @@ public class SampleMam2_Deduplicator
     */
    MasterItem extractMasterItem(ReceiverRecord<UUID, MasterItem> record) {
       record.receiverOffset().acknowledge();
-      var masterItem = record.value();
+      MasterItem masterItem = record.value();
       LOGGER.info("{}, {}: received master item, total count: {}",
           masterItem.getMasterKey(), masterItem.getAttempt(), totalRecordCount.incrementAndGet());
       return masterItem;

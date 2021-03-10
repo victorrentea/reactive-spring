@@ -81,9 +81,9 @@ public class SampleMam1 {
    //3. Salvarea in baza de date
    Mono<Boolean>  saveItem(ItemWithState item) {
       // here we exactly have one gtin
-      var masterItem = item.kafkaItem;
-      var masterKey = masterItem.getMasterKey();
-      var attempt = masterItem.getAttempt();
+      MasterItem masterItem = item.kafkaItem;
+      UUID masterKey = masterItem.getMasterKey();
+      int attempt = masterItem.getAttempt();
       LOGGER.info("{}, {}: gtin = {} saving state = {}", masterKey, attempt, masterItem.getGtin(), item.state);
       return item.state == ItemState.NEW ? // monitor items are not saved, either.
           repository.save(item.persistentItem)
