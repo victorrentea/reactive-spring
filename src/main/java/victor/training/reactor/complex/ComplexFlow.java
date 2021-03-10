@@ -36,7 +36,6 @@ public class ComplexFlow {
 
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
-          .publishOn(Schedulers.boundedElastic())
 
           .flatMap(productId -> convertBlockingToReactive(productId))
          .collectList()
@@ -44,9 +43,8 @@ public class ComplexFlow {
    }
    public static Mono<Product> convertBlockingToReactive(Long productId) {
       return Mono
-//          .defer(() ->Mono.just(ExternalAPI.getProductDetails(productId)))
-//          .subscribeOn(Schedulers.boundedElastic())
-          .just(ExternalAPI.getProductDetails(productId))
+          .defer(() ->Mono.just(ExternalAPI.getProductDetails(productId)))
+          .subscribeOn(Schedulers.boundedElastic())
           ;
    }
 
