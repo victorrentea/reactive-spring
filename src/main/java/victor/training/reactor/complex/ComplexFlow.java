@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,7 +12,6 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -26,7 +25,7 @@ public class ComplexFlow {
 // Mono si Flux sunt Publisheri
 
 //      List<Long> productIds = Arrays.asList(1L,2L);
-      List<Long> productIds = LongStream.range(1,10_000).boxed().collect(Collectors.toList());
+      List<Long> productIds = LongStream.range(1,10).boxed().collect(Collectors.toList());
 
       Mono<List<Product>> listMono = mainFlow(productIds);
 
@@ -43,14 +42,14 @@ public class ComplexFlow {
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
 
+          .buffer(2)
           .flatMap(productId -> convertBlockingToReactive(productId))
          .collectList()
          ;
    }
-   public static Mono<Product> convertBlockingToReactive(Long productId) {
+   public static Flux<Product> convertBlockingToReactive(List<Long> productIds) {
       // TODO cum ii dau cu 10 threaduri nu cu 120 = 10 x #CPU
-      return Mono
-          .defer(() -> ExternalAPI.getProductDetails(productId))
+      return Flux.defer(() -> ExternalAPI.getManyProductDetails(productIds))
           .subscribeOn(productApiCallScheduler)
           ;
    }
@@ -73,6 +72,15 @@ class ExternalAPI {
           .retrieve()
           .bodyToMono(ProductDto.class)
          .map(dto -> new Product(dto.getName(), dto.isActive()))
+      ;
+   }
+   @SneakyThrows
+   public static Flux<Product> getManyProductDetails(List<Long> productIds) {
+      log.info("Calling REST");
+      return WebClient.create().post().uri("http://localhost:9999/api/product/many").body(Mono.just(productIds), new ParameterizedTypeReference<List<Long>>() {})
+          .retrieve()
+          .bodyToFlux(ProductDto.class)
+            .map(dto -> new Product(dto.getName(), dto.isActive()))
       ;
    }
 }
