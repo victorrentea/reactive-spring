@@ -2,6 +2,7 @@ package victor.training.reactor.complex;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 
@@ -17,10 +18,11 @@ public class ExternalCacheClient {
          } else {
             return Mono.empty();
          }
-      }).delayElement(ofMillis(10));
+      }).delayElement(ofMillis(10));//.publishOn(Schedulers.single());
    }
 
    public static Mono<Void> putInCache(Long productId, ProductRating rating) {
-      return Mono.empty().delayElement(ofMillis(10)).then();
+      log.info("Put in cache " + productId);
+      return Mono.empty();//.delayElement(ofMillis(10)).then();
    }
 }

@@ -24,7 +24,7 @@ public class ComplexFlow {
 // Mono si Flux sunt Publisheri
 
 //      List<Long> productIds = Arrays.asList(1L,2L);
-      List<Long> productIds = LongStream.range(1,10).boxed().collect(Collectors.toList());
+      List<Long> productIds = LongStream.range(1, 10).boxed().collect(Collectors.toList());
 
       Mono<List<Product>> listMono = mainFlow(productIds);
 
@@ -47,22 +47,31 @@ public class ComplexFlow {
 
       return
           Flux.fromIterable(productIds)
-          .buffer(2)
-          .flatMap(ComplexFlow::convertBlockingToReactive)
+              .buffer(2)
+              .flatMap(ComplexFlow::convertBlockingToReactive)
 
-          .flatMap(product -> {
-             Mono<Void> auditMono = ExternalAPIs.auditResealedProduct(product);
-             return auditMono.thenReturn(product);
-          })
+              .flatMap(product -> {
+                 Mono<Void> auditMono = ExternalAPIs.auditResealedProduct(product);
+                 return auditMono.thenReturn(product);
+              })
 
 //           .flatMap(product -> ExternalAPIs.getRating(product.getId())
 //                                           .map(rating -> product.withRating(rating)))
-           .flatMap(product -> ExternalCacheClient.lookupInCache(product.getId())  // se comporta ca un Optional asincron
-                 .switchIfEmpty( ExternalAPIs.getRating(product.getId())) // ne inchipuim e mai expensive x 3 ori
-                                           .map(rating -> product.withRating(rating)))
-           .collectList()
-         ;
+              .flatMap(product -> ExternalCacheClient.lookupInCache(product.getId())  // se comporta ca un Optional asincron
+                  .switchIfEmpty(ExternalAPIs.getRating(product.getId())) // ne inchipuim e mai expensive x 3 ori
+                  .map(rating -> product.withRating(rating)))
+
+              .doOnNext(product -> {
+                 log.debug("Put" + product.getId());
+                 Mono.defer(() -> ExternalCacheClient.putInCache(product.getId(), product.getRating()))
+                     .subscribeOn(Schedulers.boundedElastic())
+                     .subscribe();
+              })
+
+              .collectList()
+          ;
    }
+
    public static Flux<Product> convertBlockingToReactive(List<Long> productIds) {
       // TODO cum ii dau cu 10 threaduri nu cu 120 = 10 x #CPU
       return Flux.defer(() -> ExternalAPIs.getManyProductDetails(productIds))
@@ -73,14 +82,15 @@ public class ComplexFlow {
    public static final Scheduler productApiCallScheduler = Schedulers.newBoundedElastic(10, 10_000, "product-api-call");
 
 }
+
 @Slf4j
 class ExternalAPIs {
 
    @SneakyThrows
    public static Mono<Void> auditResealedProduct(Product product) {
-       if (!product.isResealed()) {
-          return Mono.empty();
-       }
+      if (!product.isResealed()) {
+         return Mono.empty();
+      }
       log.info("Calling Audit REST");
       return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product)
           .retrieve()
@@ -88,7 +98,8 @@ class ExternalAPIs {
           .then();
 
    }
-      @SneakyThrows
+
+   @SneakyThrows
    public static Mono<Product> getSingleProductDetails(Long productId) {
       // ne inchipuim apel REST / WS
       log.info("Calling REST");
@@ -100,19 +111,20 @@ class ExternalAPIs {
       return WebClient.create().get().uri("http://localhost:9999/api/product/1")
           .retrieve()
           .bodyToMono(ProductDto.class)
-         .map(dto -> dto.toEntity())
-      ;
+          .map(dto -> dto.toEntity())
+          ;
    }
+
    @SneakyThrows
    public static Flux<Product> getManyProductDetails(List<Long> productIds) {
       log.info("Calling REST");
-      return WebClient.create().post().uri("http://localhost:9999/api/product/many").body(Mono.just(productIds), new ParameterizedTypeReference<List<Long>>() {})
+      return WebClient.create().post().uri("http://localhost:9999/api/product/many").body(Mono.just(productIds), new ParameterizedTypeReference<List<Long>>() {
+      })
           .retrieve()
           .bodyToFlux(ProductDto.class)
-            .map(dto -> dto.toEntity())
-      ;
+          .map(dto -> dto.toEntity())
+          ;
    }
-
 
 
    @SneakyThrows
