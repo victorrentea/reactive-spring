@@ -1,6 +1,5 @@
 package victor.training.reactor.complex;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +53,9 @@ public class ComplexFlow {
              Mono<Void> auditMono = ExternalAPIs.auditResealedProduct(product);
              return auditMono.thenReturn(product);
           })
-         .collectList()
+           .flatMap(product -> ExternalAPIs.getRating(product.getId())
+                                           .map(rating -> product.withRating(rating)))
+           .collectList()
          ;
    }
    public static Flux<Product> convertBlockingToReactive(List<Long> productIds) {
@@ -108,16 +109,44 @@ class ExternalAPIs {
    }
 
 
+
+   @SneakyThrows
+   public static Mono<ProductRating> getRating(long productId) {
+      log.info("Calling get Rating Service REST");
+      return WebClient.create().get().uri("http://localhost:9999/api/rating/" + productId)
+          .retrieve()
+          .bodyToMono(ProductRating.class);
+
+   }
+
 }
 
 @Data
-@AllArgsConstructor
 class Product {
    private Long id;
    private String name;
    private boolean active;
    private boolean resealed;
+   private ProductRating rating;
 
+   public Product(Long id, String name, boolean active, boolean resealed) {
+      this.id = id;
+      this.name = name;
+      this.active = active;
+      this.resealed = resealed;
+   }
+
+   public Product(Long id, String name, boolean active, boolean resealed, ProductRating rating) {
+      this.id = id;
+      this.name = name;
+      this.active = active;
+      this.resealed = resealed;
+      this.rating = rating;
+   }
+
+   public Product withRating(ProductRating rating) {
+      return new Product(id, name, active, resealed, rating);
+   }
 }
 
 @Data
