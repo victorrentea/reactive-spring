@@ -51,7 +51,6 @@ public class ComplexFlow {
           .flatMap(ComplexFlow::convertBlockingToReactive)
 
           .flatMap(product -> {
-
              Mono<Void> auditMono = ExternalAPIs.auditResealedProduct(product);
              return auditMono.thenReturn(product);
           })
