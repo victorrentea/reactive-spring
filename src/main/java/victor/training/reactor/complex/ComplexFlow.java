@@ -44,6 +44,7 @@ public class ComplexFlow {
 
 
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
+
       return
           Flux.fromIterable(productIds)
           .buffer(2)
@@ -53,7 +54,11 @@ public class ComplexFlow {
              Mono<Void> auditMono = ExternalAPIs.auditResealedProduct(product);
              return auditMono.thenReturn(product);
           })
-           .flatMap(product -> ExternalAPIs.getRating(product.getId())
+
+//           .flatMap(product -> ExternalAPIs.getRating(product.getId())
+//                                           .map(rating -> product.withRating(rating)))
+           .flatMap(product -> ExternalCacheClient.lookupInCache(product.getId())  // se comporta ca un Optional asincron
+                 .switchIfEmpty( ExternalAPIs.getRating(product.getId())) // ne inchipuim e mai expensive x 3 ori
                                            .map(rating -> product.withRating(rating)))
            .collectList()
          ;
