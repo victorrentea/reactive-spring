@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
 
@@ -50,9 +51,11 @@ public class ComplexFlow {
       // TODO cum ii dau cu 10 threaduri nu cu 120 = 10 x #CPU
       return Mono
           .defer(() -> ExternalAPI.getProductDetails(productId))
-          .subscribeOn(Schedulers.boundedElastic())
+          .subscribeOn(productApiCallScheduler)
           ;
    }
+
+   public static final Scheduler productApiCallScheduler = Schedulers.newBoundedElastic(10, 10_000, "product-api-call");
 
 }
 @Slf4j
