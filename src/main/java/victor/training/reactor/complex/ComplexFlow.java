@@ -30,7 +30,7 @@ public class ComplexFlow {
       Mono<List<Product>> listMono = mainFlow(productIds);
 
       listMono
-          .doOnNext(list -> log.info("Peeking : " + list))
+          .doOnNext(list -> log.info("Peeking : " + list.size()))
           .subscribe(list -> log.info("Result: " + list))
       ;
 
@@ -42,16 +42,25 @@ public class ComplexFlow {
 
    // De ex: daca vii cu 10K de id-uri, faci total 50 de requesturi HTTP fiecare carand dus-intors 200 id-uri/date ;
    // in plus, niciodata nu vei avea mai mult de 10 requesturi simultane deschise cu API-ul lor, datorita  #productApiCallScheduler
+
+
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
-      return Flux.fromIterable(productIds)
-          .buffer(200)
-          .flatMap(productId -> convertBlockingToReactive(productId))
+      return
+          Flux.fromIterable(productIds)
+          .buffer(2)
+          .flatMap(ComplexFlow::convertBlockingToReactive)
+
+          .flatMap(product -> {
+
+             Mono<Void> auditMono = ExternalAPIs.auditResealedProduct(product);
+             return auditMono.thenReturn(product);
+          })
          .collectList()
          ;
    }
    public static Flux<Product> convertBlockingToReactive(List<Long> productIds) {
       // TODO cum ii dau cu 10 threaduri nu cu 120 = 10 x #CPU
-      return Flux.defer(() -> ExternalAPI.getManyProductDetails(productIds))
+      return Flux.defer(() -> ExternalAPIs.getManyProductDetails(productIds))
           .subscribeOn(productApiCallScheduler)
           ;
    }
@@ -60,9 +69,22 @@ public class ComplexFlow {
 
 }
 @Slf4j
-class ExternalAPI {
+class ExternalAPIs {
+
    @SneakyThrows
-   public static Mono<Product> getProductDetails(Long productId) {
+   public static Mono<Void> auditResealedProduct(Product product) {
+       if (!product.isResealed()) {
+          return Mono.empty();
+       }
+      log.info("Calling Audit REST");
+      return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product)
+          .retrieve()
+          .toBodilessEntity()
+          .then();
+
+   }
+      @SneakyThrows
+   public static Mono<Product> getSingleProductDetails(Long productId) {
       // ne inchipuim apel REST / WS
       log.info("Calling REST");
 
@@ -73,7 +95,7 @@ class ExternalAPI {
       return WebClient.create().get().uri("http://localhost:9999/api/product/1")
           .retrieve()
           .bodyToMono(ProductDto.class)
-         .map(dto -> new Product(dto.getName(), dto.isActive()))
+         .map(dto -> new Product(dto.getName(), dto.isActive(),dto.isResealed()))
       ;
    }
    @SneakyThrows
@@ -82,9 +104,12 @@ class ExternalAPI {
       return WebClient.create().post().uri("http://localhost:9999/api/product/many").body(Mono.just(productIds), new ParameterizedTypeReference<List<Long>>() {})
           .retrieve()
           .bodyToFlux(ProductDto.class)
-            .map(dto -> new Product(dto.getName(), dto.isActive()))
+            .map(dto -> new Product(dto.getName(), dto.isActive(), dto.isResealed()))
       ;
    }
+
+
+
 }
 
 @Data
@@ -92,6 +117,7 @@ class ExternalAPI {
 class Product {
    private String name;
    private boolean active;
+   private boolean resealed;
 
 }
 
@@ -99,4 +125,5 @@ class Product {
 class ProductDto {
    private String name;
    private boolean active;
+   private boolean resealed;
 }

@@ -11,3 +11,5 @@
 - Call their API with max 10 requests in parallel <<<
 - Avoid calling network in a loop by fetching "pages of Products" 
   ExternalApi.getProductData(List<productId>): List<Product>
+  
+- Products can be resealed. If they are, an audit API REST call should happen passing the id of the product.

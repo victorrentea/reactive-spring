@@ -8,11 +8,13 @@
     "jsonBody": [
       {
         "name": "Product1",
-        "active": true
+        "active": true,
+        "resealed": true
       },
       {
         "name": "Product2",
-        "active": true
+        "active": true,
+        "resealed": false
       }
     ],
     "fixedDelayMilliseconds": 100,
