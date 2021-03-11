@@ -25,6 +25,8 @@ public class InMemoryBroadcastController {
 
    @GetMapping(value = "message/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public Flux<ServerSentEvent<CustomerDto>> messageStream() {
+
+
       return sink.asFlux()
           .flatMap(t -> rxRepo.findById("6049e6597310491734af4179"))
           .map(Objects::toString)

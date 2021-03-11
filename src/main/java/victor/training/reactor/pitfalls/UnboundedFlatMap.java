@@ -16,13 +16,13 @@ public class UnboundedFlatMap {
    @Test
    public void test() {
       getDataFlux()
-          .flatMap(this::operation)
+          .flatMap(this::operation, 4)
           .blockLast();
    }
 
    private Flux<Integer> getDataFlux() {
-      return Flux.fromStream(IntStream.range(1, 300).boxed())
-          .publishOn(Schedulers.elastic());
+      return Flux.range(1, 300)
+          .publishOn(Schedulers.boundedElastic());
    }
 
    private <R> Mono<Void> operation(Integer integer) {

@@ -3,6 +3,7 @@ package victor.training.reactor.pitfalls;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import victor.training.reactivespring.start.ThreadUtils;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,11 +22,15 @@ public class RaceVariables {
    public static class SharingVariables {
       private final Repo repo;
 
+      int camp;
       public Flux<String> problem() {
          AtomicInteger count = new AtomicInteger();
          return repo.findAll()
-             .doOnNext(t -> count.incrementAndGet())
-             .doOnComplete(() -> System.out.println("Count: " + count.get()));
+             .doOnNext(t -> {
+                camp++;
+                count.incrementAndGet();
+             })
+             .doOnComplete(() -> System.out.println("Count: " + camp));
       }
    }
 
@@ -35,6 +40,8 @@ public class RaceVariables {
       SharingVariables sharing = new SharingVariables(new Repo());
       Flux<String> flux = sharing.problem();
       flux.subscribe();
+      ThreadUtils.sleep(1000);
+      sharing.problem().subscribe();
       // TODO .subscribe again to the same flux
 
       Thread.sleep(300);

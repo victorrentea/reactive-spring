@@ -54,7 +54,9 @@ public class Part12Advanced {
    // TODO The returned Mono emits after 1 second "Hello " + the current username got from Reactor Context
    // Hint: Mono.deferContextual allows access to context propagated from downstream
    public Mono<String> reactorContext() {
-      return null;
+      return Mono.delay(Duration.ofSeconds(1))
+          .then(Mono.deferContextual(context ->
+              Mono.just("Hello " + context.get("username"))));
    }
 
    //========================================================================================

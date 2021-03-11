@@ -9,10 +9,10 @@ public class CollectListPitfall {
       Flux<Integer> intFlux = Flux.create(sink -> {
          sink.next(1);
          sink.next(2);
+         sink.complete();
       });
 
-      intFlux.collectList()
-          .subscribe(System.out::println);
+      System.out.println(intFlux.collectList().block());
 
 
    }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Random;
 import java.util.UUID;
 
@@ -22,8 +23,9 @@ public class R2DBCController {
 
    @GetMapping(value = "flux", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public Flux<String> flux() {
-      return userRepository.findAll().map(User::getName);
+      return userRepository.findAll().delayElements(Duration.ofSeconds(1)).map(User::getName);
    }
+
    @GetMapping("create")
    public Mono<User> create() {
       String id = UUID.randomUUID().toString();
