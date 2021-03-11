@@ -8,10 +8,12 @@
 
     "jsonBody":
       {
+        "id": 1,
         "name": "Product",
-        "active": true
+        "active": true,
+        "resealed": true
       },
-    "fixedDelayMilliseconds": 3000,
+    "fixedDelayMilliseconds": 100,
 
     "headers": {
       "Content-Type": "application/json"
