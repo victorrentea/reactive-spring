@@ -1,5 +1,6 @@
 package victor.training.reactor.lite;
 
+import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -33,7 +34,12 @@ public class Part12Advanced {
    public Flux<Long> hotPublisher() {
 
 
-      return Flux.interval(Duration.ofMillis(100));
+      ConnectableFlux<Long> interval = Flux.interval(Duration.ofMillis(100))
+          .publish();
+      // AICI iti subscrii toti subscriberii care trebuie sa primeasca la unison semnalale tale
+      interval.connect(); // dai foc publisherului tau. de aici incolo, emite autonom.
+      // orice late subscriber va rata semnale
+      return interval;
    }
 
    //========================================================================================

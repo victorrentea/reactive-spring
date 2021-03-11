@@ -11,6 +11,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -73,6 +74,10 @@ public class ComplexFlow {
 
               .collectList()
           ;
+
+
+//      Flux.interval(Duration.ofMillis(100))
+//          .back
    }
 
    public static Flux<Product> convertBlockingToReactive(List<Long> productIds) {

@@ -32,7 +32,7 @@ public class Part12AdvancedTest {
 
       Flux<Long> hot = workshop.hotPublisher();
       Thread.sleep(400);
-      assertThat(hot.blockFirst()).isGreaterThan(3);
+      assertThat(hot.blockFirst()).isGreaterThanOrEqualTo(3);
    }
    
    @Test
