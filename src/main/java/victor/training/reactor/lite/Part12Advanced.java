@@ -6,6 +6,7 @@ import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
 
 import java.io.FileReader;
+import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ public class Part12Advanced {
    // Note: multiple subscribers will subscribe!
    // Use generateRandomInts()!
    public Flux<Integer> defer() {
-      return null;
+      return Flux.defer(() -> Flux.fromIterable(generateRandomInts()));
    }
 
    private static List<Integer> generateRandomInts() {
@@ -30,7 +31,9 @@ public class Part12Advanced {
    // Hint: Flux.publish(): ConnectableFlux
    // Brain: connect(): Disposable > how to handle?
    public Flux<Long> hotPublisher() {
-      return null;
+
+
+      return Flux.interval(Duration.ofMillis(100));
    }
 
    //========================================================================================

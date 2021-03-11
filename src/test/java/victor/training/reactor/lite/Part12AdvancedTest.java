@@ -20,8 +20,8 @@ public class Part12AdvancedTest {
    @Test
    public void defer() {
       Flux<Integer> flux = workshop.defer();
-      List<Integer> sequence1 = flux.collectList().block();
-      List<Integer> sequence2 = flux.collectList().block();
+      Iterable<Integer> sequence1 = flux.toIterable();
+      Iterable<Integer> sequence2 = flux.toIterable();
       assertThat(sequence1).isNotEqualTo(sequence2);
    }
 
