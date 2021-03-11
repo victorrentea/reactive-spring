@@ -6,6 +6,7 @@
 - Get back a Flux<Product> (start with Flux.fromIterable(ids))
 - Fetch the data from a function returning Mono.just(result)
 - Run the blocking REST call in the appropriate Scheduler (which one?)
+- Check the threads status in visualvm
 - Move to nonBlocking REST calls with WebClient
 
 ## Optimize network calls
