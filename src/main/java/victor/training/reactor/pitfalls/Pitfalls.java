@@ -18,25 +18,21 @@ import static reactor.core.scheduler.Schedulers.boundedElastic;
 
 @Slf4j
 class Pitfalls {
-	Mono<String> create(String s) {
-		return Mono
-			.delay(ofMillis(50), boundedElastic()).thenReturn("Create " + s)
-//			.just("Create " + s )
-			.doOnNext(log::info);
+	public static void main(String[] args) {
+		new Pitfalls().create("Test").block();
 	}
-	Mono<Void> update(String s) {
-		return Mono.just("Update " + s).doOnNext(log::info).then();
+	Mono<String> create(String s) {
+		return Mono.fromSupplier(() -> {
+			log.info("Created " + s);
+			return s;
+		})
+			.delayElement(ofMillis(50), boundedElastic())
+			// TODO also run audit:
+			//  a) doOnNext(audit())
+			//  b) doOnNext(.block())
+			;
+	}
+	Mono<Void> audit(String s) {
+		return Mono.fromRunnable(() -> log.info("Save audit " + s));
 	}
 }
-
-// 1. not returning Publisher -> no subscriber
-// 2. doOnNext does not subscribe TODO create.doOnNext(update)
-// 3. .block() doesn't allow cancelling subscription  TODO doOnNext(... .block())
-// 4. subscribe() doesn't throw TODO try { .subscribe() }
-// 5. TODO: chain create():s -> update(s); return s.length ; Propagate subscription; Hint: thenReturn
-
-// 6. Out-of-band Shared State: @see RaceVariables
-// 7. Mutate argument @see RaceArguments
-// 8. flux.flatMap(Mono) might explode parallelism
-// 9. Leaking Flux : when toIterable, there's no cancel()
-// 10. Standalone flux with no error handling, just subscribe() crashes at any exception

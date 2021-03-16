@@ -2,6 +2,7 @@ package victor.training.reactor.lite;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -10,8 +11,10 @@ import victor.training.reactivespring.start.ThreadUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 public class Part12AdvancedTest {
 
@@ -46,7 +49,28 @@ public class Part12AdvancedTest {
       ThreadUtils.sleep(600);
       assertThat(timedFlux.take(3).collectList().block()).containsExactly("Large", "systems", "are");
    }
-   
+
+   @Test
+   public void share() {
+
+      Supplier<String> supplier = mock(Supplier.class);
+      Mono<String> mono = workshop.share(supplier);
+      verifyNoInteractions(supplier);
+
+      when(supplier.get()).thenReturn("Mama-Mia");
+
+      String r1 = mono.block();
+      String r2 = mono.block();
+
+      verify(supplier, times(1)).get();
+
+      assertThat(r1).startsWith("Mama-Mia");
+      assertThat(r2).startsWith("Mama-Mia");
+      assertThat(r1).isNotEqualTo(r2);
+
+   }
+
+
    @Test
    public void reactorContext() {
       Mono<String> withContext = workshop.reactorContext()

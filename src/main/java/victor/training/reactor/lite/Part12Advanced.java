@@ -4,8 +4,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Part12Advanced {
@@ -36,6 +38,18 @@ public class Part12Advanced {
    // TODO emit words from the text at every onNext signal in timeFlux. Late subscribers should receive words from the start.
    public Flux<String> replay(Flux<Long> timeFlux, String text) {
       return null;
+   }
+
+   //========================================================================================
+
+   // TODO call the fetchData function on Schedulers#boundedElastic and return the value + the current time stamp
+   //  Note: that you aren't allowed to call fetchData more than once, no matter how many subscribe
+   //  Note: fetchData should be called for the first subscribe
+   //  Note: the timestamp should be the current one
+   public Mono<String> share(Supplier<String> fetchData) {
+      return Mono.fromSupplier(fetchData)
+
+          ;
    }
 
    //========================================================================================
