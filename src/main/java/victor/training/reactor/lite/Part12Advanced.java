@@ -47,17 +47,4 @@ public class Part12Advanced {
    }
 
    //========================================================================================
-
-   // TODO Run readTask and writeTask on the Schedulers#boundedElastic and cpuTask on the Schedulers#parallel
-   public Mono<?> threadHopping(Runnable readTask, Runnable cpuTask, Runnable writeTask) {
-      return Mono.fromRunnable(readTask)
-          .then(Mono.fromRunnable(cpuTask))
-          .then(Mono.fromRunnable(writeTask));
-   }
-
-   // TODO the same as above, but the read and write happen in the caller (before and after you are invoked) - see the test
-   public Mono<?> threadHoppingHard(Mono<Void> sourceMono, Runnable cpuTask) {
-      return sourceMono
-          .then(Mono.fromRunnable(cpuTask));
-   }
 }
