@@ -1,8 +1,6 @@
 package victor.training.reactivespring.mongo;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mongodb.core.CollectionOptions;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,10 +46,10 @@ public class MongoController {
    }
 
    @GetMapping("create")
-   public Mono<Event> sendMessage(/*@PathVariable Level level*/) {
-      Event event = new Event();
-      event.setValue("Aloha " + LocalDateTime.now());
-      return rxRepo.save(event);
+   public String sendMessage() {
+      Event event = new Event("Aloha " + LocalDateTime.now());
+      rxRepo.save(event);
+      return event.getId();
    }
 }
 

@@ -19,4 +19,8 @@ public class Event {
    private String id;
    private String value;
    private Level level;
+
+   public Event(String value) {
+      this.value = value;
+   }
 }
