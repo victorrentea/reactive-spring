@@ -8,7 +8,6 @@ import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverRecord;
 
 import javax.annotation.PostConstruct;
-import java.util.Objects;
 import java.util.UUID;
 
 import static victor.training.reactivespring.sample.mam1.Analyser.hasInvalidContent;
@@ -18,7 +17,7 @@ public class SampleMam1 {
    private KafkaReceiver<UUID, MasterItem> collectorReceiver;
    private ItemStateHandler itemStateHandler;
    private Disposable disposable;
-   private KafkaItemRepository repository;
+   private AnalyzerItemRepository repository;
 
 //   1. Flux-ul in microserviciul Analyser
    @PostConstruct
@@ -28,7 +27,7 @@ public class SampleMam1 {
           .filterWhen(this::saveItem)
           .groupBy(item -> item.state)
           .flatMap(flux -> flux.key().sender.apply(itemStateHandler, flux))
-          .subscribe(this::success, Analyser::logError);
+          .subscribe(this::success, Analyser::logError);// TODO victor daca apare eroare fluxul moare - un retry() ?
    }
 
    private void success(UUID uuid) {
@@ -87,11 +86,11 @@ public class SampleMam1 {
       LOGGER.info("{}, {}: gtin = {} saving state = {}", masterKey, attempt, masterItem.getGtin(), item.state);
       return item.state == ItemState.NEW ? // monitor items are not saved, either.
           repository.save(item.persistentItem)
-              .map(result -> Boolean.TRUE) // TODO victor de ce nu
+              .map(result -> Boolean.TRUE) // TODO victor de ce nu Mono<Void> - discutie. filterWhen le face secvential - aici se consuma secv mesajele
               .onErrorResume(ex -> {
                  LOGGER.error("{}, {}: error saving item.", masterKey, attempt, ex);
 //                 MAMEvent.error(attempt, ex);
-                 return Mono.empty();
+                 return Mono.empty(); // TODO victor parca mai corect suna just(false)
               }) :
           Mono.just(Boolean.TRUE);
    }
