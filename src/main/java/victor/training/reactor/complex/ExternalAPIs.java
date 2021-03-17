@@ -22,13 +22,7 @@ class ExternalAPIs {
 
    }
 
-   @SneakyThrows
-   public static Mono<Product> getSingleProductDetails(Long productId) {
-      log.info("Calling REST");
-      RestTemplate rest = new RestTemplate();
-      ProductDto dto = rest.getForObject("http://localhost:9999/api/product/1", ProductDto.class);
-      return Mono.just(dto.toEntity());
-   }
+
 
 
 }

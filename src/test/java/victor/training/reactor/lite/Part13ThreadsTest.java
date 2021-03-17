@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import victor.training.reactivespring.start.ThreadUtils;
@@ -18,6 +19,7 @@ import java.util.function.Supplier;
 
 import static java.lang.Integer.parseInt;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -42,7 +44,7 @@ public class Part13ThreadsTest {
       Mono<String> mono = workshop.subscribe(readTask);
 
       StepVerifier.create(mono)
-          .expectNext("text")
+          .expectNext("TEXT")
           .verifyComplete();
 
       Assertions.assertThat(steps.toString())
@@ -103,15 +105,15 @@ public class Part13ThreadsTest {
       List<String> steps =new ArrayList<>();
 
       RxService service = Mockito.mock(RxService.class);
-      when(service.readData()).thenAnswer(a -> Mono.defer(() -> {
+      when(service.readData()).thenAnswer(a -> Flux.defer(() -> {
          steps.add(captureThread("READ"));
-         return Mono.just("1");
+         return Flux.just("1","2","3");
       }));
       when(service.cpuTask(anyString())).thenAnswer(s -> Mono.defer(() -> {
          steps.add(captureThread("CPU"));
          return Mono.just(parseInt(s.getArgument(0)));
       }));
-      when(service.writeData(1)).thenAnswer(s -> Mono.defer(() -> {
+      when(service.writeData(anyInt())).thenAnswer(s -> Mono.defer(() -> {
          steps.add(captureThread("WRITE"));
          return Mono.empty();
       }));
