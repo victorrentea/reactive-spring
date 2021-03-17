@@ -35,12 +35,8 @@ public class StarterRxApp {
       log.info("Sending method calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
 
-      Mono<Beer> beerMono = Mono.defer(() -> barman.pourBeer())
-          .subscribeOn(Schedulers.boundedElastic())
-          ;
-      Mono<Vodka> vodkaMono = Mono.defer(() ->barman.pourVodka())
-          .subscribeOn(Schedulers.boundedElastic()) // this runs each mono in parallel. submitting twice to boundedElastic
-          ;
+      Mono<Beer> beerMono = Mono.defer(() -> barman.pourBeer());
+      Mono<Vodka> vodkaMono = Mono.defer(() ->barman.pourVodka());
 
       Mono<DillyDilly> dillyMono = beerMono.zipWith(vodkaMono, DillyDilly::new);
 //         ; // running both monos above on the SAME thread (no parallelism)
@@ -57,16 +53,21 @@ public class StarterRxApp {
 @RequiredArgsConstructor
 class Barman {
    public Mono<Beer> pourBeer() {
-      log.info("Start pour beer");
-      ThreadUtils.sleep(1000); // blocking REST call
-      log.info("end pour beer");
-      return Mono.just(new Beer());
+      return Mono.fromSupplier(() -> {
+         log.info("Start pour beer");
+         ThreadUtils.sleep(1000); // blocking REST call
+         log.info("end pour beer");
+         return new Beer();
+      })
+          .subscribeOn(Schedulers.boundedElastic());
    }
    public Mono<Vodka> pourVodka() {
-      log.info("Start pour vodka");
-      ThreadUtils.sleep(1000);  // blocking DB call
-      log.info("end pour vodka");
-      return Mono.just(new Vodka());
+      return Mono.fromSupplier(() -> {
+         log.info("Start pour vodka");
+         ThreadUtils.sleep(1000);  // blocking DB call
+         log.info("end pour vodka");
+         return new Vodka();
+      }) .subscribeOn(Schedulers.boundedElastic());
    }
 }
 
