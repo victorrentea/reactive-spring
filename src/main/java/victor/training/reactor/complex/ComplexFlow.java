@@ -28,8 +28,8 @@ public class ComplexFlow {
           .buffer(2)
           .flatMap(ComplexFlow::getSingleProductDetails, 3)
 
-
-          .flatMap(product -> auditResealedProduct(product).then(Mono.just(product)) )
+          .delayUntil(product -> auditResealedProduct(product))
+          // the returned mono is just waited to complete, before the product is pushed further down the chain
 
           .collectList();
    }
