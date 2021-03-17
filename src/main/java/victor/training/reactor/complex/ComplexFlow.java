@@ -1,17 +1,12 @@
 package victor.training.reactor.complex;
 
-import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
-import victor.training.reactivespring.start.ThreadUtils;
 
 import java.time.Duration;
 import java.util.List;
@@ -22,7 +17,7 @@ import java.util.stream.LongStream;
 public class ComplexFlow {
    public static void main(String[] args) {
       List<Long> productIds = LongStream.range(1, 10).boxed().collect(Collectors.toList());
-      Mono<List<Product>> listMono = mainFlow(productIds);
+      Mono<List<Product>> listMono = mainFlow(productIds).timeout(Duration.ofSeconds(2));
       List<Product> products = listMono.block(); // unusual, only here to stop main thread from exiting
       log.info("Done: " + products);
    }
@@ -31,10 +26,26 @@ public class ComplexFlow {
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
           .buffer(2)
-          .flatMap(id -> getSingleProductDetails(id))
+          .flatMap(ComplexFlow::getSingleProductDetails, 3)
+
+
+          .flatMap(product -> auditResealedProduct(product).then(Mono.just(product)) )
+
           .collectList();
    }
 
+
+   @SneakyThrows
+   public static Mono<Void> auditResealedProduct(Product product) {
+      log.info("Calling Audit REST");
+      return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product.getId())
+          .retrieve()
+          .toBodilessEntity()
+          .then()
+//         .subscribe()
+      ;
+
+   }
 
    @SneakyThrows
    public static Flux<Product> getSingleProductDetails(List<Long> productId) {
@@ -45,6 +56,7 @@ public class ComplexFlow {
           .map(dto -> dto.toEntity())
           .subscribeOn(Schedulers.boundedElastic());
    }
+
 }
 
 @Value
