@@ -2,6 +2,7 @@ package victor.training.reactor.complex;
 
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestTemplate;
@@ -29,20 +30,24 @@ public class ComplexFlow {
 
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
-          .log()
-//          .publishOn(Schedulers.boundedElastic())
+          .buffer(2)
           .flatMap(id -> getSingleProductDetails(id))
           .collectList();
    }
 
 
    @SneakyThrows
-   public static Mono<Product> getSingleProductDetails(Long productId) {
-      return WebClient.create().get().uri("http://localhost:9999/api/product/{}", productId)
+   public static Flux<Product> getSingleProductDetails(List<Long> productId) {
+      return WebClient.create().post().uri("http://localhost:9999/api/product/many", productId)
+          .body(Mono.just(new ManyProductRequest(productId)), ManyProductRequest.class)
           .retrieve()
-          .bodyToMono(ProductDto.class)
-            .map(dto -> dto.toEntity());
+          .bodyToFlux(ProductDto.class)
+          .map(dto -> dto.toEntity())
+          .subscribeOn(Schedulers.boundedElastic());
    }
 }
 
-
+@Value
+class ManyProductRequest {
+   List<Long> ids;
+}
