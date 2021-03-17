@@ -104,7 +104,7 @@ class Barman {
    @Async("beerPool")
    public CompletableFuture<Beer> pourBeer() {
       log.info("Start pour beer");
-      ThreadUtils.sleep(20000); // blocking REST call
+      ThreadUtils.sleep(1000); // blocking REST call
       log.info("end pour beer");
       return CompletableFuture.completedFuture(new Beer());
    }
