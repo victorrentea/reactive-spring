@@ -28,6 +28,7 @@ public class EmitOnChange4Calin {
 //           .doOnNext(System.out::println)
 
           .scan(new OldNew(0,0), (prev, n) -> new OldNew(prev.getNewValue(), n))
+           .doOnNext(System.out::println)
            .filter(OldNew::isChanged)
            .map(oldNew -> "Delta: " + (oldNew.getNewValue() - oldNew.getOldValue()))
            .skip(1)
