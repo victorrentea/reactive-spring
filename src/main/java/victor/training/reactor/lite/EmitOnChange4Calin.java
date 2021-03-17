@@ -35,15 +35,9 @@ public class EmitOnChange4Calin {
           .subscribe()
           ;
 
-//      flux.scan
-
       ThreadUtils.sleep(1000);
 
       Stream<Integer> intStream = IntStream.range(1, 10).boxed();
-
-//      intStream.forEach(n -> {
-//         count ++;
-//      });
 
       Integer reduce = intStream.reduce(0, (acc, n) -> acc + n);
       System.out.println(reduce);
