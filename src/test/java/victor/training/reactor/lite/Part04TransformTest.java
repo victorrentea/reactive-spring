@@ -21,7 +21,7 @@ public class Part04TransformTest {
 //========================================================================================
 
 	@Test
-	public void findFirst() {
+	public void capitalizeOne() {
 		Mono<User> mono = repository.findFirst();
 		StepVerifier.create(workshop.capitalizeOne(mono))
 				.expectNext(new User("SWHITE", "SKYLER", "WHITE"))
