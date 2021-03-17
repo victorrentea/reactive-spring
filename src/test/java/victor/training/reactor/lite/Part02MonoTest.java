@@ -1,10 +1,12 @@
 package victor.training.reactor.lite;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactor.lite.domain.User;
 
 /**
  * Learn how to create Mono instances.
@@ -29,7 +31,7 @@ public class Part02MonoTest {
 
 	@Test
 	public void monoWithNoSignal() {
-		Mono<String> mono = workshop.monoWithNoSignal();
+		Mono<Void> mono = workshop.monoWithNoSignal();
 		StepVerifier
 				.create(mono)
 				.expectSubscription()
@@ -51,9 +53,16 @@ public class Part02MonoTest {
 
 	@Test
 	public void errorMono() {
+
+
+
 		Mono<String> mono = workshop.errorMono();
 		StepVerifier.create(mono)
 				.verifyError(IllegalStateException.class);
+	}
+
+	public Mono<User> loadFromDB(Long id) {
+	return Mono.empty();
 	}
 
 }

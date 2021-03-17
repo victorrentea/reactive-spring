@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -12,9 +11,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.netty.http.server.HttpServerRequest;
+import reactor.netty.http.server.HttpServerResponse;
 import victor.training.reactivespring.start.ThreadUtils;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,7 +26,8 @@ import java.util.concurrent.Executors;
 @EnableAsync
 @SpringBootApplication
 @RequiredArgsConstructor
-public class StarterApp implements CommandLineRunner {
+@RestController
+public class StarterApp  {
 
    private ExecutorService pool = Executors.newFixedThreadPool(2);
 
@@ -55,27 +60,31 @@ public class StarterApp implements CommandLineRunner {
    private final Barman barman;
 
 
-   @Override
-   public void run(String... args) throws Exception {
+   // under the hood, in a Tomcat-based app (servlet 3.0), Spring does:
+//   HttpServletRequest request;
+//   AsyncContext asyncContext = request.startAsync();
+//		return from worker threa d
+//   // in a different thread
+//		asyncContext.getResponse().getWriter().println("");
+
+
+   // in netty it gets even worse
+
+   @GetMapping("dilly")
+   public CompletableFuture<DillyDilly> getDilly() throws ExecutionException, InterruptedException {
+
       log.info("Sending method calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
-      //
-      // here there is just main
+
       CompletableFuture<Beer> futureBeer = barman.pourBeer();
       CompletableFuture<Vodka> futureVodka = barman.pourVodka();
-
-      // Schedulers.parallel(); // only use for CPU work: bitcoin minign, asymm encryption, generating PDF (binary formats), parsing/marhsalling JSON because it allocates memory
-      // IO work : Archive/compress,
-
 
       CompletableFuture<DillyDilly> futureDilly = futureBeer
           .thenCombine(futureVodka, DillyDilly::new);
 
-      futureDilly.thenAccept(dilly -> {
-         log.debug("My drinks: " + dilly);
-      });
       long t1 = System.currentTimeMillis();
       log.debug("Got my drinks " + (t1 - t0));
+      return futureDilly;
    }
 }
 
@@ -95,7 +104,7 @@ class Barman {
    @Async("beerPool")
    public CompletableFuture<Beer> pourBeer() {
       log.info("Start pour beer");
-      ThreadUtils.sleep(1000); // blocking REST call
+      ThreadUtils.sleep(20000); // blocking REST call
       log.info("end pour beer");
       return CompletableFuture.completedFuture(new Beer());
    }

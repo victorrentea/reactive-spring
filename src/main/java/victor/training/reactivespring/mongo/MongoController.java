@@ -30,6 +30,7 @@ public class MongoController {
 
    @GetMapping(value = "flux")
    public Flux<String> flux() {
+
       return rxRepo.findAll().map(Objects::toString);
    }
 
