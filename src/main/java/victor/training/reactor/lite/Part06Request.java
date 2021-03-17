@@ -18,15 +18,24 @@ public class Part06Request {
 //========================================================================================
 
 	// TODO Create a StepVerifier that initially requests all values and expect 4 values to be received
-	StepVerifier requestAllExpectFour(Flux<User> flux) {
-		return null;
+	StepVerifier requestAllExpectFour(final Flux<User> flux) {
+		Flux<User> flux2 = flux.log();
+		return StepVerifier.create(flux2)
+			.expectNextCount(4)
+			.expectComplete();
 	}
 
 //========================================================================================
 
-	// TODO Create a StepVerifier that initially requests 1 value and expects User.SKYLER then requests another value and expects User.JESSE then stops verifying by cancelling the source
+	// TODO Create a StepVerifier that initially requests 1 value and expects
+	//  User.SKYLER then requests another value and expects User.JESSE
+	//  then stops verifying by cancelling the source
 	StepVerifier requestOneExpectSkylerThenRequestOneExpectJesse(Flux<User> flux) {
-		return null;
+//		flux.scan
+		return StepVerifier.create(flux)
+			.expectNext(User.SKYLER)
+			.expectNext(User.JESSE)
+			.thenCancel();
 	}
 
 //========================================================================================
