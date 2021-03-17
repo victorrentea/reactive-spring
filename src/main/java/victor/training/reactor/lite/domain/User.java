@@ -7,11 +7,11 @@ public class User {
 	public static final User WALTER = new User("wwhite", "Walter", "White");
 	public static final User SAUL = new User("sgoodman", "Saul", "Goodman");
 
-	private String username;
+	private final String username;
 
-	private String firstname;
+	private final String firstname;
 
-	private String lastname;
+	private final String lastname;
 
 	public User(String username, String firstname, String lastname) {
 		this.username = username;
@@ -19,20 +19,20 @@ public class User {
 		this.lastname = lastname;
 	}
 
-	public User setFirstname(String firstname) {
-		this.firstname = firstname;
-		return this;
-	}
-
-	public User setLastname(String lastname) {
-		this.lastname = lastname;
-		return this;
-	}
-
-	public User setUsername(String username) {
-		this.username = username;
-		return this;
-	}
+//	public User setFirstname(String firstname) {
+//		this.firstname = firstname;
+//		return this;
+//	}
+//
+//	public User setLastname(String lastname) {
+//		this.lastname = lastname;
+//		return this;
+//	}
+//
+//	public User setUsername(String username) {
+//		this.username = username;
+//		return this;
+//	}
 
 	public String getUsername() {
 		return username;
@@ -82,5 +82,12 @@ public class User {
 				", firstname='" + firstname + '\'' +
 				", lastname='" + lastname + '\'' +
 				'}';
+	}
+
+	public User capitalize() {
+		return new User(
+			getUsername().toUpperCase(),
+			getFirstname().toUpperCase(),
+			getLastname().toUpperCase());
 	}
 }
