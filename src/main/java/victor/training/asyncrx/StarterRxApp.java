@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
@@ -43,7 +44,10 @@ public class StarterRxApp {
 
       long t1 = System.currentTimeMillis();
       log.debug("Got my drinks " + (t1 - t0));
-      return dillyMono;
+      return dillyMono
+          .log()
+          .doOnNext(d -> log.info("diliu: " + d)) // TODO run on parallel scheduler.
+          .subscribeOn(Schedulers.parallel());
    }
 }
 
@@ -59,7 +63,7 @@ class Barman {
          log.info("end pour beer");
          return new Beer();
       })
-          .subscribeOn(Schedulers.boundedElastic());
+       .subscribeOn(Schedulers.boundedElastic());
    }
    public Mono<Vodka> pourVodka() {
       return Mono.fromSupplier(() -> {
