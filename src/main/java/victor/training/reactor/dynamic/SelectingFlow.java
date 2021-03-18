@@ -60,5 +60,5 @@ enum FlowCategory {
    FlowCategory(Function<Integer, Mono<Void>> flowSupplier) {
       this.flowSupplier = flowSupplier;
    }
-}
+
 }
