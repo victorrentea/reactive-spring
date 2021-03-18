@@ -8,8 +8,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+import victor.training.reactivespring.start.ThreadUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -23,6 +25,10 @@ public class ComplexFlow {
    }
 
 
+   // What if your caller is not rx ?
+   // TODO get a callback from him to call with data
+   // TODO toFuture : allowing him to .thenAccept() async
+
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
           .buffer(2)
@@ -30,14 +36,26 @@ public class ComplexFlow {
 
           .delayUntil(ComplexFlow::auditResealedProduct)
 
-          .flatMap(product -> fetchRating(product.getId()).map(rating -> product.withRating(rating)))
+//          .flatMap(product -> fetchRating(product.getId()).map(rating -> product.withRating(rating)))
+
+          .flatMap(product -> ExternalCacheClient.lookupInCache(product.getId())
+              .switchIfEmpty(Mono.defer(()->Mono.just(fetchRatingBlocking(product.getId()))))
+//              .switchIfEmpty(fetchRating(product.getId()))
+              .map(rating -> product.withRating(rating)))
 
           .collectList();
    }
 
 
    @SneakyThrows
+   public static ProductRating fetchRatingBlocking(Long productId) {
+      log.info("Calling fetchRatingBlocking from EXTERNAL SYSTEM");
+      ThreadUtils.sleep(1000);
+      return new ProductRating(3);
+   }
+   @SneakyThrows
    public static Mono<ProductRating> fetchRating(Long productId) {
+      log.info("Calling fetchRating");
       return WebClient.create().get().uri("http://localhost:9999/api/rating/{}", productId)
           .retrieve()
           .bodyToMono(ProductRating.class)

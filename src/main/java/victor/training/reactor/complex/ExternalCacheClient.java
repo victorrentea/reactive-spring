@@ -10,7 +10,7 @@ import static java.time.Duration.ofMillis;
 
 @Slf4j
 public class ExternalCacheClient {
-   public static Mono<ProductRating> lookupInCache(Long productId) {
+   public static Mono<ProductRating> lookupInCache(Long productId) { // ~Optional<ProductRating>
       return Mono.defer(() -> {
          if (Math.random() < .5) {
             log.debug("Cache hit");
