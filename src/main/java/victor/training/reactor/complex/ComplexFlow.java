@@ -11,6 +11,7 @@ import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -48,7 +49,7 @@ public class ComplexFlow {
           .delayUntil(ComplexFlow::auditResealedProduct)
           .flatMap(product -> lookupInCache(product.getId())
               .switchIfEmpty(getRemoteRating(product))
-              .map(rating -> product.withRating(rating)))
+              .map(rating -> product.withRating(rating!=ProductRating.NONE?rating:null)))
           .collectList()
          .toFuture();
    }
@@ -56,10 +57,9 @@ public class ComplexFlow {
    private static Mono<ProductRating> getRemoteRating(Product product) {
       return fetchRating(product.getId())
           .timeout(ofMillis(200))
-          .onErrorResume(TimeoutException.class, ex -> Mono.just(null))
-          .doOnNext(rating -> putInCache(product.getId(), rating)
-              .subscribe(v -> {
-              }, ex -> System.err.println(ex.getMessage()))); // "silencing the out of band exception"
+          .doOnNext(rating -> putInCache(product.getId(), rating).subscribe())
+          .onErrorResume(TimeoutException.class, ex -> Mono.just(ProductRating.NONE))
+          ;
    }
 
 
@@ -70,9 +70,9 @@ public class ComplexFlow {
           .retrieve()
           .bodyToMono(ProductRating.class)
           .doOnNext(e -> log.info("Got Rating Response " + System.identityHashCode(e)))
-//          .delayUntil(rating -> Math.random() < .5 ?
-//              Mono.just("fast").delayElement(ofMillis(50)) :
-//              Mono.just("slow").delayElement(ofSeconds(1)))
+          .delayUntil(rating -> Math.random() < .5 ?
+              Mono.just("fast").delayElement(ofMillis(50)) :
+              Mono.just("slow").delayElement(ofSeconds(1)))
           .doOnNext(e -> log.info("Emitting Rating Response " + System.identityHashCode(e)))
           ;
    }

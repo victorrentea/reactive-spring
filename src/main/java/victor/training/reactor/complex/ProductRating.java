@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductRating {
+   public static final ProductRating NONE = new ProductRating();
    private int rating;
 }
 

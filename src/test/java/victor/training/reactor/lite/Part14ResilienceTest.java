@@ -2,6 +2,7 @@ package victor.training.reactor.lite;
 
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import static java.time.Duration.ofMillis;
@@ -20,6 +21,10 @@ public class Part14ResilienceTest {
 
       Mono<String> slow = Mono.just("slow").delayElement(ofMillis(1000));
       assertThat(workshop.timeout(slow).block()).isEqualTo("DUMMY");
+
+      Mono<String> upstreamError = Mono.error(new RuntimeException());
+      Mono<String> result = workshop.timeout(upstreamError);
+      StepVerifier.create(result).verifyError();
    }
 
    @Test
@@ -30,11 +35,12 @@ public class Part14ResilienceTest {
           .error(new RuntimeException())
           .next("ok");
       assertThat(workshop.retry(fail1.mono()).block()).isEqualTo("ok");
-      assertThat(fail1.subscribeCount()).isEqualTo(2);
+      assertThat(fail1.subscribeCount()).isEqualTo(1);
 
       TestPublisher<String> fail2 = TestPublisher.<String>createCold()
           .error(new RuntimeException())
-          .error(new RuntimeException());
+          .error(new RuntimeException())
+          .next("ok");
       assertThat(workshop.retry(fail2.mono()).block()).isEqualTo("ok");
       assertThat(fail2.subscribeCount()).isEqualTo(3);
 

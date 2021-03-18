@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -102,6 +104,7 @@ class DillyDilly {
 @RequiredArgsConstructor
 class Barman {
    @Async("beerPool")
+//@Retryable(maxAttempts = 4, backoff = @Backoff())
    public CompletableFuture<Beer> pourBeer() {
       log.info("Start pour beer");
       ThreadUtils.sleep(1000); // blocking REST call
