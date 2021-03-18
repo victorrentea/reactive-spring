@@ -84,15 +84,18 @@ public class SampleMam1 {
       UUID masterKey = masterItem.getMasterKey();
       int attempt = masterItem.getAttempt();
       LOGGER.info("{}, {}: gtin = {} saving state = {}", masterKey, attempt, masterItem.getGtin(), item.state);
-      return item.state == ItemState.NEW ? // monitor items are not saved, either.
-          repository.save(item.persistentItem)
-              .map(result -> Boolean.TRUE) // TODO victor de ce nu Mono<Void> - discutie. filterWhen le face secvential - aici se consuma secv mesajele
-              .onErrorResume(ex -> {
-                 LOGGER.error("{}, {}: error saving item.", masterKey, attempt, ex);
+
+      // monitor items are not saved, either.
+      if (item.state != ItemState.NEW) {
+         return Mono.just(Boolean.TRUE);
+      }
+      return repository.save(item.persistentItem)
+          .thenReturn(Boolean.TRUE) // TODO victor de ce nu Mono<Void> - discutie. filterWhen le face secvential - aici se consuma secv mesajele
+          .onErrorResume(ex -> {
+             LOGGER.error("{}, {}: error saving item.", masterKey, attempt, ex);
 //                 MAMEvent.error(attempt, ex);
-                 return Mono.empty(); // TODO victor parca mai corect suna just(false)
-              }) :
-          Mono.just(Boolean.TRUE);
+             return Mono.empty(); // TODO victor parca mai corect suna just(false)
+          });
    }
 
 }

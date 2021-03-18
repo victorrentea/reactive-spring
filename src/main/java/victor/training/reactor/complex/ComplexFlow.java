@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -17,18 +17,19 @@ import java.util.stream.LongStream;
 public class ComplexFlow {
    public static void main(String[] args) {
       List<Long> productIds = LongStream.range(1, 10).boxed().collect(Collectors.toList());
-      Mono<List<Product>> listMono = mainFlow(productIds).timeout(Duration.ofSeconds(2));
+      Mono<List<Product>> listMono = mainFlow(productIds);//.timeout(Duration.ofSeconds(2));
       List<Product> products = listMono.block(); // unusual, only here to stop main thread from exiting
-      log.info("Done: " + products);
+      log.info("Done {}: {}",products.size(), products);
    }
 
 
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
           .buffer(2)
-          .flatMap(ComplexFlow::getSingleProductDetails, 3)
+          .flatMap(productId -> getSingleProductDetails(productId), 3)
 
-          .delayUntil(product -> auditResealedProduct(product))
+          .delayUntil(ComplexFlow::auditResealedProduct)
+
           // the returned mono is just waited to complete, before the product is pushed further down the chain
 
           .collectList();
@@ -37,15 +38,17 @@ public class ComplexFlow {
 
    @SneakyThrows
    public static Mono<Void> auditResealedProduct(Product product) {
+      if (!product.isResealed()) {
+         return Mono.empty();
+      }
       log.info("Calling Audit REST");
       return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product.getId())
           .retrieve()
           .toBodilessEntity()
-          .then()
-//         .subscribe()
-      ;
-
+          .then();
    }
+
+   public static final Scheduler myBounded = Schedulers.newBoundedElastic(200, 200, "prod-det");
 
    @SneakyThrows
    public static Flux<Product> getSingleProductDetails(List<Long> productId) {
@@ -54,7 +57,8 @@ public class ComplexFlow {
           .retrieve()
           .bodyToFlux(ProductDto.class)
           .map(dto -> dto.toEntity())
-          .subscribeOn(Schedulers.boundedElastic());
+          .subscribeOn(myBounded)
+          ;
    }
 
 }
