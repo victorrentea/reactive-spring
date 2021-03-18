@@ -10,9 +10,8 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactivespring.start.ThreadUtils;
 
-import javax.xml.ws.Holder;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -27,24 +26,23 @@ public class ComplexFlow {
 
    public static void main(String[] args) {
       List<Long> productIds = LongStream.range(1, 10).boxed().collect(Collectors.toList());
-      mainFlow(productIds, results -> {
-         List<Product> products = results;
-         log.info("Done {}: {}", products.size(), products);
+      mainFlow(productIds).thenAccept(results -> {
+         log.info("Done {}: {}", results.size(), results);
       });
       ThreadUtils.sleep(15000);
 //      List<Product> products = listMono.block(); // unusual, only here to stop main thread from exiting
    }
 
    // non-reactive world
-   //---------------------
+   //--------------------------------------------------
    // reactive
 
    // What if your caller is not rx ?
    // TODO get a callback from him to call with data
    // TODO toFuture : allowing him to .thenAccept() async
 
-   private static void mainFlow(List<Long> productIds, Consumer<List<Product>> resultCallback) {
-      Flux.fromIterable(productIds)
+   private static CompletableFuture<List<Product>> mainFlow(List<Long> productIds) {
+     return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::getSingleProductDetails, 3)
           .delayUntil(ComplexFlow::auditResealedProduct)
@@ -52,7 +50,7 @@ public class ComplexFlow {
               .switchIfEmpty(getRemoteRating(product))
               .map(rating -> product.withRating(rating)))
           .collectList()
-         .subscribe(resultCallback);
+         .toFuture();
    }
 
    private static Mono<ProductRating> getRemoteRating(Product product) {
