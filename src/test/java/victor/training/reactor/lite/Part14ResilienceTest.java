@@ -21,4 +21,28 @@ public class Part14ResilienceTest {
       Mono<String> slow = Mono.just("slow").delayElement(ofMillis(1000));
       assertThat(workshop.timeout(slow).block()).isEqualTo("DUMMY");
    }
+
+   @Test
+   public void retry() {
+      assertThat(workshop.retry(Mono.just("ok")).block()).isEqualTo("ok");
+
+      TestPublisher<String> fail1 = TestPublisher.<String>createCold()
+          .error(new RuntimeException())
+          .next("ok");
+      assertThat(workshop.retry(fail1.mono()).block()).isEqualTo("ok");
+      assertThat(fail1.subscribeCount()).isEqualTo(2);
+
+      TestPublisher<String> fail2 = TestPublisher.<String>createCold()
+          .error(new RuntimeException())
+          .error(new RuntimeException());
+      assertThat(workshop.retry(fail2.mono()).block()).isEqualTo("ok");
+      assertThat(fail2.subscribeCount()).isEqualTo(3);
+
+      TestPublisher<String> fail3 = TestPublisher.<String>createCold()
+          .error(new RuntimeException())
+          .error(new RuntimeException())
+          .error(new RuntimeException());
+      assertThat(workshop.retry(fail3.mono()).block()).isNull();
+      assertThat(fail3.subscribeCount()).isEqualTo(3);
+   }
 }
