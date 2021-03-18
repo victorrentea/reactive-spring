@@ -30,11 +30,24 @@ public class ComplexFlow {
 
           .delayUntil(ComplexFlow::auditResealedProduct)
 
-          // the returned mono is just waited to complete, before the product is pushed further down the chain
+          .flatMap(product -> {
+
+             Mono<ProductRating> ratingMono = fetchRating(product.getId());
+
+             return ratingMono.map(rating -> new ProductWithRating(product, rating));
+          })
 
           .collectList();
    }
 
+
+   @SneakyThrows
+   public static Mono<ProductRating> fetchRating(Long productId) {
+      return WebClient.create().get().uri("http://localhost:9999/api/rating/{}", productId)
+          .retrieve()
+          .bodyToMono(ProductRating.class)
+          ;
+   }
 
    @SneakyThrows
    public static Mono<Void> auditResealedProduct(Product product) {
@@ -60,6 +73,7 @@ public class ComplexFlow {
           .subscribeOn(myBounded)
           ;
    }
+
 
 }
 

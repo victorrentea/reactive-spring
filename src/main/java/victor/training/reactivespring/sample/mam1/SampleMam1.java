@@ -78,23 +78,19 @@ public class SampleMam1 {
 
 
    //3. Salvarea in baza de date
-   Mono<Boolean>  saveItem(ItemWithState item) {
-      // here we exactly have one gtin
-      MasterItem masterItem = item.kafkaItem;
-      UUID masterKey = masterItem.getMasterKey();
-      int attempt = masterItem.getAttempt();
-      LOGGER.info("{}, {}: gtin = {} saving state = {}", masterKey, attempt, masterItem.getGtin(), item.state);
 
-      // monitor items are not saved, either.
+//   Mono<User> // might be empty, who knows what's on that other system
+//   Mono<Void> // always empty
+   Mono<Boolean>  saveItem(ItemWithState item) {
       if (item.state != ItemState.NEW) {
          return Mono.just(Boolean.TRUE);
       }
       return repository.save(item.persistentItem)
-          .thenReturn(Boolean.TRUE) // TODO victor de ce nu Mono<Void> - discutie. filterWhen le face secvential - aici se consuma secv mesajele
+          .thenReturn(Boolean.TRUE)
           .onErrorResume(ex -> {
-             LOGGER.error("{}, {}: error saving item.", masterKey, attempt, ex);
+             LOGGER.error("{}, {}: error saving item.", item.kafkaItem.getMasterKey(), item.kafkaItem.getAttempt(), ex);
 //                 MAMEvent.error(attempt, ex);
-             return Mono.empty(); // TODO victor parca mai corect suna just(false)
+             return Mono.just(Boolean.FALSE);
           });
    }
 
