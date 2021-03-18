@@ -78,6 +78,8 @@ public class Part08OtherOperations {
 //			.flatMap(page -> networkCall(page));
 //		flux.window
 
+//		flux.flatMap(user -> readDataFromDB(user))
+
 		return flux.collectList();
 	}
 
