@@ -2,6 +2,8 @@ package victor.training.reactivespring.sample.mam2;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import reactor.core.Disposable;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverRecord;
@@ -10,9 +12,12 @@ import reactor.util.function.Tuples;
 import victor.training.reactivespring.sample.mam1.MasterItem;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+//@RefreshScope requires spring-cloud-config; can refresh some.prop from a .properties file on disk when a POST /actuator/refresh call i
+@Component
 public class SampleMam2_Deduplicator
 {
    private static final Logger LOGGER = LoggerFactory.getLogger(SampleMam2_Deduplicator.class);
@@ -21,12 +26,17 @@ public class SampleMam2_Deduplicator
    private int keyProviderConcurrency;
    private KafkaReceiver<UUID, MasterItem> masterItemReceiver;
    private BobControllerClient bobControllerClient;
+   @Value("${some.prop}")
    private int keyProviderPrefetch;
    private Disposable subscription;
    private AtomicInteger totalRecordCount;
 
 //1. flow-ul serviciului deduplicator
 
+   @PreDestroy
+   public void method() {
+       subscription.dispose();
+   }
 /**
  * describes the deduplication workflow on application ctx startup.
  */

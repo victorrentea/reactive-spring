@@ -3,6 +3,7 @@ package victor.training.reactor.complex;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import victor.training.reactivespring.start.ThreadUtils;
 
 import java.time.Duration;
 
@@ -22,10 +23,14 @@ public class ExternalCacheClient {
    }
 
    public static Mono<Void> putInCache(Long productId, ProductRating rating) {
-      log.info("Put in cache " + productId);
-      if (true) {
-         throw new RuntimeException("buba");
-      }
-      return Mono.empty();//.delayElement(ofMillis(10)).then();
+
+    return Mono.fromRunnable( () -> {
+       log.info("Put in cache " + productId);
+      ThreadUtils.sleep(1000);
+       if (Math.random() < .3) {
+          throw new RuntimeException("buba");
+       }
+    }).then();
+//      return Mono.empty();//.delayElement(ofMillis(10)).then();
    }
 }

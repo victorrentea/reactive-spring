@@ -12,8 +12,13 @@ import victor.training.reactivespring.start.ThreadUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
+import static victor.training.reactor.complex.ExternalCacheClient.*;
 
 @Slf4j
 public class ComplexFlow {
@@ -33,32 +38,35 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::getSingleProductDetails, 3)
-
           .delayUntil(ComplexFlow::auditResealedProduct)
-
-//          .flatMap(product -> fetchRating(product.getId()).map(rating -> product.withRating(rating)))
-
-          .flatMap(product -> ExternalCacheClient.lookupInCache(product.getId())
-              .switchIfEmpty(Mono.defer(()->Mono.just(fetchRatingBlocking(product.getId()))))
-//              .switchIfEmpty(fetchRating(product.getId()))
+          .flatMap(product -> lookupInCache(product.getId())
+              .switchIfEmpty(getRemoteRating(product))
               .map(rating -> product.withRating(rating)))
-
           .collectList();
    }
 
-
-   @SneakyThrows
-   public static ProductRating fetchRatingBlocking(Long productId) {
-      log.info("Calling fetchRatingBlocking from EXTERNAL SYSTEM");
-      ThreadUtils.sleep(1000);
-      return new ProductRating(3);
+   private static Mono<ProductRating> getRemoteRating(Product product) {
+      return fetchRating(product.getId())
+          .timeout(ofMillis(200))
+          .onErrorResume(ex -> ex instanceof TimeoutException,
+              ex -> Mono.just(null))
+          .doOnNext(rating -> putInCache(product.getId(), rating)
+              .subscribe(v -> {
+              }, ex -> System.err.println(ex.getMessage()))); // "silencing the out of band exception"
    }
+
+
    @SneakyThrows
    public static Mono<ProductRating> fetchRating(Long productId) {
       log.info("Calling fetchRating");
       return WebClient.create().get().uri("http://localhost:9999/api/rating/{}", productId)
           .retrieve()
           .bodyToMono(ProductRating.class)
+          .doOnNext(e -> log.info("Got Rating Response " + System.identityHashCode(e)))
+          .delayUntil(rating -> Math.random() < .5 ?
+              Mono.just("fast").delayElement(ofMillis(50)) :
+              Mono.just("slow").delayElement(ofSeconds(1)))
+          .doOnNext(e -> log.info("Emitting Rating Response " + System.identityHashCode(e)))
           ;
    }
 

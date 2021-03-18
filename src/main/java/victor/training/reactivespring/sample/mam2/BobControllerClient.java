@@ -25,33 +25,23 @@ public class BobControllerClient {
 
    //3. se verifica existenta item-ului intr-un proiect extern
    public Mono<DeduplicatorItem> readAssortmentState(MasterItem masterItem) {
-
-      // this is valid and never null here (since checked by Analyser)
-      Object gtin = masterItem.getGtin();
-
-      UUID masterKey = masterItem.getMasterKey();
-      int attempt = masterItem.getAttempt();
-      LOGGER.info("{}, {}: looking up BoB id {} at {}/bob/{}/... (requestCount {})",
-          masterKey, attempt, gtin, keyProviderUrl, keyProviderCountry,
-          requestCount.incrementAndGet());
-
       return createWebClient(keyProviderUrl, keyProviderUser, keyProviderPass)
           .get()
-          .uri("BOB_RESOURCE", urlParams(gtin))
+          .uri("BOB_RESOURCE", urlParams(masterItem.getGtin()))
           .accept(MediaType.APPLICATION_JSON)
-          .exchange()
-          .flatMap(response -> mapGetResponse(masterItem, response))
+          .exchangeToMono(response -> mapGetResponse(masterItem, response))
           .retryWhen(retry)
           .onErrorResume(ex -> ex instanceof RetryExhaustedException, ex -> {
-             LOGGER.error("{}, {}: Bob Controller retries exhausted.", masterKey, attempt, ex.getCause());
-//             MAMEvent.error(attempt, ex.getCause());
              return Mono.just(DeduplicatorItem.MONITOR);
           })
           .onErrorResume(ex -> {
-             LOGGER.error("{}, {}: Bob Controller error.", masterKey, attempt, ex);
-//             MAMEvent.error(attempt, ex);
              return Mono.empty(); // discard error items
           });
+//      catch (RetryExhaustedException e) {
+//         return MONITOR;
+//      } catch (Exception e) {
+//         return null;
+//      }
    }
 
    private Mono<DeduplicatorItem> mapGetResponse(MasterItem masterItem, ClientResponse response) {
