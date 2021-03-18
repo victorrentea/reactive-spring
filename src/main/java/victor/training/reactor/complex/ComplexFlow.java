@@ -26,14 +26,11 @@ public class ComplexFlow {
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
       return Flux.fromIterable(productIds)
           .buffer(2)
-          .flatMap(productId -> getSingleProductDetails(productId), 3)
+          .flatMap(ComplexFlow::getSingleProductDetails, 3)
 
           .delayUntil(ComplexFlow::auditResealedProduct)
 
-          .flatMap(product -> {
-             Mono<ProductRating> ratingMono = fetchRating(product.getId());
-             return ratingMono.map(rating -> product.withRating(rating));
-          })
+          .flatMap(product -> fetchRating(product.getId()).map(rating -> product.withRating(rating)))
 
           .collectList();
    }
