@@ -15,7 +15,7 @@ public class 	Part10ReactiveToBlocking {
 
 	// TODO Return the user contained in that Mono
 	User monoToValue(Mono<User> mono) {
-		return null;
+		return mono.block();
 	}
 
 //========================================================================================
