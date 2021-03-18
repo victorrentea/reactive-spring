@@ -23,7 +23,9 @@ public class Part14Resilience {
 
    // TODO issue a maximum of 2 retries when the mono emits an error. If still in error, return an empty mono.
    public Mono<String> retry(Mono<String> possiblyCrashing) {
-      return possiblyCrashing.retry(2);
+      return possiblyCrashing
+          .log()
+          .retry(2);
    }
 
 
