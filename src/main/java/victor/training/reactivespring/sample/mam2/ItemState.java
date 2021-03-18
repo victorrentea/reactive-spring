@@ -12,7 +12,8 @@ public enum ItemState {
           deduplicator -> Flux.just(deduplicator.rejectedMasterItemSender)),
       NOT_IN_METRO_ASSORTMENT(ItemState::isNotInMetroAssortment,
           deduplicator -> Flux.just(deduplicator.masterItemSender)), // TODO victor Flux de functii care intor Fluxuri... excelent!
-      ERROR,
+      ERROR((item, bobResponse, state) -> true,
+          deduplicator -> Flux.empty()),
       MONITOR(ItemState::isMonitorItem,
           deduplicator -> Flux.just(deduplicator.masterItemSender, deduplicator.rejectedMasterItemSender));
 
@@ -23,10 +24,6 @@ public enum ItemState {
 
       final Matcher matcher;
       final Function<SampleMam2_Deduplicator, Flux<BaseItemSender<DeduplicatorItem, ?>>> sender;
-
-      ItemState() { // TODO victor delete -> inline in ERROR()
-         this((item, bobResponse, state) -> true, deduplicator -> Flux.empty()); // errors are not sent anywhere
-      }
 
       ItemState(Matcher matcher, Function<SampleMam2_Deduplicator, Flux<BaseItemSender<DeduplicatorItem, ?>>> sender) {
          this.matcher = matcher;

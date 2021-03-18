@@ -2,6 +2,7 @@ package victor.training.reactivespring.sample.mam1;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.kafka.receiver.KafkaReceiver;
@@ -15,6 +16,7 @@ import static victor.training.reactivespring.sample.mam1.Analyser.hasInvalidCont
 public class SampleMam1 {
    private static final Logger LOGGER = LoggerFactory.getLogger(SampleMam1.class);
    private KafkaReceiver<UUID, MasterItem> collectorReceiver;
+   @Autowired
    private ItemStateHandler itemStateHandler;
    private Disposable disposable;
    private AnalyzerItemRepository repository;
@@ -87,11 +89,7 @@ public class SampleMam1 {
       }
       return repository.save(item.persistentItem)
           .thenReturn(Boolean.TRUE)
-          .onErrorResume(ex -> {
-             LOGGER.error("{}, {}: error saving item.", item.kafkaItem.getMasterKey(), item.kafkaItem.getAttempt(), ex);
-//                 MAMEvent.error(attempt, ex);
-             return Mono.just(Boolean.FALSE);
-          });
+          .onErrorResume(ex -> Mono.just(Boolean.FALSE));
    }
 
 }

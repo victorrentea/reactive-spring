@@ -32,7 +32,7 @@ public class BobControllerClient {
           .exchangeToMono(response -> mapGetResponse(masterItem, response))
           .retryWhen(retry)
           .onErrorResume(RetryExhaustedException.class, ex -> {
-             return Mono.just(DeduplicatorItem.MONITOR);
+             return Mono.just(DeduplicatorItem.MONITOR); // Null Object pattern -- represents NOTHING
           })
           .onErrorResume(ex -> {
              return Mono.empty(); // discard error items

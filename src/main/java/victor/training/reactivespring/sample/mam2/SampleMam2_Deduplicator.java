@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverRecord;
+import reactor.test.publisher.TestPublisher;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 import victor.training.reactivespring.sample.mam1.MasterItem;
@@ -43,6 +45,10 @@ public class SampleMam2_Deduplicator
    @PostConstruct
    public void deduplicateMasterItems() {
       LOGGER.info("initialize synchronize integrated master items (KP concurrency: {}, prefetch: {})", keyProviderConcurrency, keyProviderPrefetch);
+//      Flux<Object> testFlux = TestPublisher.createCold()
+//          .emit(100 elements)
+//          .flux();
+//      when(masterItemReceiver).theNRetrn(testFlux);
 
       subscription = masterItemReceiver.receive()
           .map(this::extractMasterItem)
@@ -53,8 +59,10 @@ public class SampleMam2_Deduplicator
           .flatMap(item -> item.state.sender.apply(this).map(sender -> Tuples.of(sender, item)))
           // VICTOR unele item-uri sunt trimise pe doi senderi
           // TODO Victor in loc sa folosim enum-ul pentru a tine logica, nu o putem pune in DeduplicatorItem.get
+          // (SenderA, item1), (SenderB, item1), (SenderA, item2) ...
           .groupBy(Tuple2::getT1, Tuple2::getT2)
           // Grouping key is a BaseItemSender
+          // you get a max o 2 emissions by the outer Flux
 
           .flatMap(flux -> flux.key().sendAll(flux))
           .subscribe(this::success, SampleMam2_Deduplicator::logError);

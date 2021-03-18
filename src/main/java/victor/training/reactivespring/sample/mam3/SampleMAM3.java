@@ -21,6 +21,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+
 public class SampleMAM3 {
    private static final Logger LOGGER = LoggerFactory.getLogger(SampleMAM3.class);
    private CollectorClient collectorClient;
@@ -45,41 +47,42 @@ public class SampleMAM3 {
     */
 //   @DetailedItemInfoByMiraklIdSwagger
    @PostMapping(value = "DETAILED_ITEM_INFO_BY_MIRAKL_ID_RESOURCE", consumes = MediaType.APPLICATION_JSON_VALUE)
-   public final Mono<ResponseEntity<ItemInfoResponse>> detailedItemInfoByMiraklId(@RequestBody(required = false) List<String> miraklIdsList) {
+   public final Mono<ItemInfoResponse> detailedItemInfoByMiraklId(@RequestBody(required = false) List<String> miraklIdsList) {
       LOGGER.info("GET_INFO_MESSAGE" +  miraklIdsList); //
       HashSet<String> itemsOnError = new HashSet<String>();
       MultiSet<String> miraklIds = new HashMultiSet<>();// TODO victor similar to sorted ? or sorted by hashCode()? De ce ?
       miraklIds.addAll(miraklIdsList);
 
-
 //    TODO victor  Stream.of(miraklIds).map(UUID::fromString).collect(Collectors.toList()); +
-      //+ Mono.defer(() -> retrieveCollectorItems)
 
+      List<UUID> uuids = miraklIdsList.stream().map(UUID::fromString).collect(toList());
+
+//          Mono.defer(() -> Flux.fromIterable()collectorClient.retrieveCollectorItems(uuids))
       // TODO victor fragment in variables
-      return Flux.fromIterable(miraklIdsList)
-          .map(UUID::fromString)
-          .collectList()
+      final Flux<Long> trackingIds = Mono.just(uuids)
           .flatMap(collectorClient::retrieveCollectorItems)
           .flatMapMany(Flux::fromIterable)
           .filter(collectorResponse -> trackingIdNotNull(itemsOnError, collectorResponse))
           .map(CollectorResponse::getTrackingId)
-          // TODO victor break here
-          .distinct()
+          .distinct();
+
+      Mono<List<DetailedItemInfo>> determinItemInfo = trackingIds
           .flatMap(miraklClient::getMiraklSyncDetails)
           .flatMap(miraklSuccessResponse -> Flux.fromIterable(miraklSuccessResponse.getProcessedItems()))
           .filter(processedItem -> miraklIds.contains(processedItem.getMiraklId()))
           .flatMap(processedItem -> pairInfo(processedItem, miraklIds))
           .map(dataPair -> mapDetailedItemInfo(dataPair.getT1(), dataPair.getT2()))
-          .collectList()
-          .flatMap(itemsWithInfo -> generateResponse(itemsWithInfo, miraklIds, itemsOnError, null))
-          // TODO victor why ResponseEntity?
+          .collectList();
+
+      return determinItemInfo.flatMap(itemsWithInfo -> generateResponse(itemsWithInfo, miraklIds, itemsOnError, null))
           .onErrorContinue((ex, value) -> {
              LOGGER.error("ERROR_MESSAGE", ex.getMessage());
              itemsOnError.add(value.toString());
           });
+
    }
 
-   private Mono<ResponseEntity<ItemInfoResponse>> generateResponse(List<DetailedItemInfo> itemsWithInfo, MultiSet<String> miraklIds, HashSet<String> itemsOnError, Object o) {
+   private Mono<ItemInfoResponse> generateResponse(List<DetailedItemInfo> itemsWithInfo, MultiSet<String> miraklIds, HashSet<String> itemsOnError, Object o) {
       return null;
    }
 
@@ -92,6 +95,7 @@ public class SampleMAM3 {
    }
 
    private boolean trackingIdNotNull(HashSet<String> itemsOnError, CollectorResponse collectorResponse) {
+//      itemsOnError.add("aaa");
       return false;
    }
 
