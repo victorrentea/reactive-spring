@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //@RefreshScope requires spring-cloud-config; can refresh some.prop from a .properties file on disk when a POST /actuator/refresh call i
-@Component
+//@Component
 public class SampleMam2_Deduplicator
 {
    private static final Logger LOGGER = LoggerFactory.getLogger(SampleMam2_Deduplicator.class);
@@ -26,7 +26,7 @@ public class SampleMam2_Deduplicator
    private int keyProviderConcurrency;
    private KafkaReceiver<UUID, MasterItem> masterItemReceiver;
    private BobControllerClient bobControllerClient;
-   @Value("${some.prop}")
+   @Value("${some.prop:2}")
    private int keyProviderPrefetch;
    private Disposable subscription;
    private AtomicInteger totalRecordCount;
