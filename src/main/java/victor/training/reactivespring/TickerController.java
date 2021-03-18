@@ -16,12 +16,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 public class TickerController {
-   private Flux<Long> hotFlux;
+   private ConnectableFlux<Long> hotFlux;
 
    @PostConstruct
    public void initHotFlux() {
-      hotFlux = Flux.interval(Duration.ofSeconds(1)).cache();
-//      hotFlux.connect();
+//      hotFlux = Flux.interval(Duration.ofSeconds(1)).cache();
+
+      hotFlux = Flux.interval(Duration.ofSeconds(1)).publish();
+      hotFlux.connect();
    }
 
    @GetMapping(value = "tick", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
