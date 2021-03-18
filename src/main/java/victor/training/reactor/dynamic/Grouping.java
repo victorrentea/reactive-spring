@@ -28,6 +28,7 @@ public class Grouping {
              if (groupedFlux.key() == NumberType.EVEN) {
                 return groupedFlux
                     .buffer(10)
+//                    .publishOn(Schedulers.parallel()) // only involves 2 threads. Once here, and sencond time at // lineX
 //          .parallel()
 //          .runOn(Schedulers.parallel())
 //                    .subscribeOn(Schedulers.parallel())
@@ -36,6 +37,7 @@ public class Grouping {
              } else {
                 return groupedFlux
                     .buffer(10)
+//                    .publishOn(Schedulers.parallel()) // lineX
 //          .parallel()
 //          .runOn(Schedulers.parallel())
 //                    .subscribeOn(Schedulers.parallel())
