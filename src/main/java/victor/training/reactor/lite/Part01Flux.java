@@ -26,20 +26,16 @@ public class Part01Flux {
 //========================================================================================
 
 
-//	public static void main(String[] args) {
-//		Flux<String> flux = Flux.create(sink -> {
-//			sink.next("foo");
-//			sink.next("bar");
-//		});
-//
-////		for (String s : flux.toIterable()) {
-////			System.out.println(s);
-////		}
-//
-//		List<String> list = flux.collectList().block();
-//		System.out.println(list);
-//
-//	}
+	public static void main(String[] args) {
+		Flux<String> flux = Flux.create(sink -> {
+			sink.next("foo");
+			sink.next("bar");
+		});
+
+		List<String> list = flux.collectList().block();
+		System.out.println(list);
+
+	}
 
 	// TODO Return a Flux that contains 2 values "foo" and "bar" without using an array or a collection
 	Flux<String> fooBarFluxFromValues() {

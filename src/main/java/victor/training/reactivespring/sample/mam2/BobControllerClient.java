@@ -31,7 +31,7 @@ public class BobControllerClient {
           .accept(MediaType.APPLICATION_JSON)
           .exchangeToMono(response -> mapGetResponse(masterItem, response))
           .retryWhen(retry)
-          .onErrorResume(ex -> ex instanceof RetryExhaustedException, ex -> {
+          .onErrorResume(RetryExhaustedException.class, ex -> {
              return Mono.just(DeduplicatorItem.MONITOR);
           })
           .onErrorResume(ex -> {

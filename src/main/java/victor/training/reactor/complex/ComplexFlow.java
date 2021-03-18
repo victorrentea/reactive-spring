@@ -48,8 +48,7 @@ public class ComplexFlow {
    private static Mono<ProductRating> getRemoteRating(Product product) {
       return fetchRating(product.getId())
           .timeout(ofMillis(200))
-          .onErrorResume(ex -> ex instanceof TimeoutException,
-              ex -> Mono.just(null))
+          .onErrorResume(TimeoutException.class, ex -> Mono.just(null))
           .doOnNext(rating -> putInCache(product.getId(), rating)
               .subscribe(v -> {
               }, ex -> System.err.println(ex.getMessage()))); // "silencing the out of band exception"

@@ -1,10 +1,14 @@
 package victor.training.reactor.lite;
 
+import reactor.core.Disposable;
+import victor.training.reactivespring.start.ThreadUtils;
 import victor.training.reactor.lite.domain.User;
 import victor.training.reactor.lite.repository.ReactiveRepository;
 import victor.training.reactor.lite.repository.ReactiveUserRepository;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+
+import static java.time.Duration.ofMillis;
 
 /**
  * Learn how to control the demand.
@@ -40,16 +44,49 @@ public class Part06Request {
 
 //========================================================================================
 
-	// TODO Return a Flux with all users stored in the repository that prints automatically logs for all Reactive Streams signals
+	// TODO Return a Flux with all users stored in the repository that prints
+	//  automatically logs for all Reactive Streams signals
 	Flux<User> fluxWithLog() {
-		return null;
+		return repository.findAll()
+			.log()
+			;
 	}
 
 //========================================================================================
 
-	// TODO Return a Flux with all users stored in the repository that prints "Starring:" on subscribe, "firstname lastname" for all values and "The end!" on complete
+	// TODO Return a Flux with all users stored in the repository that prints
+	//  "Starring:" on subscribe,
+	//  "firstname lastname" for all values and
+	//  "The end!" on complete
 	Flux<User> fluxWithDoOnPrintln() {
-		return null;
+		return repository.findAll()
+			.doOnSubscribe(subscription -> System.out.println("Starring:"))
+			.doOnNext(user -> System.out.println(user.getFirstname() + " " + user.getLastname()))
+			.doOnComplete(() -> { // SUCCESSFUL completion
+				// real world: ack the message on kafka
+				// send a notification: "data exported"
+				System.out.println("The end!");
+			})
+			.doFinally(signalType -> { // ~ finally {
+				// close a file that you wrote to
+			})
+			;
+	}
+
+	public static void main(String[] args) {
+		Disposable disposable = Flux.interval(ofMillis(100))
+//			.take(2)
+			.doOnNext(n -> System.out.println(n))
+			.doOnCancel(() -> System.out.println("CANCEL!!!"))
+			.doAfterTerminate(() -> System.out.println("COMPLETE or ERROR"))
+			.doFinally(signal -> System.out.println("fianlly {" + signal))
+			.subscribe();
+
+		ThreadUtils.sleep(1000);
+		disposable.dispose();
+		ThreadUtils.sleep(100);
+		System.out.println("exit");
+
 	}
 
 }
