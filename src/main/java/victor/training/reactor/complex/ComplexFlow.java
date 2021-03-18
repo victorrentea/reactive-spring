@@ -31,10 +31,8 @@ public class ComplexFlow {
           .delayUntil(ComplexFlow::auditResealedProduct)
 
           .flatMap(product -> {
-
              Mono<ProductRating> ratingMono = fetchRating(product.getId());
-
-             return ratingMono.map(rating -> new ProductWithRating(product, rating));
+             return ratingMono.map(rating -> product.withRating(rating));
           })
 
           .collectList();
