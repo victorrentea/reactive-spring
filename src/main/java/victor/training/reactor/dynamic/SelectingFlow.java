@@ -1,10 +1,11 @@
 package victor.training.reactor.dynamic;
 
 import lombok.Value;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+
+import java.util.function.Function;
 
 public class SelectingFlow {
    public static void main(String[] args) {
@@ -19,32 +20,27 @@ public class SelectingFlow {
       ;
    }
 
-   private static Mono<Void> process(ItemWithCategory idCat) {
-      switch (idCat.getCategory()) {
-         case CALL_A:
-            return callA(idCat.getId());
-         case CALL_B:
-            return callB(idCat.getId());
-         case CALL_A_THEN_B:
-            Mono<Void> monoA = callA(idCat.getId()).subscribeOn(Schedulers.boundedElastic());
-            Mono<Void> monoB = callB(idCat.getId()).subscribeOn(Schedulers.boundedElastic());
-            return Mono.when(monoA, monoB);
-         default: // problems might be here...
-            return Mono.empty();
-      }
-   }
-
-   private static Mono<Void> callA(Integer id) {
+   public static Mono<Void> callA(Integer id) {
       System.out.println("calling A " + id);
       return Mono.empty();
    }
-   private static Mono<Void> callB(Integer id) {
+
+   public static Mono<Void> callB(Integer id) {
       System.out.println("calling B " + id);
       return Mono.empty();
    }
-
    static Mono<FlowCategory> fetchItemCategory(Integer id) {
       return Mono.just(FlowCategory.values()[id%FlowCategory.values().length]);
+   }
+
+   private static Mono<Void> process(ItemWithCategory idCat) {
+      return idCat.getCategory().flowSupplier.apply(idCat.getId());
+   }
+
+   public static Mono<Void> callAThenB(Integer id) {
+      Mono<Void> monoA = callA(id).subscribeOn(Schedulers.boundedElastic());
+      Mono<Void> monoB = callB(id).subscribeOn(Schedulers.boundedElastic());
+      return Mono.when(monoA, monoB);
    }
 }
 
@@ -55,8 +51,14 @@ class ItemWithCategory {
 }
 
 enum FlowCategory {
-   NOOP,
-   CALL_A,
-   CALL_B,
-   CALL_A_THEN_B
+   NOOP(id -> Mono.empty()),
+   CALL_A(SelectingFlow::callA),
+   CALL_B(SelectingFlow::callB),
+   CALL_A_THEN_B(SelectingFlow::callAThenB);
+   public final Function<Integer, Mono<Void>> flowSupplier;
+
+   FlowCategory(Function<Integer, Mono<Void>> flowSupplier) {
+      this.flowSupplier = flowSupplier;
+   }
+}
 }
