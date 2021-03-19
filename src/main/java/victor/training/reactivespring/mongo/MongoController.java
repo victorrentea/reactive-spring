@@ -42,15 +42,14 @@ public class MongoController {
    @GetMapping(value = "list")
    public Mono<String> list() {
       List<Event> result = new ArrayList<>();
-      blockingRepo.findAll().forEach(result::add);
+      blockingRepo.findAll().forEach(result::add); // BAD! VERY BAD!
       return Mono.just(result.toString());
    }
 
    @GetMapping("create")
-   public String sendMessage() {
+   public Mono<String> sendMessage() {
       Event event = new Event("Aloha " + LocalDateTime.now());
-      rxRepo.save(event);
-      return event.getId();
+      return rxRepo.save(event).map(Event::getId);
    }
 }
 

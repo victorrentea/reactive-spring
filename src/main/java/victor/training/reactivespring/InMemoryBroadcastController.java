@@ -17,11 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class InMemoryBroadcastController {
    private AtomicInteger integer = new AtomicInteger(0);
    private Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer();
+   private Flux<String> stringFlux = sink.asFlux();
 
 
    @GetMapping(value = "message/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public Flux<ServerSentEvent<CustomerDto>> messageStream() {
-      return sink.asFlux().map(Objects::toString).map(CustomerDto::new).map(dto -> ServerSentEvent.builder(dto).build());
+      return stringFlux.map(Objects::toString).map(CustomerDto::new).map(dto -> ServerSentEvent.builder(dto).build());
    }
 
    @GetMapping("message/send")

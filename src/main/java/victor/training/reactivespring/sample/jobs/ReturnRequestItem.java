@@ -1,7 +1,7 @@
 package victor.training.reactivespring.sample.jobs;
 
 public class ReturnRequestItem {
-   public static <K> Long getBettyBundleId(ReturnRequestItem returnRequestItem) {
+   public  Long getBettyBundleId() {
       return 1L;
    }
 }

@@ -23,8 +23,8 @@ public class ReadingPom {
       // CITIRE din FLUX, posibil dintr-un fisier gigantic
 
       Flux<String> stringFlux = Flux.using(
-          () -> Files.lines(path),  // cum obtin resursa
-          Flux::fromStream, // cum convertesc resursa la flux
+          () -> Files.lines(path),  // how do I get hold of the resource
+          stream -> Flux.fromStream(stream), // cum convertesc resursa la flux
           Stream::close // cum inchid resursa
       )
           .filter(Strings::isNotBlank)
@@ -37,11 +37,8 @@ public class ReadingPom {
       stringFlux
           .publishOn(Schedulers.boundedElastic())
           .log()
-          .subscribe(
-             line -> fileWriter.println(line),
-             e -> e.printStackTrace(),
-              fileWriter::close
-      );
+          .doFinally(signalType ->  fileWriter.close())
+          .subscribe(fileWriter::println);
 
       Thread.sleep(1000);
    }

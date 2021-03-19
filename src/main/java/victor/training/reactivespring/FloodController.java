@@ -32,6 +32,8 @@ public class FloodController {
    }
    @GetMapping("flood/download")
    public Flux<String> download() throws IOException {
+
+
       Writer fileWriter = new FileWriter("download.dat");
       return WebClient.create().get().uri("http://localhost:8080/flood/generate")
           .retrieve()

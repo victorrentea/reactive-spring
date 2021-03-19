@@ -46,9 +46,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>compile</scope>
         </dependency>
-
-
-        <!--<dependency>
+        <dependency>
+            <groupId>io.projectreactor.addons</groupId>
+            <artifactId>reactor-extra</artifactId>
+            <!--<version>3.3.3.RELEASE</version>-->
+        </dependency><!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-cassandra-reactive</artifactId>
         </dependency>-->
@@ -95,6 +97,10 @@
             <version>4.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-cassandra</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
