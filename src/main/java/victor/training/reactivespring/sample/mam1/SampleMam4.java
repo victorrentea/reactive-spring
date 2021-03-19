@@ -14,7 +14,7 @@ public class SampleMam4 {
       Mono<ItemWithState2> warningMono = Mono.empty();
       Mono<ItemWithState2> invalidAmount = Mono.just(new ItemWithState2(receivedMasterItem, ItemState2.INVALID_AMOUNT_ITEM_CHANGE));
 
-      System.out.println(lastNonEmpty.block());
+//      System.out.println(lastNonEmpty.block());
    }
 
 
