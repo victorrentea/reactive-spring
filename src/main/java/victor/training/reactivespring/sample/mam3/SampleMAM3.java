@@ -59,22 +59,19 @@ public class SampleMAM3 {
 
 //          Mono.defer(() -> Flux.fromIterable()collectorClient.retrieveCollectorItems(uuids))
       // TODO victor fragment in variables
-      final Flux<Long> trackingIds = Mono.just(uuids)
+
+      return Mono.just(uuids)
           .flatMap(collectorClient::retrieveCollectorItems)
           .flatMapMany(Flux::fromIterable)
           .filter(collectorResponse -> trackingIdNotNull(itemsOnError, collectorResponse))
           .map(CollectorResponse::getTrackingId)
-          .distinct();
-
-      Mono<List<DetailedItemInfo>> determinItemInfo = trackingIds
+          .distinct()
           .flatMap(miraklClient::getMiraklSyncDetails)
           .flatMap(miraklSuccessResponse -> Flux.fromIterable(miraklSuccessResponse.getProcessedItems()))
           .filter(processedItem -> miraklIds.contains(processedItem.getMiraklId()))
           .flatMap(processedItem -> pairInfo(processedItem, miraklIds))
           .map(dataPair -> mapDetailedItemInfo(dataPair.getT1(), dataPair.getT2()))
-          .collectList();
-
-      return determinItemInfo.flatMap(itemsWithInfo -> generateResponse(itemsWithInfo, miraklIds, itemsOnError, null))
+          .collectList().flatMap(itemsWithInfo -> generateResponse(itemsWithInfo, miraklIds, itemsOnError, null))
           .onErrorContinue((ex, value) -> {
              LOGGER.error("ERROR_MESSAGE", ex.getMessage());
              itemsOnError.add(value.toString());
