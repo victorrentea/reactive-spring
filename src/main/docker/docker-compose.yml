@@ -7,3 +7,11 @@ services:
       - "9042:9042"
     volumes:
       - ./data/cassandra:/var/lib/cassandra
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=ThePassword
+      - MYSQL_DATABASE=mysql

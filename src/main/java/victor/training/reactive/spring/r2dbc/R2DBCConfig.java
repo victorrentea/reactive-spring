@@ -1,7 +1,6 @@
 package victor.training.reactive.spring.r2dbc;
 
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
-import io.r2dbc.postgresql.PostgresqlConnectionFactory;
+import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -27,14 +26,19 @@ public class R2DBCConfig extends AbstractR2dbcConfiguration {
   @Bean
   @Override
   public ConnectionFactory connectionFactory() {
-    return new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration
-        .builder()
-        .host(host)
-        .database(database)
-        .username(username)
-        .password(password)
-        .port(port)
-        .build());
+//    return new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration
+//        .builder()
+//        .host(host)
+//        .database(database)
+//        .username(username)
+//        .password(password)
+//        .port(port)
+//        .build());
+//    return new
+
+    return ConnectionFactories.get("r2dbcs:mysql://root:ThePassword@localhost:3306/mysql");
+
+
   }
 
 

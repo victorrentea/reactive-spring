@@ -7,18 +7,18 @@ import static java.time.Duration.ofMillis;
 
 @Slf4j
 public class ExternalCacheClient {
-   public static Mono<ProductRating> lookupInCache(Long productId) {
+   public static Mono<ProductRatingDto> lookupInCache(Long productId) {
       return Mono.defer(() -> {
          if (Math.random() < .5) {
             log.debug("Cache hit");
-            return Mono.just(new ProductRating(5));
+            return Mono.just(new ProductRatingDto(5));
          } else {
             return Mono.empty();
          }
       }).delayElement(ofMillis(10));//.publishOn(Schedulers.single());
    }
 
-   public static Mono<Void> putInCache(Long productId, ProductRating rating) {
+   public static Mono<Void> putInCache(Long productId, ProductRatingDto rating) {
       log.info("Put in cache " + productId);
       if (true) {
          throw new RuntimeException("buba");

@@ -8,6 +8,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.intro.ThreadUtils;
 
+import java.sql.Connection;
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -33,16 +35,49 @@ public class ComplexFlow {
 
       Flux<Product> productFlux = idFlux
           .buffer(2)
-          .flatMap(id -> getMultipleProductDetails(id), 4)
+          .flatMap(ComplexFlow::getMultipleProductDetails, 4)
+
+//          .delayUntil(product -> auditResealedProduct(product)) // intarzia Produsele pana cand sunt si auditate
+
+          .doOnNext(product ->
+             auditResealedProduct(product).subscribe() // Mandatory sa faci .subscribe in RX
+          ) // intarzia Produsele pana cand sunt si auditate
+
+         .flatMap(product -> fetchRating(product.getId())
+             .map(rating -> product.withRating(rating)))
+
+
           .subscribeOn(Schedulers.single())// ma dau mare... pute a NodeJS
            ;
-
-//      Stream<Stream<Integer>> ---> .flatMap
 
       return productFlux.collectList();
    }
 
 
+
+   @SneakyThrows
+   public static Mono<ProductRatingDto> fetchRating(Long productId) {
+      return WebClient.create().get().uri("http://localhost:9999/api/rating/{}", productId)
+          .retrieve()
+          .bodyToMono(ProductRatingDto.class);
+   }
+
+   @SneakyThrows
+   public static Mono<Void> auditResealedProduct(Product product) {
+
+//      Connection c;
+//      c.ab
+
+      if (!product.isResealed()) {
+         return Mono.empty(); // ~CompletableFuture.completed.
+      }
+      log.info("Calling Audit REST");
+      return WebClient.create().get().uri("http://localxxxxhost:9999/api/audit-resealed/" + product)
+          .retrieve()
+          .toBodilessEntity()
+          .then();
+
+   }
 
    @SneakyThrows
    public static Mono<Product> getSingleProductDetails(Long productId) {
@@ -51,7 +86,10 @@ public class ComplexFlow {
       return WebClient.create().get().uri("http://localhost:9999/api/product/1")
           .retrieve()
           .bodyToMono(ProductDto.class)
-          .map(dto -> dto.toEntity());
+          .map(dto -> dto.toEntity())
+          .timeout(Duration.ofMillis(500))
+          .retry(3)
+          ;
    }
    @SneakyThrows
    public static Flux<Product> getMultipleProductDetails(List<Long> productIdPage) {
