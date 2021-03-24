@@ -11,7 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ReactiveProgramming {
    @Test
    public void test() {
+
+
+
       Flux<String> ids = fetchIds();
+
 
       Flux<String> combinations =
           ids.flatMap(id -> {

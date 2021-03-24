@@ -34,11 +34,11 @@ public class CompletableFutures {
    public void test() {
       CompletableFuture<List<String>> ids = fetchIds();
 
-      CompletableFuture<List<String>> result = ids.thenComposeAsync(l -> {
+      CompletableFuture<List<String>> result = ids.thenComposeAsync(listIds -> {
          Stream<CompletableFuture<String>> zip =
-             l.stream().map(i -> {
-                CompletableFuture<String> nameTask = fetchName(i);
-                CompletableFuture<Integer> statTask = fetchStat(i);
+             listIds.stream().map(id -> {
+                CompletableFuture<String> nameTask = fetchName(id);
+                CompletableFuture<Integer> statTask = fetchStat(id);
 
                 return nameTask.thenCombineAsync(statTask, (name, stat) -> "Name " + name + " has stats " + stat);
              });
