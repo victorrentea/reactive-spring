@@ -1,5 +1,7 @@
 package victor.training.reactive.intro;
 
+import java.util.Scanner;
+
 public class ThreadUtils {
 	
 	public static void sleep(long millis) {
@@ -8,6 +10,11 @@ public class ThreadUtils {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}		
+	}
+
+	public static void waitForEnter() {
+		System.out.println("\nHit [ENTER] to continue");
+		new Scanner(System.in).next();
 	}
 	
 }

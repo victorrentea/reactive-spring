@@ -8,5 +8,5 @@ public class Product {
    private String name;
    private boolean active;
    private boolean resealed;
-   private ProductRating rating;
+   private ProductRatingResponse rating;
 }

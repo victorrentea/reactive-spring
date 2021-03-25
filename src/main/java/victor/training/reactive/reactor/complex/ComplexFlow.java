@@ -16,7 +16,7 @@ public class ComplexFlow {
       Mono<List<Product>> listMono = mainFlow(productIds);
 
       List<Product> products = listMono.block(); // unusual, only here to stop main thread from exiting
-      log.info("Done: " + products);
+      log.info("Done. Got {} products: {}", products.size(), products);
    }
 
 
