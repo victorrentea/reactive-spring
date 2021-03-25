@@ -14,25 +14,11 @@ public class Grouping {
       // TODO send odd numbers to sendOdd, while even numbers to sendEven, respectively; all in pages of 10 items
 
       Flux.range(1, 100)
-          .groupBy(number -> getType(number)) // a Flux<GroupedFlux<NumberType, Integer>>;
-          .flatMap(groupedFlux -> {
-             if (groupedFlux.key() == NumberType.EVEN) {
-                return groupedFlux
-                    .buffer(10)
-                    .flatMap(Grouping::sendEven); // flatmap eagerly subscribes to EACH generated Publisher (Mono) in our case.
-                // -->> leading to multiple threads acquired due to .subscribeOn in the send... method
-             } else {
-                return groupedFlux
-                    .buffer(10)
-                    .flatMap(Grouping::sendOdd);
-             }
-          })
+          .buffer(10)
+          .flatMap(Grouping::sendOdd)
           .subscribe();
 
       ThreadUtils.sleep(2000);
-   }
-   public static Mono<Void> sendNumber(Integer number) {
-      return Mono.fromRunnable(() -> log.info("N" + number));
    }
 
    public static NumberType getType(int number) {
