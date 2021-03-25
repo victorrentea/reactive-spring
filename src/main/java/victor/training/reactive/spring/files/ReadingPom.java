@@ -12,36 +12,29 @@ import java.util.stream.Stream;
 public class ReadingPom {
    public static void main(String[] args) throws IOException, InterruptedException {
 
-      Path path = new File("pom.xml").toPath();
-//      try (Stream<String> lines = Files.lines(path)) {
-//         lines.filter(Strings::isNotBlank)
-//             .map(String::toUpperCase)
-//             .forEach(System.out::println);
-//      }
+      Flux<String> stringFlux = openFluxFromFile(new File("pom.xml"));
 
-      // CITIRE din FLUX, posibil dintr-un fisier gigantic
+      writeFluxToFile(stringFlux, new File("pom-upper.xml"));
 
-      Flux<String> stringFlux = Flux.using(
-          () -> Files.lines(path),  // cum obtin resursa
-          Flux::fromStream, // cum convertesc resursa la flux
-          Stream::close // cum inchid resursa
+      Thread.sleep(1000);
+   }
+
+   private static Flux<String> openFluxFromFile(File file) {
+      return Flux.using(
+          () -> Files.lines(file.toPath()),  // how to open the resource (Stream<String>)
+          Flux::fromStream, // Convert the Stream<String> to Flux<String>
+          Stream::close // how to close the resource (Stream<String>)
       )
           .filter(Strings::isNotBlank)
           .map(String::toUpperCase);
+   }
 
-
-
-      File out = new File("pom-upper.xml");
+   private static void writeFluxToFile(Flux<String> stringFlux, File out) throws FileNotFoundException {
       PrintWriter fileWriter = new PrintWriter(out);
       stringFlux
           .publishOn(Schedulers.boundedElastic())
           .log()
-          .subscribe(
-             line -> fileWriter.println(line),
-             e -> e.printStackTrace(),
-              fileWriter::close
-      );
-
-      Thread.sleep(1000);
+          .doFinally(signalType -> fileWriter.close())
+          .subscribe(fileWriter::println);
    }
 }
