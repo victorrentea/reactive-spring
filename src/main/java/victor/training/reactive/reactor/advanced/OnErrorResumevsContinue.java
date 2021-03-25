@@ -1,4 +1,4 @@
-package victor.training.reactive.reactor.lite;
+package victor.training.reactive.reactor.advanced;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
