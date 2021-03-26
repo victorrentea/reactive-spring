@@ -9,4 +9,10 @@ public class Product {
    private boolean active;
    private boolean resealed;
    private ProductRatingResponse rating;
+   private String description;
+
+   public Product withDescription(String description) {
+      this.description = description;
+      return this;
+   }
 }

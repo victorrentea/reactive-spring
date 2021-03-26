@@ -15,12 +15,12 @@ public class ProductApiClient implements CommandLineRunner {
 
    @Override
    public void run(String... args) throws Exception {
-      String url = "http://localhost:9999/api/product/1";
-      log.info("Sending request to {}...", url);
-//      String string = rest.getForObject(url, String.class);
-//      log.info("Got response: " + string);
-
-      WebClient.create().get().uri(url).retrieve().bodyToMono(String.class)
-          .subscribe(s -> log.info("Got response: " + s));
+//      String url = "http://localhost:9999/api/product/1";
+//      log.info("Sending request to {}...", url);
+////      String string = rest.getForObject(url, String.class);
+////      log.info("Got response: " + string);
+//
+//      WebClient.create().get().uri(url).retrieve().bodyToMono(String.class)
+//          .subscribe(s -> log.info("Got response: " + s));
    }
 }
