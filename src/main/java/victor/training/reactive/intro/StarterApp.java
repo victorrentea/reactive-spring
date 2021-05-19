@@ -64,10 +64,10 @@ public class StarterApp  {
       log.info("Sending orders calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
 
-//      Schedulers.parallel()
-
-      // TODO make this guy drink earlier
-
+      // TODO async servlets
+      // TODO CF plain Java
+      // TODO controlling pool sizes
+      // TODO Exceptions
 
       CompletableFuture<Beer> futureBeer = barman.pourBeer();
       CompletableFuture<Vodka> futureVodka = barman.pourVodka();
@@ -76,10 +76,6 @@ public class StarterApp  {
 
 
       CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombineAsync(futureVodka, DillyDilly::new);
-
-
-//      DillyDilly dilly = futureDilly.get();
-
 
       long t1 = System.currentTimeMillis();
       log.debug("Time= " + (t1 - t0));
