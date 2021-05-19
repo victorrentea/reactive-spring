@@ -3,9 +3,7 @@ package victor.training.reactive.intro;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +11,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -23,7 +23,8 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 @EnableAsync
 @SpringBootApplication
 @RequiredArgsConstructor
-public class StarterApp implements CommandLineRunner {
+@RestController
+public class StarterApp  {
 
    public static void main(String[] args) {
       SpringApplication.run(StarterApp.class, args);
@@ -58,8 +59,8 @@ public class StarterApp implements CommandLineRunner {
 //      static ExecutorService pool = Executors.newFixedThreadPool(4);
 
 
-   @Override
-   public void run(String... args) throws Exception {
+   @GetMapping("dilly")
+   public CompletableFuture<DillyDilly> run() throws ExecutionException, InterruptedException {
       log.info("Sending orders calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
 
@@ -73,14 +74,17 @@ public class StarterApp implements CommandLineRunner {
 
       log.debug("Now, two workers are pouring drinks for me in ||");
 
-      Beer beer = futureBeer.get();
-      Vodka vodka = futureVodka.get();
+
+      CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombineAsync(futureVodka, DillyDilly::new);
 
 
-      log.debug("Drinking: " + beer + vodka);
+//      DillyDilly dilly = futureDilly.get();
+
 
       long t1 = System.currentTimeMillis();
       log.debug("Time= " + (t1 - t0));
+      return futureDilly;
+
    }
 }
 
