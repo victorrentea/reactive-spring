@@ -14,6 +14,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.concurrent.*;
 
@@ -79,7 +80,9 @@ public class StarterApp  {
              }
              throw new RuntimeException(e);
           });
+
       CompletableFuture<Vodka> futureVodka = CompletableFuture.supplyAsync(() -> barman.pourVodka(), vodkaPool);
+      CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureBeer, futureVodka);
 
       log.debug("Now, two workers are pouring drinks for me in ||");
 
