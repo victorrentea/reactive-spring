@@ -3,13 +3,21 @@ package victor.training.reactive.intro;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Slf4j
 @EnableAsync
@@ -22,10 +30,10 @@ public class StarterApp implements CommandLineRunner {
    }
 
    @Bean
-   public ThreadPoolTaskExecutor pool() {
+   public ThreadPoolTaskExecutor pool(@Value("${barman.count}")int corePoolSize) {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-      executor.setCorePoolSize(2);
-      executor.setMaxPoolSize(2);
+      executor.setCorePoolSize(corePoolSize);
+      executor.setMaxPoolSize(corePoolSize);
       executor.setQueueCapacity(500);
       executor.setThreadNamePrefix("bar-");
       executor.initialize();
@@ -35,15 +43,29 @@ public class StarterApp implements CommandLineRunner {
 
    private final Barman barman;
 
+//      static ExecutorService pool = Executors.newFixedThreadPool(4);
+
+   @Autowired
+   private ThreadPoolTaskExecutor pool;
 
    @Override
    public void run(String... args) throws Exception {
       log.info("Sending orders calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
 
+//      Schedulers.parallel()
+
       // TODO make this guy drink earlier
-      Beer beer = barman.pourBeer();
-      Vodka vodka = barman.pourVodka();
+
+
+      CompletableFuture<Beer> futureBeer = barman.pourBeer();
+      CompletableFuture<Vodka> futureVodka = barman.pourVodka();
+
+      log.debug("Now, two workers are pouring drinks for me in ||");
+
+      Beer beer = futureBeer.get();
+      Vodka vodka = futureVodka.get();
+
 
       log.debug("Drinking: " + beer + vodka);
 
@@ -56,18 +78,20 @@ public class StarterApp implements CommandLineRunner {
 @Service
 @RequiredArgsConstructor
 class Barman {
-   public Beer pourBeer() {
+   @Async
+   public CompletableFuture<Beer> pourBeer() {
       log.info("Start pour beer");
       ThreadUtils.sleep(1000); // blocking REST call
       log.info("end pour beer");
-      return new Beer();
+      return completedFuture(new Beer());
    }
 
-   public Vodka pourVodka() {
+   @Async
+   public CompletableFuture<Vodka> pourVodka() {
       log.info("Start pour vodka");
       ThreadUtils.sleep(1000);  // blocking DB call
       log.info("end pour vodka");
-      return new Vodka();
+      return completedFuture(new Vodka());
    }
 }
 
