@@ -19,6 +19,7 @@ public class User {
 		this.lastname = lastname;
 	}
 
+
 	public String getUsername() {
 		return username;
 	}
@@ -67,5 +68,12 @@ public class User {
 				", firstname='" + firstname + '\'' +
 				", lastname='" + lastname + '\'' +
 				'}';
+	}
+
+	public User capitalize() {
+		return new User(
+		username.toUpperCase(),
+		firstname.toUpperCase(),
+		lastname.toUpperCase());
 	}
 }
