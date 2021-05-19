@@ -39,8 +39,13 @@ public class StarterWithReactorApp /*implements CommandLineRunner */{
 
       Mono<Beer> beerMono = barman.pourBlondBeer()
           .subscribeOn(Schedulers.boundedElastic());
+
       Mono<Vodka> vodkaMono = barman.pourVodka()
+          .map(vodka -> vodka)
           .subscribeOn(Schedulers.boundedElastic());
+
+      // ThreadLocals in Reactor have no meaning.
+      // the replacement> Reactor Context >> @Transactional
 
       Mono<DillyDilly> dillyDillyMono = beerMono
           .publishOn(Schedulers.parallel())
@@ -49,6 +54,7 @@ public class StarterWithReactorApp /*implements CommandLineRunner */{
 //      dillyDillyMono.subscribe( dilly->{
 //         log.info("Digesting : " + dilly);
 //      });
+//      dillyDillyMono.subscribe()
 
       long t1 = System.currentTimeMillis();
       log.debug("Time= " + (t1 - t0));

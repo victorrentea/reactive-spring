@@ -19,6 +19,7 @@ package victor.training.reactive.reactor.lite;
 import java.time.Duration;
 import java.util.function.Supplier;
 
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.domain.User;
 import reactor.core.publisher.Flux;

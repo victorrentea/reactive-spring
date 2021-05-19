@@ -83,18 +83,19 @@ public class Part06RequestTest {
 		                   .collect(Collectors.joining("\n"));
 
 		assertThat(log)
-				.contains("onSubscribe(FluxZip.ZipCoordinator)\n"
-						+ "request(1)\n"
+				.startsWith("onSubscribe(")
+				.contains("request(1)\n"
 						+ "onNext(Person{username='swhite', firstname='Skyler', lastname='White'})\n"
 						+ "request(1)\n"
 						+ "onNext(Person{username='jpinkman', firstname='Jesse', lastname='Pinkman'})\n"
 						+ "request(2)\n"
 						+ "onNext(Person{username='wwhite', firstname='Walter', lastname='White'})\n"
-						+ "onNext(Person{username='sgoodman', firstname='Saul', lastname='Goodman'})\n"
-						+ "onComplete()");
+						+ "onNext(Person{username='sgoodman', firstname='Saul', lastname='Goodman'})"
+						);
 	}
 
 //========================================================================================
+
 
 	@Test
 	public void fluxWithDoOnPrintln() {
@@ -109,12 +110,12 @@ public class Part06RequestTest {
 		            .verifyComplete();
 
 		assertThat(logConsole.toString())
-				.isEqualTo("Starring:\n"
-						+ "Skyler White\n"
-						+ "Jesse Pinkman\n"
-						+ "Walter White\n"
-						+ "Saul Goodman\n"
-						+ "The end!\n");
+				.isEqualTo("Starring:\r\n"
+						+ "Skyler White\r\n"
+						+ "Jesse Pinkman\r\n"
+						+ "Walter White\r\n"
+						+ "Saul Goodman\r\n"
+						+ "The end!\r\n");
 	}
 
 }

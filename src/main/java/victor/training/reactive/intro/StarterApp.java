@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -51,8 +52,25 @@ public class StarterApp  {
       executor.setThreadNamePrefix("vodka-");
       executor.initialize();
       executor.setWaitForTasksToCompleteOnShutdown(true);
+      executor.setTaskDecorator(new TaskDecorator() {
+         @Override
+         public Runnable decorate(Runnable runnable) {
+            // runs in the sumbitter's thread (main)
+            String originalusername = currentUsername.get();
+            return () -> {
+               currentUsername.set(originalusername);
+               try {
+                  // runs in the worker thread.
+                  runnable.run();
+               } finally {
+                  currentUsername.remove();
+               }
+            };
+         }
+      });
       return executor;
    }
+   static ThreadLocal<String> currentUsername = new ThreadLocal<>();
 
    private final Barman barman;
 

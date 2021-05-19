@@ -9,13 +9,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 class ExternalAPIs {
 
-   @SneakyThrows
-   public static Product fetchSingleProductDetails(Long productId) {
-      log.info("Calling Get Product Details REST");
-      RestTemplate rest = new RestTemplate();
-      ProductDetailsResponse dto = rest.getForObject("http://localhost:9999/api/product/", ProductDetailsResponse.class, productId);
-      return dto.toEntity();
-   }
+
 
    @SneakyThrows
    public static Mono<Void> auditResealedProduct(Product product) {
