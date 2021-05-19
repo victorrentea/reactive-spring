@@ -30,12 +30,24 @@ public class StarterApp implements CommandLineRunner {
    }
 
    @Bean
-   public ThreadPoolTaskExecutor pool(@Value("${barman.count}")int corePoolSize) {
+   public ThreadPoolTaskExecutor beerPool(@Value("${beer.count:1}")int corePoolSize) {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
       executor.setCorePoolSize(corePoolSize);
       executor.setMaxPoolSize(corePoolSize);
       executor.setQueueCapacity(500);
-      executor.setThreadNamePrefix("bar-");
+      executor.setThreadNamePrefix("beer-");
+      executor.initialize();
+      executor.setWaitForTasksToCompleteOnShutdown(true);
+      return executor;
+   }
+
+   @Bean
+   public ThreadPoolTaskExecutor vodkaPool(@Value("${vodka.count:4}")int corePoolSize) {
+      ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+      executor.setCorePoolSize(corePoolSize);
+      executor.setMaxPoolSize(corePoolSize);
+      executor.setQueueCapacity(500);
+      executor.setThreadNamePrefix("vodka-");
       executor.initialize();
       executor.setWaitForTasksToCompleteOnShutdown(true);
       return executor;
@@ -45,8 +57,6 @@ public class StarterApp implements CommandLineRunner {
 
 //      static ExecutorService pool = Executors.newFixedThreadPool(4);
 
-   @Autowired
-   private ThreadPoolTaskExecutor pool;
 
    @Override
    public void run(String... args) throws Exception {
@@ -78,7 +88,7 @@ public class StarterApp implements CommandLineRunner {
 @Service
 @RequiredArgsConstructor
 class Barman {
-   @Async
+   @Async("beerPool")
    public CompletableFuture<Beer> pourBeer() {
       log.info("Start pour beer");
       ThreadUtils.sleep(1000); // blocking REST call
@@ -86,7 +96,7 @@ class Barman {
       return completedFuture(new Beer());
    }
 
-   @Async
+   @Async("vodkaPool")
    public CompletableFuture<Vodka> pourVodka() {
       log.info("Start pour vodka");
       ThreadUtils.sleep(1000);  // blocking DB call
