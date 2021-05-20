@@ -17,7 +17,7 @@ public class MongoConfig {
 
    private final MongoOperations db;
 
-      @PostConstruct
+//      @PostConstruct
    public void setupDb() {
       db.createCollection(Event.class, CollectionOptions.empty()
           .capped()

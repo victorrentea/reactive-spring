@@ -10,18 +10,26 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import javax.annotation.PostConstruct;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 public class InMemoryBroadcastController {
    private AtomicInteger integer = new AtomicInteger(0);
-   private Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer();
+   private Sinks.Many<String> sink;
+   private Flux<String> flux;
+
+   @PostConstruct
+   public void method() {
+      sink  = Sinks.many().multicast().directBestEffort();
+      flux = sink.asFlux();
+   }
 
 
    @GetMapping(value = "message/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public Flux<ServerSentEvent<CustomerDto>> messageStream() {
-      return sink.asFlux().map(Objects::toString).map(CustomerDto::new).map(dto -> ServerSentEvent.builder(dto).build());
+      return flux.log().map(Objects::toString).map(CustomerDto::new).map(dto -> ServerSentEvent.builder(dto).build());
    }
 
    @GetMapping("message/send")
