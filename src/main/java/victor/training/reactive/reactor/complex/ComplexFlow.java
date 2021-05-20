@@ -10,7 +10,6 @@ import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.intro.ThreadUtils;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -38,9 +37,9 @@ public class ComplexFlow {
 //          .doOnNext(product -> auditResealedProduct(product)
 //              .doOnError(error -> log.error("Error auditing product:",error))
 //               .subscribe()  ) // acceptable<< T
-            // 1) THE ONLY place where you should subscribe(): because you don't care about FAILURES >> normally frameworks will subscribe to your publishers: eg return a Mono from a @GetMapping
-            // 2) Problem: cancelling the subscription for the MainFlow will NOT cancel also the subscription to audit http req
-               // >> the auditing will happen anyway despite .cancel on mainflow, if it got to .subscribe()
+          // 1) THE ONLY place where you should subscribe(): because you don't care about FAILURES >> normally frameworks will subscribe to your publishers: eg return a Mono from a @GetMapping
+          // 2) Problem: cancelling the subscription for the MainFlow will NOT cancel also the subscription to audit http req
+          // >> the auditing will happen anyway despite .cancel on mainflow, if it got to .subscribe()
 
 //          .flatMap(product -> auditResealedProduct(product).thenReturn(product)) // acceptable<< T or equivalent..
           .delayUntil(ComplexFlow::auditProduct)
@@ -51,16 +50,9 @@ public class ComplexFlow {
    }
 
    private static Mono<ProductRatingResponse> retrieveRatingWithCache(Product product) {
-//      Optional<ProductRatingResponse> cacheOpt = ExternalCacheClient.lookupInCache(product.getId()).blockOptional();
-//
-//      if (cacheOpt.isPresent()) {
-//         return Mono.just(cacheOpt.get());
-//      }
-
-
-      Mono<ProductRatingResponse> cacheMono = ExternalCacheClient.lookupInCache(product.getId());
-      return cacheMono.switchIfEmpty(ExternalAPIs.fetchProductRating(product.getId())
-               .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating).subscribe()));
+      return ExternalCacheClient.lookupInCache(product.getId())
+          .switchIfEmpty(ExternalAPIs.fetchProductRating(product.getId())
+              .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating).subscribe()));
    }
 
 
