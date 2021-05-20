@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
-@Configuration
-@EnableR2dbcRepositories
+//@Configuration
+//@EnableR2dbcRepositories
 public class R2DBCConfig extends AbstractR2dbcConfiguration {
 
   @Value("${datasource.host}")

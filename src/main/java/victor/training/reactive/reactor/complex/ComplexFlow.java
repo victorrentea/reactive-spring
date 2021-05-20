@@ -55,8 +55,9 @@ public class ComplexFlow {
    private static Mono<ProductRatingResponse> retrieveRatingWithCache(Product product) {
       return ExternalCacheClient.lookupInCache(product.getId())
           .switchIfEmpty(ExternalAPIs.fetchProductRating(product.getId())
-              .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating)
-                  .subscribe()));
+              .doOnNext(rating ->
+                  ExternalCacheClient.putInCache(product.getId(), rating)
+                  .subscribe().dispose()));
    }
 
 

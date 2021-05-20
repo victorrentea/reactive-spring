@@ -29,8 +29,8 @@ public class MongoController {
    }
 
    @GetMapping(value = "flux")
-   public Flux<String> flux() {
-      return rxRepo.findAll().map(Objects::toString);
+   public Flux<Event> flux() {
+      return rxRepo.findAll();
    }
 
    @GetMapping(value = "mono")
@@ -46,10 +46,9 @@ public class MongoController {
    }
 
    @GetMapping("create")
-   public String sendMessage() {
+   public Mono<String> sendMessage() {
       Event event = new Event("Aloha " + LocalDateTime.now());
-      rxRepo.save(event);
-      return event.getId();
+      return rxRepo.save(event).map(Event::getId);
    }
 }
 
