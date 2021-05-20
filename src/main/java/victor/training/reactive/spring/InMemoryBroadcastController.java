@@ -22,6 +22,10 @@ public class InMemoryBroadcastController {
 
    @PostConstruct
    public void method() {
+//      Flux.create(sink -> {
+//         sink.next("aa");
+//         sink.complete();
+//      })
       sink  = Sinks.many().multicast().directBestEffort();
       flux = sink.asFlux();
    }
