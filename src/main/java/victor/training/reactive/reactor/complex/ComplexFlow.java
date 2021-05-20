@@ -2,24 +2,17 @@ package victor.training.reactive.reactor.complex;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.intro.ThreadUtils;
 
-import java.io.FilterInputStream;
-import java.sql.PreparedStatement;
-import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import java.util.zip.GZIPInputStream;
 
 @Slf4j
 public class ComplexFlow {
@@ -50,13 +43,28 @@ public class ComplexFlow {
                // >> the auditing will happen anyway despite .cancel on mainflow, if it got to .subscribe()
 
 //          .flatMap(product -> auditResealedProduct(product).thenReturn(product)) // acceptable<< T or equivalent..
-          .delayUntil(ComplexFlow::auditResealedProduct)
+          .delayUntil(ComplexFlow::auditProduct)
+
+          .flatMap(product -> retrieveRatingWithCache(product).map(product::withRating))
 
           .doOnNext(p -> log.info("Product on main flow"));
    }
 
+   private static Mono<ProductRatingResponse> retrieveRatingWithCache(Product product) {
+//      Optional<ProductRatingResponse> cacheOpt = ExternalCacheClient.lookupInCache(product.getId()).blockOptional();
+//
+//      if (cacheOpt.isPresent()) {
+//         return Mono.just(cacheOpt.get());
+//      }
 
-//   public static final ConnectableFlux<Long> timer = Flux.interval(Duration.ofMillis(1000)).publish();
+
+      Mono<ProductRatingResponse> cacheMono = ExternalCacheClient.lookupInCache(product.getId());
+      return cacheMono.switchIfEmpty(ExternalAPIs.fetchProductRating(product.getId())
+               .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating).subscribe()));
+   }
+
+
+   //   public static final ConnectableFlux<Long> timer = Flux.interval(Duration.ofMillis(1000)).publish();
 //   static {
 //      timer.connect();
 //   }
@@ -74,7 +82,7 @@ public class ComplexFlow {
 
 
    @SneakyThrows
-   public static Mono<Void> auditResealedProduct(Product product) {
+   public static Mono<Void> auditProduct(Product product) {
       if (product.isResealed()) {
          return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product)
              .retrieve()
