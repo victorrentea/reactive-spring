@@ -45,7 +45,8 @@ public class ComplexFlow {
           .subscribeOn(Schedulers.boundedElastic())
           .thenReturn("useless");
 
-      Mono<Product> productWithRatingMono = retrieveRatingWithCache(product).map(product::withRating)
+      Mono<Product> productWithRatingMono = retrieveRatingWithCache(product)
+          .map(product::withRating)
           .subscribeOn(Schedulers.boundedElastic());
 
       return productWithRatingMono.zipWith(auditMono, (p, v) -> p);
