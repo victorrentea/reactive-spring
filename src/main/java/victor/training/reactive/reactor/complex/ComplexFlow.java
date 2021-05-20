@@ -7,6 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.intro.ThreadUtils;
@@ -48,8 +49,8 @@ public class ComplexFlow {
             // 2) Problem: cancelling the subscription for the MainFlow will NOT cancel also the subscription to audit http req
                // >> the auditing will happen anyway despite .cancel on mainflow, if it got to .subscribe()
 
-//          .flatMap(product -> auditResealedProduct(product).thenReturn(product)) // acceptable<< T
-            .delayUntil(ComplexFlow::auditResealedProduct)
+//          .flatMap(product -> auditResealedProduct(product).thenReturn(product)) // acceptable<< T or equivalent..
+          .delayUntil(ComplexFlow::auditResealedProduct)
 
           .doOnNext(p -> log.info("Product on main flow"));
    }
@@ -74,11 +75,15 @@ public class ComplexFlow {
 
    @SneakyThrows
    public static Mono<Void> auditResealedProduct(Product product) {
-      // TODO only audit resealed products !
-      return WebClient.create().get().uri("http://localhost:9999/api/auditoups!!-resealed/" + product)
-          .retrieve()
-          .toBodilessEntity()
-          .then();
+      if (product.isResealed()) {
+         return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product)
+             .retrieve()
+             .toBodilessEntity()
+             .then()
+             .subscribeOn(Schedulers.boundedElastic());
+      } else {
+         return Mono.empty();
+      }
    }
 
 //
