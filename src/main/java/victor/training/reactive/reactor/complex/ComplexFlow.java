@@ -41,17 +41,15 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(idPage -> fetchSingleProductDetails(idPage)/*, 4*/)
-//          .doOnNext(product -> auditResealedProduct(product)  ) // you forgot to subscribe-> no HTTP call happens
-//          .doOnNext(product -> auditResealedProduct(product).block()   ) // you BLOCK a thread
-
-          .doOnNext(product -> auditResealedProduct(product)
-              .doOnError(error -> log.error("Error auditing product:",error))
-               .subscribe()  ) // acceptable<< T
+//          .doOnNext(product -> auditResealedProduct(product)
+//              .doOnError(error -> log.error("Error auditing product:",error))
+//               .subscribe()  ) // acceptable<< T
             // 1) THE ONLY place where you should subscribe(): because you don't care about FAILURES >> normally frameworks will subscribe to your publishers: eg return a Mono from a @GetMapping
             // 2) Problem: cancelling the subscription for the MainFlow will NOT cancel also the subscription to audit http req
                // >> the auditing will happen anyway despite .cancel on mainflow, if it got to .subscribe()
 
 //          .flatMap(product -> auditResealedProduct(product).thenReturn(product)) // acceptable<< T
+            .delayUntil(ComplexFlow::auditResealedProduct)
 
           .doOnNext(p -> log.info("Product on main flow"));
    }
