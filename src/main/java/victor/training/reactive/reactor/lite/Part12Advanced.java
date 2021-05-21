@@ -16,10 +16,11 @@ public class Part12Advanced {
    // Note: multiple subscribers will subscribe!
    // Use generateRandomInts()!
    public Flux<Integer> defer() {
-      return null;
+      return Flux.defer(() -> Flux.fromIterable(generateRandomInts()));
    }
 
    private static List<Integer> generateRandomInts() {
+      System.out.println("HOW MANY TIMES IS THIS CALLED ?!");
       Random r = new Random(); // depends on current time
       return r.ints(3).boxed().collect(Collectors.toList());
    }
@@ -48,7 +49,8 @@ public class Part12Advanced {
    //  Note: the timestamp should be the current one
    public Mono<String> share(Supplier<String> fetchData) {
       return Mono.fromSupplier(fetchData)
-
+          .cache()
+            .map(s -> s + LocalDateTime.now())
           ;
    }
 
@@ -59,6 +61,8 @@ public class Part12Advanced {
    public Mono<String> reactorContext() {
       return null;
    }
+
+
 
    //========================================================================================
 }
