@@ -8,12 +8,16 @@ import static java.time.Duration.ofMillis;
 @Slf4j
 public class ExternalCacheClient {
    public static Mono<ProductRatingResponse> lookupInCache(Long productId) {
-      return Mono.delay(ofMillis(5000))
+      return Mono.delay(ofMillis(100))
           .flatMap(n -> Mono.defer(() -> {
-             if (Math.random() < .5) {
+             double r = Math.random();
+             if (r < .1) {
                 log.debug("Cache hit");
                 return Mono.just(new ProductRatingResponse(5));
-             } else {
+             } else if (r < .9 ){
+                return Mono.error(new RuntimeException());
+             }
+                else {
                 return Mono.<ProductRatingResponse>empty();
              }
           }))

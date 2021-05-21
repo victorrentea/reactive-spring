@@ -7,9 +7,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.context.ContextView;
 import victor.training.reactive.intro.ThreadUtils;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -19,7 +21,7 @@ public class ComplexFlow {
    public static final Scheduler FR_GOV = Schedulers.newBoundedElastic(2, 100, "fr.gov");
 
    public static void main(String[] args) {
-      List<Long> productIds = LongStream.range(0, 2).boxed().collect(Collectors.toList());
+      List<Long> productIds = LongStream.range(0, 100).boxed().collect(Collectors.toList());
 
       log.info("START");
       Flux<Product> listMono = mainFlow(productIds);
@@ -78,6 +80,26 @@ public class ComplexFlow {
 
    private static Mono<ProductRatingResponse> retrieveRatingWithCache(Product product) {
       return ExternalCacheClient.lookupInCache(product.getId())
+
+
+//            .doOnSubscribe(s -> {
+//               System.out.println("For the initial and every retry");
+//            })
+
+          .doOnEach(signal -> {
+             if (signal.isOnSubscribe()) {
+                ContextView context = signal.getContextView();
+                log.info("AAAAAAA");
+               String uuid = context.get("requestUUID");
+               log.info("REQUESTUUID: >" + uuid + "<");
+             }
+          })
+            .retry(100)
+//            .retry(Retry.)
+          .contextWrite(context -> context.put("requestUUID", UUID.randomUUID().toString()))
+
+          .onErrorResume(t -> Mono.empty())
+
           .switchIfEmpty(ExternalAPIs.fetchProductRating(product.getId())
               .doOnNext(rating ->
                   ExternalCacheClient.putInCache(product.getId(), rating)
