@@ -8,13 +8,10 @@ public class ReactorContext {
 
       Mono.just("orderData")
           .flatMap(d->Repo.save(d))
-
           .contextWrite(context -> context.put("username","jane"))
-          //spring
-//          .doOnNext()
           .flatMap(u -> Mono.deferContextual(c -> {
              log.debug((String) c.get("username"));
-             return Mono.just("");
+             return Mono.just("x");
           }).thenReturn(u))
           .doOnError(e->e.printStackTrace())
           .contextWrite(context -> context.put("username","johndoe"))
@@ -27,10 +24,10 @@ public class ReactorContext {
 
 @Slf4j
 class Repo {
-   public static Mono<Void> save(String d) {
+   public static Mono<String> save(String d) {
       return Mono.deferContextual(context -> {
          log.debug("INSERT INT o... username=" + context.get("username"));
-         return Mono.just("");
-      }).then();
+         return Mono.just("x");
+      });
    }
 }

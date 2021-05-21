@@ -42,12 +42,36 @@ public class ComplexFlow {
 
    private static Mono<Product> getRatingAndAuditInParallel(Product product) {
       Mono<String> auditMono = auditProduct(product)
-          .subscribeOn(Schedulers.boundedElastic())
-          .thenReturn("useless");
+          .subscribeOn(Schedulers.single())
+          .thenReturn("useless"); // > zipWith wanted data signal in order to proceed
+
+//      Mono.deferContextual(context -> {
+//         runWithMDC(context, () -> callLegacyCode());
+////         context.get("usermetda");
+////
+////             ThreadLocal.set("mdc", user);
+////             try {
+////                call legacy code
+////                    return just("results");
+////                return empty();
+////             }finally {
+////                ThreadLocal.remove();
+////             }
+//      })
 
       Mono<Product> productWithRatingMono = retrieveRatingWithCache(product)
           .map(product::withRating)
-          .subscribeOn(Schedulers.boundedElastic());
+//          .doOnEach(signal -> {
+//             signal.getContextView().get("usermetda");
+//             ThreadLocal.set("mdc", user);
+//             try {
+//                call legacy code
+//             }finally {
+//                ThreadLocal.remove();
+//             }
+//          })
+          .subscribeOn(Schedulers.single())
+          ;
 
       return productWithRatingMono.zipWith(auditMono, (p, v) -> p);
    }
@@ -57,7 +81,7 @@ public class ComplexFlow {
           .switchIfEmpty(ExternalAPIs.fetchProductRating(product.getId())
               .doOnNext(rating ->
                   ExternalCacheClient.putInCache(product.getId(), rating)
-                  .subscribe().dispose()));
+                      .subscribe()));
    }
 
 
@@ -88,7 +112,8 @@ public class ComplexFlow {
              .then()
              .doOnSubscribe(s -> log.info("Calling AUDIT for " + product.getId()))
              .doOnTerminate(() -> log.info("Call DONE AUDIT for " + product.getId()))
-             .subscribeOn(Schedulers.boundedElastic());
+//             .subscribeOn(Schedulers.boundedElastic())
+             ;
       } else {
          return Mono.empty();
       }

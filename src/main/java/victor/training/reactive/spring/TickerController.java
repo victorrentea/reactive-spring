@@ -16,6 +16,8 @@ public class TickerController {
    @PostConstruct
    public void initHotFlux() {
       hotFlux = Flux.interval(Duration.ofSeconds(1)).publish();
+//      hotFlux.subscribe(t -> System.out.println("Subscriber 1 " + t));
+//      hotFlux.subscribe(t -> System.out.println("Subscriber 2 " + t));
       hotFlux.connect();
    }
 

@@ -41,7 +41,7 @@ public class Part13ThreadsTest {
       Mono<String> mono = workshop.subscribe(readTask);
 
       StepVerifier.create(mono)
-          .expectNext("text")
+          .expectNext("TEXT")
           .verifyComplete();
 
       Assertions.assertThat(steps.toString())

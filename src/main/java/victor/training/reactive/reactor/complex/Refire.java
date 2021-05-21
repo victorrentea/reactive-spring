@@ -20,6 +20,7 @@ public class Refire {
    }
 
    private static Mono<String> getCEntry() {
+      // -- cache
 //      Mono<String> aMono = getA().cache();
 //
 //      Mono<String> monoB = aMono.flatMap(a -> getB(a));
@@ -27,9 +28,11 @@ public class Refire {
 //      Mono<String> monoC = aMono.zipWith(monoB)
 //          .flatMap(function((a, b) -> getC(a, b)));
 
+      // --- preferred:
       return getA()
-          .flatMap(a1 -> getB(a1).map(b1 -> Tuples.of(a1, b1)))
-          .flatMap(function((a, b) -> getC(a, b)));
+          .zipWhen(a -> getB(a))
+          .flatMap(function((a, b) -> getC(a, b)))
+          ;
    }
 
    public static Mono<String> getA() {
