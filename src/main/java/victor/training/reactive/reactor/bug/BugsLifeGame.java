@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.File;
 import java.time.Duration;
@@ -87,7 +88,7 @@ public class BugsLifeGame extends Application {
 
       tick.subscribe(t -> {
          for (ImageView tile : tiles) {
-            if (tile.getTranslateX() < -BUG_SPEED) {
+            if (tile.getTranslateX() < -tileImage.getWidth()) {
                tile.setTranslateX(screenWidth - BUG_SPEED);
             } else {
                tile.setTranslateX(tile.getTranslateX() - BUG_SPEED);
@@ -128,7 +129,12 @@ public class BugsLifeGame extends Application {
       // TODO jump dynamics with gravity: remember Y decreases UPWARDS
       Flux<Double> jumpsFlux = sink.asFlux(); //emits once per SPACE
 
-      jumpsFlux.subscribe(speed -> {
+      jumpsFlux
+//         .publishOn(Schedulers.boundedElastic())
+//          .flatMap(networkCall)
+//          .publishOn(new SillyRxScheduler())
+
+          .subscribe(speed -> {
              tick.scan(8d, (s0, t) -> s0 - gravity)
                  .takeUntil(v -> bug.getTranslateY() >= groundY)
                  .subscribe(s -> {
