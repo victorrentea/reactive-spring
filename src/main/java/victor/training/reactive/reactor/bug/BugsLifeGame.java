@@ -59,11 +59,7 @@ public class BugsLifeGame extends Application {
         // TODO create an observer that fires every 10ms on the computation() thread,
         //  but its subscribers (+operators) run in the GUI event loop thread
 
-//        Scheduler testScheduler = createTestScheduler(scene);
-//        Observable<Long> time = Observable.interval(10, TimeUnit.MILLISECONDS, testScheduler)
-//                .observeOn(new FxPlatformScheduler());
-        Flux<Long> time = Flux.interval(Duration.ofMillis(10)).onBackpressureDrop()
-                .publishOn(new SillyRxScheduler());
+//        TOFO Flux<Long> time
 
 
 
@@ -76,15 +72,6 @@ public class BugsLifeGame extends Application {
         // TODO make every tile move left with BUG_SPEED, and then return from right when out (translateX <= -width)
 //                    tile.setTranslateX(screenWidth - BUG_SPEED);
 
-        time.subscribe(tick -> {
-            for (ImageView tile : tiles) {
-                if (tile.getTranslateX() <= -tileImage.getWidth()) {
-                    tile.setTranslateX(screenWidth);
-                } else {
-                    tile.setTranslateX(tile.getTranslateX() - BUG_SPEED);
-                }
-            }
-        });
 
         // ========== SUN ===========
         showHeart(false);
@@ -93,13 +80,6 @@ public class BugsLifeGame extends Application {
 
         // TODO make sun move left with BUG_SPEED, and then return from right when out (translateX <= -width)
 
-        time.subscribe(tick -> {
-            if (sun.getTranslateX() <= -sun.getImage().getWidth()) {
-                sun.setTranslateX(screenWidth);
-            } else {
-                sun.setTranslateX(sun.getTranslateX() - BUG_SPEED);
-            }
-        });
 
         // ========== BUG ===========
         double groundY = (-tileImage.getHeight() / 2) - 5;
@@ -118,19 +98,14 @@ public class BugsLifeGame extends Application {
         // TODO jump dynamics with gravity: remember Y decreases UPWARDS
         double jumpSpeed = 8;
         Flux<Double> jumpsFlux = sink.asFlux();
-        jumpsFlux.flatMap(v0 -> time
-                        .scan(jumpSpeed, (v, tick) -> v - gravity)
-                        .takeUntilOther(jumpsFlux)
-//                    .takeWhile(v -> v == jumpSpeed || bug.getTranslateY() != groundY)
-        )
-                .subscribe(dy -> {
-//                    System.out.println(dy);
-                    if (bug.getTranslateY() <= groundY + dy) {
-                        bug.setTranslateY(bug.getTranslateY() - dy);
-                    } else {
-                        bug.setTranslateY(groundY);
-                    }
-                });
+
+
+//                    if (bug.getTranslateY() <= groundY + dy) {
+//                        bug.setTranslateY(bug.getTranslateY() - dy);
+//                    } else {
+//                        bug.setTranslateY(groundY);
+//                    }
+
 
         // TODO on SPACE jump up with this speed
         // OPT play sound: new AudioClip(getResourceUri("smb3_jump.wav")).play()
@@ -143,19 +118,13 @@ public class BugsLifeGame extends Application {
 
         // TODO observable of positions: sun.localToScene(sun.getLayoutBounds());
 
-        Flux<Bounds> sunPosition = time.map(tick -> sun.localToScene(sun.getLayoutBounds()));
 
-        Flux<Bounds> bugPosition = time.map(tick -> bug.localToScene(bug.getLayoutBounds()));
+//        Flux<Boolean> enterExit =
 
-        Flux<Boolean> enterExit = Flux.combineLatest(sunPosition, bugPosition, Bounds::intersects)
-                .distinctUntilChanged()
-//                .doOnNext(x -> System.out.println("NU"))
-                ;
+//        enterExit.subscribe(this::showHeart);
 
-
-        enterExit.subscribe(this::showHeart);
-        Flux<Boolean> hitObs = enterExit.filter(b -> b);
-        hitObs.subscribe(enter -> new AudioClip(getResourceUri("smb3_coin.wav")).play());
+//        Flux<Boolean> hitObs = ;
+//        hitObs.subscribe(enter -> new AudioClip(getResourceUri("smb3_coin.wav")).play());
 
         // TODO intersect the observable of positions, and fire only when they intersect. ONLY ONCE.
 //        Observable<List<Boolean>> hitsObservable =
@@ -164,9 +133,7 @@ public class BugsLifeGame extends Application {
 
         // TODO increment and display a score: scoreText.setText("Score: " + count);
 
-        hitObs
-                .scan(0,(s,t)->s+1)
-                .subscribe(s -> scoreText.setText("Score: " + s));
+//        hitObs
 
         scoreText.setFont(Font.font("Consolas", FontWeight.BOLD, 40));
         root.getChildren().add(scoreText);
