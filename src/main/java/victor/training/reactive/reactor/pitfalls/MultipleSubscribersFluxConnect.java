@@ -2,18 +2,15 @@ package victor.training.reactive.reactor.pitfalls;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.ThreadUtils;
 
 import java.util.List;
 import java.util.Objects;
 
-import static victor.training.reactive.intro.ThreadUtils.sleep;
 import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
 
 @Slf4j
-public class MultipleSubscribersConnect {
+public class MultipleSubscribersFluxConnect {
 
    public static void main(String[] args) {
 
@@ -22,9 +19,10 @@ public class MultipleSubscribersConnect {
       // TODO send items in buffers of 10 items to writePage() in || with announce(), all on boundedElastic
       hugeFlux
           .buffer(10)
-          .subscribe(MultipleSubscribersConnect::writePage);
+          .subscribe(MultipleSubscribersFluxConnect::writePage);
+
       hugeFlux
-          .subscribe(MultipleSubscribersConnect::announce);
+          .subscribe(MultipleSubscribersFluxConnect::announce);
 
       waitForEnter();
    }

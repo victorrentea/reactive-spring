@@ -22,10 +22,10 @@ public class UnboundedFlatMap {
 
    private Flux<Integer> getDataFlux() {
       return Flux.fromStream(IntStream.range(1, 300).boxed())
-          .publishOn(Schedulers.elastic());
+          .publishOn(Schedulers.boundedElastic());
    }
 
-   private <R> Mono<Void> operation(Integer integer) {
+   private Mono<Void> operation(Integer integer) {
       log.debug("Run");
       return WebClient.create().get().uri("https://google.com").retrieve().toBodilessEntity().then();
 //      return Mono.empty();

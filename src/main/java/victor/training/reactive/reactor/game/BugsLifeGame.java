@@ -1,4 +1,4 @@
-package victor.training.reactive.reactor.bug;
+package victor.training.reactive.reactor.game;
 
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -20,6 +20,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import victor.training.reactive.reactor.game.SillyRxScheduler;
 
 import java.io.File;
 import java.time.Duration;

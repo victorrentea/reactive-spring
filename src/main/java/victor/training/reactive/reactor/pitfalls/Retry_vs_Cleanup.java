@@ -7,11 +7,11 @@ import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.intro.ThreadUtils;
 
 @RequiredArgsConstructor
-public class LongRunningTask {
+public class Retry_vs_Cleanup {
 
 
    public static void main(String[] args) {
-      new LongRunningTask().longRunningProblem();
+      new Retry_vs_Cleanup().longRunningProblem();
       ThreadUtils.sleep(2000);
    }
 

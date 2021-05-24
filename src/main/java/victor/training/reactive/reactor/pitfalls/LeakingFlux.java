@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LeakingFlux {
 
-
    private TestPublisher<String> coldPublisher = TestPublisher.createCold();
    private Flux<String> flux = coldPublisher.flux();
 
@@ -20,8 +19,8 @@ public class LeakingFlux {
 
       Iterable<String> iterable = flux.toIterable();
 
-      assertEquals("a", iterable.iterator().next());;
+      assertEquals("a", iterable.iterator().next());
 
-      coldPublisher.assertNotCancelled();  //oups
+      coldPublisher.assertNotCancelled();  //oups, memory resources not freed on the producer side
    }
 }
