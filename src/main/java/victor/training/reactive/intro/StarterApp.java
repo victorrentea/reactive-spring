@@ -13,6 +13,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 @Slf4j
@@ -28,6 +30,10 @@ public class StarterApp implements CommandLineRunner {
    @Bean
    public ThreadPoolTaskExecutor pool( @Value("${barman.count}")int barmanCount) {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+      // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+      // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+      // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+      // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
       executor.setCorePoolSize(barmanCount);
       executor.setMaxPoolSize(barmanCount);
       executor.setQueueCapacity(2);
@@ -48,25 +54,36 @@ public class StarterApp implements CommandLineRunner {
       long t0 = System.currentTimeMillis();
 
       // TODO make this guy drink earlier
-      Future<Beer> futureBeer = pool.submit(barman::pourBeer);
-      Future<Vodka> futureVodka = pool.submit(barman::pourVodka);
 
-      // placed both commands (both drinks are poured in parallele)
+//      CompletableFuture<Void> payFuture = CompletableFuture.runAsync(() -> {
+//         log.debug("PAY");
+//      });
 
-      Beer beer = futureBeer.get(); // main sleeps for 1 sec
-      Vodka vodka = futureVodka.get(); // main sleeps for ~0 sec
+      CompletableFuture<Beer> futureBeer = CompletableFuture.supplyAsync( barman::pourBeer);
+      CompletableFuture<Vodka> futureVodka = CompletableFuture.supplyAsync(barman::pourVodka); // ONLY ALLOWED IF I ONLY DO CPU work !!!
+      // NOT REST, DB, FILES, logging ?
 
 
-      DillyDilly dilly = new DillyDilly(beer, vodka);
+//      CompletableFuture<Void> whenBothAreDoneFuture = CompletableFuture.allOf(futureBeer, futureVodka);
+//      whenBothAreDoneFuture.thenRun(() -> {
+//         log.debug("HALO!");
+//      });
 
-      log.debug("Drinking: " + dilly);
+      CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
+
+
+      futureDilly.thenAccept(dilly ->  {
+         log.debug("Drinking: " + dilly);
+      });
+//      DillyDilly dilly = new DillyDilly(beer, vodka);
+//
 
       long t1 = System.currentTimeMillis();
       log.debug("Time= " + (t1 - t0));
    }
 }
 
-
+// await / async
 
 @Slf4j
 @Service
