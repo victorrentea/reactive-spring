@@ -10,6 +10,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import reactor.core.scheduler.Schedulers;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Slf4j
 @EnableAsync
@@ -35,6 +44,7 @@ public class StarterApp implements CommandLineRunner {
 
    private final Barman barman;
 
+      ExecutorService pool = Executors.newFixedThreadPool(12);
 
    @Override
    public void run(String... args) throws Exception {
@@ -42,15 +52,25 @@ public class StarterApp implements CommandLineRunner {
       long t0 = System.currentTimeMillis();
 
       // TODO make this guy drink earlier
-      Beer beer = barman.pourBeer();
-      Vodka vodka = barman.pourVodka();
+      Future<Beer> futureBeer = pool.submit(barman::pourBeer);
+      Future<Vodka> futureVodka = pool.submit(barman::pourVodka);
 
-      log.debug("Drinking: " + beer + vodka);
+      // placed both commands (both drinks are poured in parallele)
+
+      Beer beer = futureBeer.get(); // main sleeps for 1 sec
+      Vodka vodka = futureVodka.get(); // main sleeps for ~0 sec
+
+
+      DillyDilly dilly = new DillyDilly(beer, vodka);
+
+      log.debug("Drinking: " + dilly);
 
       long t1 = System.currentTimeMillis();
       log.debug("Time= " + (t1 - t0));
    }
 }
+
+
 
 @Slf4j
 @Service
