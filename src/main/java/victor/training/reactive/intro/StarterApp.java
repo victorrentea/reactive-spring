@@ -61,6 +61,7 @@ public class StarterApp  {
 
    @GetMapping("drink")
    public CompletableFuture<DillyDilly> run() throws ExecutionException, InterruptedException {
+//      HttpServletRequest.startAsync();
       try {
          log.info("Sending orders calls to the barman : " + barman.getClass());
          long t0 = System.currentTimeMillis();
@@ -93,6 +94,7 @@ class Barman {
 //      return CompletableFuture.supplyAsync(() -> {
          log.info("Start pour beer");
          ThreadUtils.sleep(1000); // blocking REST call
+//      new RestTe
          log.info("end pour beer");
       return CompletableFuture.completedFuture(new Beer());
 //      });
@@ -102,6 +104,9 @@ class Barman {
    public CompletableFuture<Vodka> pourVodka() {
       log.info("Start pour vodka");
       ThreadUtils.sleep(1000);  // blocking DB call
+//      jdbc.
+//      entityManager.
+//      session.
       log.info("end pour vodka");
       return CompletableFuture.completedFuture(new Vodka());
    }
