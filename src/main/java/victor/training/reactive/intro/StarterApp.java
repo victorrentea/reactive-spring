@@ -68,6 +68,9 @@ public class StarterApp  {
 
          // TODO make this guy drink earlier
 
+
+//         CompletableFuture<Void>
+
          CompletableFuture<Beer> futureBeer = barman.pourBeer();
          CompletableFuture<Vodka> futureVodka =barman.pourVodka(); // ONLY ALLOWED IF I ONLY DO CPU work !!!
          // NOT REST, DB, FILES, logging ?
