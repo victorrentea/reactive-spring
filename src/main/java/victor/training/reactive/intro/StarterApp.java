@@ -5,39 +5,52 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @EnableAsync
 @SpringBootApplication
 @RequiredArgsConstructor
-public class StarterApp implements CommandLineRunner {
+@RestController
+public class StarterApp  {
 
    public static void main(String[] args) {
       SpringApplication.run(StarterApp.class, args);
    }
 
    @Bean
-   public ThreadPoolTaskExecutor pool( @Value("${barman.count}")int barmanCount) {
+   public ThreadPoolTaskExecutor vodkaPool( @Value("${vodka.count:1}")int count) {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
       // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
       // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
       // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
       // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-      executor.setCorePoolSize(barmanCount);
-      executor.setMaxPoolSize(barmanCount);
+      executor.setCorePoolSize(count);
+      executor.setMaxPoolSize(count);
       executor.setQueueCapacity(2);
-      executor.setThreadNamePrefix("bar-");
+      executor.setThreadNamePrefix("vodka-");
+      executor.initialize();
+      executor.setWaitForTasksToCompleteOnShutdown(true);
+      return executor;
+   }
+   @Bean
+   public ThreadPoolTaskExecutor beerPool( @Value("${beer.count:2}")int count) {
+      ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+      executor.setCorePoolSize(count);
+      executor.setMaxPoolSize(count);
+      executor.setQueueCapacity(2);
+      executor.setThreadNamePrefix("beer-");
       executor.initialize();
       executor.setWaitForTasksToCompleteOnShutdown(true);
       return executor;
@@ -45,41 +58,25 @@ public class StarterApp implements CommandLineRunner {
 
    private final Barman barman;
 
-   @Autowired
-   ThreadPoolTaskExecutor pool;
 
-   @Override
-   public void run(String... args) throws Exception {
-      log.info("Sending orders calls to the barman : " + barman.getClass());
-      long t0 = System.currentTimeMillis();
+   @GetMapping("drink")
+   public CompletableFuture<DillyDilly> run() throws ExecutionException, InterruptedException {
+      try {
+         log.info("Sending orders calls to the barman : " + barman.getClass());
+         long t0 = System.currentTimeMillis();
 
-      // TODO make this guy drink earlier
+         // TODO make this guy drink earlier
 
-//      CompletableFuture<Void> payFuture = CompletableFuture.runAsync(() -> {
-//         log.debug("PAY");
-//      });
+         CompletableFuture<Beer> futureBeer = barman.pourBeer();
+         CompletableFuture<Vodka> futureVodka =barman.pourVodka(); // ONLY ALLOWED IF I ONLY DO CPU work !!!
+         // NOT REST, DB, FILES, logging ?
 
-      CompletableFuture<Beer> futureBeer = CompletableFuture.supplyAsync( barman::pourBeer);
-      CompletableFuture<Vodka> futureVodka = CompletableFuture.supplyAsync(barman::pourVodka); // ONLY ALLOWED IF I ONLY DO CPU work !!!
-      // NOT REST, DB, FILES, logging ?
+         CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
 
-
-//      CompletableFuture<Void> whenBothAreDoneFuture = CompletableFuture.allOf(futureBeer, futureVodka);
-//      whenBothAreDoneFuture.thenRun(() -> {
-//         log.debug("HALO!");
-//      });
-
-      CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
-
-
-      futureDilly.thenAccept(dilly ->  {
-         log.debug("Drinking: " + dilly);
-      });
-//      DillyDilly dilly = new DillyDilly(beer, vodka);
-//
-
-      long t1 = System.currentTimeMillis();
-      log.debug("Time= " + (t1 - t0));
+         return futureDilly;
+      } finally {
+         log.debug("http worker thread returns to the pool");
+      }
    }
 }
 
@@ -89,18 +86,24 @@ public class StarterApp implements CommandLineRunner {
 @Service
 @RequiredArgsConstructor
 class Barman {
-   public Beer pourBeer() {
-      log.info("Start pour beer");
-      ThreadUtils.sleep(1000); // blocking REST call
-      log.info("end pour beer");
-      return new Beer();
+   @Async("beerPool")
+//   public void pourBeer() { // Mono<Void>
+//   public CompletableFuture<Beer> pourBeer() { // Mono<Beer>
+   public CompletableFuture<Beer> pourBeer() {
+//      return CompletableFuture.supplyAsync(() -> {
+         log.info("Start pour beer");
+         ThreadUtils.sleep(1000); // blocking REST call
+         log.info("end pour beer");
+      return CompletableFuture.completedFuture(new Beer());
+//      });
    }
 
-   public Vodka pourVodka() {
+   @Async("vodkaPool")
+   public CompletableFuture<Vodka> pourVodka() {
       log.info("Start pour vodka");
       ThreadUtils.sleep(1000);  // blocking DB call
       log.info("end pour vodka");
-      return new Vodka();
+      return CompletableFuture.completedFuture(new Vodka());
    }
 }
 
