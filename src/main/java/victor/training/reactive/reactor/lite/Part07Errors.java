@@ -107,10 +107,6 @@ public class Part07Errors {
    //========================================================================================
    // TODO fail at first error, rethrowing the exception wrapped in a CustomException
    public Mono<List<Order>> catchRethrow(List<Integer> ids) {
-      return Flux.fromIterable(ids)
-          .flatMap(this::retrieveOrder)
-          .collectList()
-          .onErrorMap(e -> new CustomException(e));
 //      try {
 //         List<Order> orders = new ArrayList<>();
 //         for (Integer id : ids) {
@@ -121,7 +117,7 @@ public class Part07Errors {
 //      } catch (Exception e) {
 //         throw new CustomException(e);
 //      }
-//      return null;
+      return null;
    }
    public static class CustomException extends RuntimeException {
       public CustomException(Throwable cause) {
