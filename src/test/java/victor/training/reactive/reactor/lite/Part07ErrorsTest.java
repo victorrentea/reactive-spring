@@ -16,12 +16,19 @@
 
 package victor.training.reactive.reactor.lite;
 
-import victor.training.reactive.reactor.lite.domain.User;
 import org.junit.jupiter.api.Test;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.Part07Errors.Product;
+import victor.training.reactive.reactor.lite.domain.User;
+
+import java.util.List;
+import java.util.stream.LongStream;
+
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Learn how to deal with errors.
@@ -72,5 +79,21 @@ public class Part07ErrorsTest {
 		StepVerifier.create(flux)
 				.verifyError(Part07Errors.GetOutOfHereException.class);
 	}
+
+//========================================================================================
+
+	@Test
+	public void catchReturnDefault() {
+
+		List<Long> ids = LongStream.rangeClosed(1, 8).boxed().collect(toList());
+
+		Mono<List<Product>> flux = workshop.catchReturnDefault(ids);
+
+		StepVerifier.create(flux)
+				.expectNext(emptyList())
+				.verifyComplete();
+	}
+
+
 
 }

@@ -21,6 +21,10 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
+import static java.util.Collections.emptyList;
+
 /**
  * Learn how to deal with errors.
  *
@@ -59,7 +63,40 @@ public class Part07Errors {
 	}
 
 	protected final class GetOutOfHereException extends Exception {
-	    private static final long serialVersionUID = 0L;
+		private static final long serialVersionUID = 0L;
 	}
+
+
+//========================================================================================
+
+
+	// TODO retrieve all Products with retrieveProduct. In case any fails, return an empty list.
+	public Mono<List<Product>> catchReturnDefault(List<Long> ids) {
+		return Flux.fromIterable(ids)
+			.flatMap(id -> retrieveProduct(id))
+			.collectList()
+			.onErrorReturn(emptyList());
+	}
+
+	private Mono<Product> retrieveProduct(Long id) { // imagine a network call
+		if (id % 4 == 0) {
+			return Mono.error(new RuntimeException());
+		} else {
+			return Mono.just(new Product(id));
+		}
+	}
+
+	public static class Product {
+		private final Long id;
+
+		public Product(Long id) {
+			this.id = id;
+		}
+		public Long getId() {
+			return id;
+		}
+	}
+
+
 
 }
