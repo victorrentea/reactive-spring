@@ -21,6 +21,7 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -69,27 +70,31 @@ public class Part07Errors {
 
 //========================================================================================
 
-
 	// TODO retrieve all Products with retrieveProduct. In case any fails, return an empty list.
-	public Mono<List<Product>> catchReturnDefault(List<Long> ids) {
-		return Flux.fromIterable(ids)
-			.flatMap(id -> retrieveProduct(id))
-			.collectList()
-			.onErrorReturn(emptyList());
-	}
-
-	private Mono<Product> retrieveProduct(Long id) { // imagine a network call
-		if (id % 4 == 0) {
-			return Mono.error(new RuntimeException());
-		} else {
-			return Mono.just(new Product(id));
+	public Mono<List<Order>> catchReturnDefault(List<Long> ids) {
+		try {
+			List<Order> products = new ArrayList<>();
+			for (Long id : ids) {
+				retrieveOrder(id).block();
+			}
+			return Mono.just(products);
+		} catch (Exception e) {
+			return Mono.just(emptyList());
 		}
 	}
 
-	public static class Product {
+	private Mono<Order> retrieveOrder(Long id) { // imagine a network call
+		if (id % 4 == 0) {
+			return Mono.error(new RuntimeException());
+		} else {
+			return Mono.just(new Order(id));
+		}
+	}
+
+	public static class Order {
 		private final Long id;
 
-		public Product(Long id) {
+		public Order(Long id) {
 			this.id = id;
 		}
 		public Long getId() {
