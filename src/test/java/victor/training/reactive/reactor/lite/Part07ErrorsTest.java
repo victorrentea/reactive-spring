@@ -16,6 +16,7 @@
 
 package victor.training.reactive.reactor.lite;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
@@ -24,7 +25,9 @@ import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.Part07Errors.CustomException;
 import victor.training.reactive.reactor.lite.Part07Errors.Order;
 import victor.training.reactive.reactor.lite.domain.User;
+import victor.training.util.CaptureSystemOutput;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -138,6 +141,40 @@ public class Part07ErrorsTest {
 			.expectNextMatches(productsWithIds(1,2))
 			.verifyComplete();
 	}
+
+
+
+//========================================================================================
+	@Test
+	@CaptureSystemOutput
+	public void logRethrow(CaptureSystemOutput.OutputCapture outputCapture) {
+		outputCapture.expect(CoreMatchers.containsString("BOOM"));
+		// ERROR
+		try {
+			StepVerifier.create(workshop.logRethrow(asList(1, 2, -1, 4)))
+				.expectError(RuntimeException.class)
+				.verify();
+		} catch (RuntimeException e) {}//REMOVE me
+	}
+
+//========================================================================================
+	@Test
+	public void recover() {
+		// ERROR
+		StepVerifier.create(workshop.recover(asList(1, -1, 4)))
+			.expectNextMatches(productsWithIds(1,-1,4).and(list -> list.get(1).isBackup()))
+			.verifyComplete();
+	}
+
+//========================================================================================
+	@Test
+	public void tryFinally() throws IOException {
+		// ERROR
+		StepVerifier.create(workshop.tryFinally(asList(1, 4)))
+			.verifyComplete();
+	}
+
+
 
 	private Predicate<List<Order>> productsWithIds(Integer... expectedIds) {
 		return list -> {
