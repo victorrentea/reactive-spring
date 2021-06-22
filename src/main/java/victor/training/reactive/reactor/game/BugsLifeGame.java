@@ -12,7 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.media.AudioClip;
+//import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -22,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import victor.training.reactive.reactor.game.SillyRxScheduler;
 
+import java.applet.AudioClip;
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -156,7 +157,7 @@ public class BugsLifeGame extends Application {
 
         enterExit.subscribe(this::showHeart);
         Flux<Boolean> hitObs = enterExit.filter(b -> b);
-        hitObs.subscribe(enter -> new AudioClip(getResourceUri("smb3_coin.wav")).play());
+//        hitObs.subscribe(enter -> new AudioClip(getResourceUri("smb3_coin.wav")).play());
 
         // TODO intersect the observable of positions, and fire only when they intersect. ONLY ONCE.
 //        Observable<List<Boolean>> hitsObservable =
@@ -181,7 +182,7 @@ public class BugsLifeGame extends Application {
 //        Observable.timer(2, TimeUnit.SECONDS)
 //            .subscribe(t -> abonament.unsubscribe());
 
-        stage.setOnShown(e -> new AudioClip(getResourceUri("smb3_power-up.wav")).play());
+//        stage.setOnShown(e -> new AudioClip(getResourceUri("smb3_power-up.wav")).play());
         stage.setTitle("A Bugs Life");
         stage.setScene(scene);
         stage.show();
