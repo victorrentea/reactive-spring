@@ -21,7 +21,7 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import victor.training.reactive.reactor.lite.Part07Errors.Product;
+import victor.training.reactive.reactor.lite.Part07Errors.Order;
 import victor.training.reactive.reactor.lite.domain.User;
 
 import java.util.List;
@@ -87,7 +87,7 @@ public class Part07ErrorsTest {
 
 		List<Long> ids = LongStream.rangeClosed(1, 8).boxed().collect(toList());
 
-		Mono<List<Product>> flux = workshop.catchReturnDefault(ids);
+		Mono<List<Order>> flux = workshop.catchReturnDefault(ids);
 
 		StepVerifier.create(flux)
 				.expectNext(emptyList())
