@@ -1,5 +1,8 @@
 package victor.training.reactive.reactor.lite.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
 	public static final User SKYLER = new User("swhite", "Skyler", "White");
@@ -12,11 +15,36 @@ public class User {
 	private final String firstname;
 
 	private final String lastname;
-
+//	private List<String> tickets = new ArrayList<>();
+//	private ImmutablePart part;
+//
+//	class ImmutablePart {
+//		private String bigResume;
+//		private String bigResume2;
+//		private String bigResume3;
+//		private String bigResume4;
+//		private String bigResume5;
+//	}
 	public User(String username, String firstname, String lastname) {
 		this.username = username;
 		this.firstname = firstname;
 		this.lastname = lastname;
+	}
+
+	public static User getSKYLER() {
+		return SKYLER;
+	}
+
+	public static User getJESSE() {
+		return JESSE;
+	}
+
+	public static User getWALTER() {
+		return WALTER;
+	}
+
+	public static User getSAUL() {
+		return SAUL;
 	}
 
 	public String getUsername() {
@@ -67,5 +95,9 @@ public class User {
 				", firstname='" + firstname + '\'' +
 				", lastname='" + lastname + '\'' +
 				'}';
+	}
+
+	public User capitalize() {
+		return new User(getUsername().toUpperCase(), getFirstname().toUpperCase(), getLastname().toUpperCase());
 	}
 }

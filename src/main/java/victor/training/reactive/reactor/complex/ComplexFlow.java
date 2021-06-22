@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -39,7 +40,8 @@ public class ComplexFlow {
 
 
    private static Flux<Product> mainFlow(List<Long> productIds) {
-       return Flux.fromIterable(productIds)
+
+      return Flux.fromIterable(productIds)
           .buffer(2)// Flux<List<id>>   = Flux<page of ids>
           // the set if ids will be broken in pages of 2 items (eg 10 items => [1,2], [3,4], ... [9,10]
           .flatMap(ComplexFlow::getProductById, 1 ) // only 3 pages will be sent in parallel to their API. eg [1,2] || [3,4] || [5,6]
@@ -52,13 +54,6 @@ public class ComplexFlow {
            // no errors propagating
            // we don't wait.
           .doOnNext(p -> auditResealedProduct(p).subscribe())
-
-
-            // propagate exceptions from audit into master flow
-//          .flatMap(p->auditResealedProduct(p).thenReturn(p))
-          // simplerdelayUntil(product -> auditResealedProduct(product))
-
-         // here I want to return 10 items
           ;
    }
 
