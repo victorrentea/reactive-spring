@@ -33,6 +33,13 @@ public class Part02Mono {
 
 //========================================================================================
 
+	// TODO Return a Mono of data. data can come null.
+	Mono<String> optionalMono(String data) {
+		return null;
+	}
+
+//========================================================================================
+
 	// TODO Create a Mono that emits an IllegalStateException
 	Mono<String> errorMono() {
 		return null;

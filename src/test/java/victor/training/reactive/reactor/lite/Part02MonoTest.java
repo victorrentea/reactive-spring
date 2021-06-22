@@ -50,6 +50,18 @@ public class Part02MonoTest {
 //========================================================================================
 
 	@Test
+	public void optionalMono() {
+		StepVerifier.create(workshop.optionalMono("foo"))
+				.expectNext("foo")
+				.verifyComplete();
+
+		StepVerifier.create(workshop.optionalMono(null))
+				.verifyComplete();
+	}
+
+//========================================================================================
+
+	@Test
 	public void errorMono() {
 		Mono<String> mono = workshop.errorMono();
 		StepVerifier.create(mono)
