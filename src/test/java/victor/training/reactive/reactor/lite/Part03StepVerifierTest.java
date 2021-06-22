@@ -18,10 +18,15 @@ package victor.training.reactive.reactor.lite;
 
 import java.time.Duration;
 
+import org.mockito.Mockito;
+import reactor.test.publisher.TestPublisher;
 import victor.training.reactive.reactor.lite.domain.User;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static reactor.core.publisher.Mono.empty;
+import static reactor.core.publisher.Mono.when;
 
 /**
  * Learn how to use StepVerifier to test Mono, Flux or any other kind of Reactive Streams Publisher.
@@ -66,6 +71,47 @@ public class Part03StepVerifierTest {
 	@Test
 	public void expectDelayedElement() {
 		workshop.expectDelayedElement();
+	}
+
+//========================================================================================
+
+	@Test
+	public void testPublisher() {
+		class AlertService {
+			public Mono<Void> raise(int level) {
+				return empty();
+			}
+		}
+		class StringService {
+			public Mono<Integer> parse(String s) {
+				return Mono.just(s.length());
+			}
+		}
+		StringService stringService = Mockito.mock(StringService.class);
+		TestPublisher<Integer> stringPublisher = TestPublisher.createCold();
+		Mockito.when(stringService.parse("test")).thenReturn(stringPublisher.mono());
+		stringPublisher.emit(4);
+
+		AlertService alertService = Mockito.mock(AlertService.class);
+		TestPublisher<Void> alertPublisher = TestPublisher.createCold();
+		Mockito.when(alertService.raise(4)).thenReturn(alertPublisher.mono());
+
+		Mono.just("init")
+			.flatMap(s -> stringService.parse(s))
+			.doOnNext(i -> {
+				if (i <= 4) {
+					System.out.println("OK");
+				} else {
+					System.out.println("KO");
+				}
+			})
+			.delayUntil(i ->  (i<=4) ?alertService.raise(i):empty())
+			.block();
+
+
+		alertPublisher.assertWasSubscribed();
+
+//		workshop.expectDelayedElement();
 	}
 
 }
