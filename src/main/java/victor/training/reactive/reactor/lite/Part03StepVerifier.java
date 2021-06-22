@@ -16,8 +16,11 @@
 
 package victor.training.reactive.reactor.lite;
 
+import java.time.Duration;
 import java.util.function.Supplier;
 
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.domain.User;
 import reactor.core.publisher.Flux;
 
@@ -60,10 +63,20 @@ public class Part03StepVerifier {
 
 //========================================================================================
 
-	// TODO Expect 3600 elements at intervals of 1 second, and verify quicker than 3600s
-	// by manipulating virtual time thanks to StepVerifier#withVirtualTime, notice how long the test takes
-	void expect3600Elements(Supplier<Flux<Long>> supplier) {
-		fail();
+	// TODO Expect the value "later" to arrive 1 hour after subscribe(). Make the test complete in <1 second
+	// Manipiulate virtual with StepVerifier#withVirtualTime/.thenAwait
+	// TODO expect no signal for 30 minutes
+	void expectDelayedElement() {
+		StepVerifier.withVirtualTime(() -> timeBoundFlow())
+			.expectSubscription()
+			.expectNoEvent(Duration.ofMinutes(30))
+			.thenAwait(Duration.ofHours(1))
+			.expectNextCount(1)
+			.verifyComplete();
+	}
+
+	Mono<String> timeBoundFlow() {
+		return Mono.just("later").delayElement(Duration.ofHours(1));
 	}
 
 	private void fail() {
