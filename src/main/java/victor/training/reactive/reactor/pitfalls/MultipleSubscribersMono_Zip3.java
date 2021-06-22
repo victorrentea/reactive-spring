@@ -11,7 +11,7 @@ import static victor.training.reactive.intro.ThreadUtils.sleep;
 import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
 
 @Slf4j
-public class MultipleSubscribersMono {
+public class MultipleSubscribersMono_Zip3 {
 
    public static void main(String[] args) {
       Mono<A> aMono = getA(); // COLD PUBLISHER
