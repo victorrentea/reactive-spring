@@ -16,11 +16,16 @@
 
 package victor.training.reactive.reactor.lite;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import victor.training.reactive.reactor.lite.domain.User;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +38,7 @@ import static java.util.Collections.emptyList;
  * @see Exceptions#propagate(Throwable)
  */
 public class Part07Errors {
-
+   private static final Logger log = LoggerFactory.getLogger(Part07Errors.class);
 //========================================================================================
 
    // TODO Return a Mono<User> containing User.SAUL when an error occurs in the input Mono, else do not change the input Mono.
@@ -64,7 +69,7 @@ public class Part07Errors {
    }
 
 //========================================================================================
-   // TODO retrieve all Products with retrieveProduct. In case any fails, return an empty list.
+   // TODO retrieve all Orders with retrieveOrder. In case any fails, return an empty list.
    public Mono<List<Order>> catchReturnDefault(List<Integer> ids) {
       try {
          List<Order> orders = new ArrayList<>();
@@ -104,6 +109,7 @@ public class Part07Errors {
       }
       return Mono.just(orders);
    }
+
    //========================================================================================
    // TODO fail at first error, rethrowing the exception wrapped in a CustomException
    public Mono<List<Order>> catchRethrow(List<Integer> ids) {
@@ -119,6 +125,54 @@ public class Part07Errors {
 //      }
       return null;
    }
+
+   //========================================================================================
+   // TODO fail at any error, log the error and rethrow it
+   public Mono<List<Order>> logRethrow(List<Integer> ids) {
+      try {
+         List<Order> orders = new ArrayList<>();
+         for (Integer id : ids) {
+            Order order = retrieveOrder(id).block();
+            orders.add(order);
+         }
+         return Mono.just(orders);
+      } catch (Exception e) {
+         log.error("BOOM", e);
+         throw e;
+      }
+   }
+
+   //========================================================================================
+   // TODO for any item, if an error occurs fall back by calling another storage (blocking) - "retrieveOrderBackup"
+   public Mono<List<Order>> recover(List<Integer> ids) {
+      List<Order> orders = new ArrayList<>();
+      for (Integer id : ids) {
+         Order order;
+         try {
+            order = retrieveOrder(id).block();
+         } catch (Exception e) {
+            order = retrieveOrderBackup(id).block();
+         }
+
+         orders.add(order);
+      }
+      return Mono.just(orders);
+   }
+
+   //========================================================================================
+   // TODO  close the writer at the end signal (error or completion)
+   // TODO [pro] what if the subscriber retries? Tip: Mono.fromSupplier
+   public Mono<Void> tryFinally(List<Integer> ids) throws IOException {
+      try(FileWriter writer = new FileWriter("a.txt")) {
+         for (Integer id : ids) {
+            Order order = retrieveOrder(id).block();
+            writer.write(order.toString());
+         }
+      }
+      return Mono.empty();
+   }
+
+
    public static class CustomException extends RuntimeException {
       public CustomException(Throwable cause) {
          super(cause);
@@ -132,9 +186,13 @@ public class Part07Errors {
          return Mono.just(new Order(id));
       }
    }
+   private Mono<Order> retrieveOrderBackup(int id) { // imagine a local fast storage (~cache)
+      return Mono.just(new Order(id).backup());
+   }
 
    public static class Order {
       private final Integer id;
+      private boolean backup; // mutable data, God help us all
 
       public Order(Integer id) {
          this.id = id;
@@ -142,6 +200,15 @@ public class Part07Errors {
 
       public Integer getId() {
          return id;
+      }
+
+      public Order backup() {
+         this.backup = true;
+         return this;
+      }
+
+      public boolean isBackup() {
+         return backup;
       }
 
       @Override
