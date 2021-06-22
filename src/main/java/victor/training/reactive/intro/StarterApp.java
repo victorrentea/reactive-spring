@@ -3,19 +3,23 @@ package victor.training.reactive.intro;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 
-import java.util.concurrent.CompletableFuture;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -23,14 +27,16 @@ import java.util.concurrent.ExecutionException;
 @SpringBootApplication
 @RequiredArgsConstructor
 @RestController
-public class StarterApp  {
+public class StarterApp {
+
+   private final Barman barman;
 
    public static void main(String[] args) {
       SpringApplication.run(StarterApp.class, args);
    }
 
    @Bean
-   public ThreadPoolTaskExecutor vodkaPool( @Value("${vodka.count:1}")int count) {
+   public ThreadPoolTaskExecutor vodkaPool(@Value("${vodka.count:1}") int count) {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
       // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
       // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
@@ -44,8 +50,9 @@ public class StarterApp  {
       executor.setWaitForTasksToCompleteOnShutdown(true);
       return executor;
    }
+
    @Bean
-   public ThreadPoolTaskExecutor beerPool( @Value("${beer.count:2}")int count) {
+   public ThreadPoolTaskExecutor beerPool(@Value("${beer.count:2}") int count) {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
       executor.setCorePoolSize(count);
       executor.setMaxPoolSize(count);
@@ -56,11 +63,8 @@ public class StarterApp  {
       return executor;
    }
 
-   private final Barman barman;
-
-
    @GetMapping("drink")
-   public CompletableFuture<DillyDilly> run() throws ExecutionException, InterruptedException {
+   public Mono<DillyDilly> run() throws ExecutionException, InterruptedException {
 //      HttpServletRequest.startAsync();
       try {
          log.info("Sending orders calls to the barman : " + barman.getClass());
@@ -71,11 +75,16 @@ public class StarterApp  {
 
 //         CompletableFuture<Void>
 
-         CompletableFuture<Beer> futureBeer = barman.pourBeer();
-         CompletableFuture<Vodka> futureVodka =barman.pourVodka(); // ONLY ALLOWED IF I ONLY DO CPU work !!!
+         Mono<Beer> futureBeer = barman.pourBeer();
+         Mono<Vodka> futureVodka = barman.pourVodka(); // ONLY ALLOWED IF I ONLY DO CPU work !!!
          // NOT REST, DB, FILES, logging ?
 
-         CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka, (b, v) -> new DillyDilly(b, v));
+         Mono<Tuple3<Beer, Beer, Vodka>> zip = Mono.zip(futureBeer, futureBeer, futureVodka);
+//         Tuple2<String, Map<Long, Tuple3<String, LocalDateTime, String>>>
+
+         Mono<DillyDilly> futureDilly = futureBeer.zipWith(futureVodka, (b, v) -> new DillyDilly(b, v))
+//             .subscribeOn(Schedulers.single())
+             ;
 
          return futureDilly;
       } finally {
@@ -90,29 +99,31 @@ public class StarterApp  {
 @Service
 @RequiredArgsConstructor
 class Barman {
-   @Async("beerPool")
-//   public void pourBeer() { // Mono<Void>
-//   public CompletableFuture<Beer> pourBeer() { // Mono<Beer>
-   public CompletableFuture<Beer> pourBeer() {
-//      return CompletableFuture.supplyAsync(() -> {
+   public Mono<Beer> pourBeer() {// IF a function declares to return Mono or Flux, it must NEVER BLOCK and it should never THROW\
+      return Mono.fromSupplier(() -> {
          log.info("Start pour beer");
          ThreadUtils.sleep(1000); // blocking REST call
-//      new RestTe
          log.info("end pour beer");
-      return CompletableFuture.completedFuture(new Beer());
-//      });
+         return new Beer();
+      })
+          .subscribeOn(Schedulers.boundedElastic()); //~ pool.submit()
    }
 
-   @Async("vodkaPool")
-   public CompletableFuture<Vodka> pourVodka() {
-      log.info("Start pour vodka");
-      ThreadUtils.sleep(1000);  // blocking DB call
-//      jdbc.
-//      entityManager.
-//      session.
-      log.info("end pour vodka");
-      return CompletableFuture.completedFuture(new Vodka());
+   public Mono<Vodka> pourVodka() {
+      return Mono.fromSupplier(() -> {
+         log.info("Start pour vodka");
+         ThreadUtils.sleep(1000);  // blocking DB call
+
+         log.info("end pour vodka");
+         return new Vodka();
+      }).subscribeOn(Schedulers.boundedElastic()); //~ pool.submit()
    }
+
+//   private Mono<Void> someMethod() {
+////      WebClient
+////      Mono<Data>
+//      ThreadUtils.sleep(1000);  // blocking DB call
+//   }
 }
 
 
