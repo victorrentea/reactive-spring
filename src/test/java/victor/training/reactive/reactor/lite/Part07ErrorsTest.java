@@ -21,14 +21,17 @@ import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.Part07Errors.CustomException;
 import victor.training.reactive.reactor.lite.Part07Errors.Order;
 import victor.training.reactive.reactor.lite.domain.User;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.LongStream;
+import java.util.Set;
+import java.util.function.Predicate;
 
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Learn how to deal with errors.
@@ -84,16 +87,69 @@ public class Part07ErrorsTest {
 
 	@Test
 	public void catchReturnDefault() {
+		// ERROR
+		StepVerifier.create(workshop.catchReturnDefault(asList(1,2,-1,4)))
+			.expectNextMatches(productsWithIds())
+			.verifyComplete();
 
-		List<Long> ids = LongStream.rangeClosed(1, 8).boxed().collect(toList());
-
-		Mono<List<Order>> flux = workshop.catchReturnDefault(ids);
-
-		StepVerifier.create(flux)
-				.expectNext(emptyList())
+		// OK
+		StepVerifier.create(workshop.catchReturnDefault(asList(1,2)))
+				.expectNextMatches(productsWithIds(1,2))
 				.verifyComplete();
 	}
 
+//========================================================================================
+	@Test
+	public void catchReturnBestEffort() {
+		// ERROR
+		StepVerifier.create(workshop.catchReturnBestEffort(asList(1,2,-1,4)))
+			.expectNextMatches(productsWithIds(1, 2 ,4))
+			.verifyComplete();
+
+		// OK
+		StepVerifier.create(workshop.catchReturnBestEffort(asList(1,2)))
+			.expectNextMatches(productsWithIds(1,2))
+			.verifyComplete();
+	}
+//========================================================================================
+	@Test
+	public void catchStop() {
+		// ERROR
+		StepVerifier.create(workshop.catchAndStop(asList(1,2,-1,4)))
+			.expectNextMatches(productsWithIds(1, 2))
+			.verifyComplete();
+
+		// OK
+		StepVerifier.create(workshop.catchAndStop(asList(1,2)))
+			.expectNextMatches(productsWithIds(1,2))
+			.verifyComplete();
+	}
+//========================================================================================
+	@Test
+	public void catchRethrow() {
+		// ERROR
+		StepVerifier.create(workshop.catchRethrow(asList(1,2,-1,4)))
+			.expectErrorMatches(e -> e instanceof CustomException &&
+											 e.getCause() instanceof RuntimeException)
+			.verify();
+
+		// OK
+		StepVerifier.create(workshop.catchAndStop(asList(1,2)))
+			.expectNextMatches(productsWithIds(1,2))
+			.verifyComplete();
+	}
+
+	private Predicate<List<Order>> productsWithIds(Integer... expectedIds) {
+		return list -> {
+			Set<Integer> actualIds = list.stream().map(Order::getId).collect(toSet());
+			if (actualIds.equals(Set.of(expectedIds))) {
+				return true;
+			} else {
+				System.out.println("Actual order ids : " + actualIds + " didn't matched the expected ids: " + Arrays.toString(expectedIds));
+				return false;
+			}
+		};
+	}
 
 
 }
