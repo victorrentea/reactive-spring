@@ -46,10 +46,9 @@ public class MongoController {
    }
 
    @GetMapping("create")
-   public String sendMessage() {
-      Event event = new Event("Aloha " + LocalDateTime.now());
-      rxRepo.save(event);
-      return event.getId();
+   public Mono<String> sendMessage(String name) {
+      Event event = new Event("Aloha " + name + LocalDateTime.now());
+      return rxRepo.save(event).map(Event::getId);
    }
 }
 

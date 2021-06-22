@@ -20,7 +20,17 @@ public class Part06Request {
 
 	// TODO Create a StepVerifier that initially requests all values and expect 4 values to be received
 	StepVerifier requestAllExpectFour(Flux<User> flux) {
-		return null;
+		return StepVerifier.create(flux
+//			.backpre
+			.log()
+			.limitRate(200)
+		)
+//			.thenRequest(4)
+//			.thenCancel()
+			.expectNextCount(3)
+			.thenCancel()
+//			.expectComplete()
+			;
 	}
 
 //========================================================================================

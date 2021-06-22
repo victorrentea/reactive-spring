@@ -91,6 +91,16 @@ public class Part03StepVerifier {
 			.verifyComplete();
 	}
 
+
+//	public void method(Supplier<Smth> supplier) {
+//		hackTheTime
+//		{
+//			supplier.get();
+//		} final {
+//			restore real time;
+//		}
+//	}
+
 	private void fail() {
 		throw new AssertionError("workshop not implemented");
 	}
