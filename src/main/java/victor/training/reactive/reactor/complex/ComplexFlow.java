@@ -40,20 +40,11 @@ public class ComplexFlow {
 
 
    private static Flux<Product> mainFlow(List<Long> productIds) {
-
       return Flux.fromIterable(productIds)
           .buffer(2)// Flux<List<id>>   = Flux<page of ids>
           // the set if ids will be broken in pages of 2 items (eg 10 items => [1,2], [3,4], ... [9,10]
           .flatMap(ComplexFlow::getProductById, 1 ) // only 3 pages will be sent in parallel to their API. eg [1,2] || [3,4] || [5,6]
-
-          // flux of 10 products (5 of them are resealed)
-//          .filter(p -> p.isResealed())
-          // flux of 5 products, all resealed
-
-           // fire and forget : 1 of the 2 valid use cases to to .subscribe manually()
-           // no errors propagating
-           // we don't wait.
-          .doOnNext(p -> auditResealedProduct(p).subscribe())
+          .doOnNext(p -> auditResealedProduct(p).doOnError(Throwable::printStackTrace).subscribe())
           ;
    }
 

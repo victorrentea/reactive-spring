@@ -56,6 +56,7 @@ public class Part03StepVerifierTest {
 
 //========================================================================================
 
+
 	@Test
 	public void expect10Elements() {
 		workshop.expect10Elements(Flux.interval(Duration.ofSeconds(1)).take(10));
@@ -65,7 +66,8 @@ public class Part03StepVerifierTest {
 
 	@Test
 	public void expect3600Elements() {
-		workshop.expect3600Elements(() -> Flux.interval(Duration.ofSeconds(1)).take(3600));
+//		workshop.expect3600Elements(Flux.interval(Duration.ofSeconds(1)).take(3600));
+		workshop.expect3600Elements(()->Flux.interval(Duration.ofSeconds(1)).take(3600));
 	}
 
 }
