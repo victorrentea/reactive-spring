@@ -67,12 +67,7 @@ public class Part03StepVerifier {
 	// Manipiulate virtual with StepVerifier#withVirtualTime/.thenAwait
 	// TODO expect no signal for 30 minutes
 	void expectDelayedElement() {
-		StepVerifier.withVirtualTime(() -> timeBoundFlow())
-			.expectSubscription()
-			.expectNoEvent(Duration.ofMinutes(30))
-			.thenAwait(Duration.ofHours(1))
-			.expectNextCount(1)
-			.verifyComplete();
+		timeBoundFlow();
 	}
 
 	Mono<String> timeBoundFlow() {
