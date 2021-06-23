@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -18,20 +17,8 @@ import reactor.test.publisher.TestPublisher;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
 
-class AlertService {
-   public Mono<Void> raise(int level) {
-      return empty();
-   }
-}
-
-class StringService {
-   public Mono<Integer> parse(String s) {
-      return Mono.just(s.length());
-   }
-}
-
 @ExtendWith(MockitoExtension.class)
-public class ComplexProdTest {
+public class Part14ComplexProdTest {
    @InjectMocks
    private BizLogic bizLogic;
    @Mock
@@ -76,5 +63,16 @@ class BizLogic {
       } else {
          return empty();
       }
+   }
+}
+class AlertService {
+   public Mono<Void> raise(int level) {
+      return empty();
+   }
+}
+
+class StringService {
+   public Mono<Integer> parse(String s) {
+      return Mono.just(s.length());
    }
 }
