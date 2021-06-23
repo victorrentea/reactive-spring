@@ -44,14 +44,14 @@ public class Part07Errors {
 
    // TODO Return a Mono<User> containing User.SAUL when an error occurs in the input Mono, else do not change the input Mono.
    Mono<User> betterCallSaulForBogusMono(Mono<User> mono) {
-      return null;
+      return mono.onErrorReturn(User.SAUL);
    }
 
 //========================================================================================
 
    // TODO Return a Flux<User> containing User.SAUL and User.JESSE when an error occurs in the input Flux, else do not change the input Flux.
    Flux<User> betterCallSaulAndJesseForBogusFlux(Flux<User> flux) {
-      return null;
+      return flux.onErrorResume(t -> Flux.just(User.SAUL, User.JESSE));
    }
 
 //========================================================================================
@@ -72,48 +72,61 @@ public class Part07Errors {
 //========================================================================================
    // TODO retrieve all Orders with retrieveOrder. In case any fails, return an empty list.
    public Mono<List<Order>> catchReturnDefault(List<Integer> ids) {
-      try {
-         List<Order> orders = new ArrayList<>();
-         for (Integer id : ids) {
-            orders.add(retrieveOrder(id).block());// TODO REMOVE blocking
-         }
-         return Mono.just(orders);
-      } catch (Exception e) {
-         return Mono.just(emptyList());
-      }
+
+      return Flux.fromIterable(ids)
+          .flatMap(this::retrieveOrder)
+          .collectList()
+          .onErrorResume(t -> Mono.just(emptyList())); // bad practice ?
+//          .onErrorResume(t -> Mono.empty());
+//          .flatMapMany(Flux::fromIterable); //strange
    }
 
    //========================================================================================
    // TODO return those items that were retrieve successfully
    public Mono<List<Order>> catchReturnBestEffort(List<Integer> ids) {
-      List<Order> orders = new ArrayList<>();
-      for (Integer id : ids) {
-         try {
-            Order order = retrieveOrder(id).block();// TODO REMOVE blocking
-            orders.add(order);
-         } catch (Exception e) {
-         }
-      }
-      return Mono.just(orders);
+
+      return Flux.fromIterable(ids)
+          .flatMap(id -> retrieveOrder(id).onErrorResume(t -> Mono.empty()))
+          .collectList()
+          ;
+//      List<Order> orders = new ArrayList<>();
+//      for (Integer id : ids) {
+//         try {
+//            Order order = retrieveOrder(id).block();// TODO REMOVE blocking
+//            orders.add(order);
+//         } catch (Exception e) {
+//         }
+//      }
+//      return Mono.just(orders);
    }
 
    //========================================================================================
    // TODO return the items that were retrieve, never request further items (==> no async prefetch)
    public Mono<List<Order>> catchAndStop(List<Integer> ids) {
-      List<Order> orders = new ArrayList<>();
-      try {
-         for (Integer id : ids) {
-            Order order = retrieveOrder(id).block();// TODO REMOVE blocking
-            orders.add(order);
-         }
-      } catch (Exception e) {
-      }
-      return Mono.just(orders);
+      return Flux.fromIterable(ids)
+          .flatMap(id -> retrieveOrder(id))
+          .onErrorResume(t -> Mono.empty()) // replaces the error singlal with a completion signal
+          .collectList()
+          ;
+//      List<Order> orders = new ArrayList<>();
+//      try {
+//         for (Integer id : ids) {
+//            Order order = retrieveOrder(id).block();// TODO REMOVE blocking
+//            orders.add(order);
+//         }
+//      } catch (Exception e) {
+//      }
+//      return Mono.just(orders);
    }
 
    //========================================================================================
    // TODO fail at first error, rethrowing the exception wrapped in a CustomException
    public Mono<List<Order>> catchRethrow(List<Integer> ids) {
+      return Flux.fromIterable(ids)
+          .flatMap(id -> retrieveOrder(id))
+          .collectList()
+          .onErrorMap(originalException -> new CustomException(originalException)) // returns a Mono.error(CustomException(originalexcept)
+          ;
 //      try {
 //         List<Order> orders = new ArrayList<>();
 //         for (Integer id : ids) {
@@ -124,40 +137,52 @@ public class Part07Errors {
 //      } catch (Exception e) {
 //         throw new CustomException(e);
 //      }
-      return null;
+//      return null;
    }
 
    //========================================================================================
    // TODO fail at any error, log the error and rethrow it
    public Mono<List<Order>> logRethrow(List<Integer> ids) {
-      try {
-         List<Order> orders = new ArrayList<>();
-         for (Integer id : ids) {
-            Order order = retrieveOrder(id).block();
-            orders.add(order);
-         }
-         return Mono.just(orders);
-      } catch (Exception e) {
-         log.error("BOOM", e);
-         throw e;
-      }
+      return Flux.fromIterable(ids)
+          .flatMap(id -> retrieveOrder(id))
+          .collectList()
+         .doOnError(e ->   log.error("BOOM",e));
+
+
+//      try {
+//         List<Order> orders = new ArrayList<>();
+//         for (Integer id : ids) {
+//            Order order = retrieveOrder(id).block();
+//            orders.add(order);
+//         }
+//         return Mono.just(orders);
+//      } catch (Exception e) {
+//         log.error("BOOM", e);
+//         throw e;
+//      }
    }
 
    //========================================================================================
    // TODO for any item, if an error occurs fall back by calling another storage (blocking) - "retrieveOrderBackup"
    public Mono<List<Order>> recover(List<Integer> ids) {
-      List<Order> orders = new ArrayList<>();
-      for (Integer id : ids) {
-         Order order;
-         try {
-            order = retrieveOrder(id).block();
-         } catch (Exception e) {
-            order = retrieveOrderBackup(id).block();
-         }
 
-         orders.add(order);
-      }
-      return Mono.just(orders);
+      return Flux.fromIterable(ids)
+          .flatMap(id -> retrieveOrder(id) .onErrorResume(e -> retrieveOrderBackup(id))     )
+          .collectList()
+          ;
+
+//      List<Order> orders = new ArrayList<>();
+//      for (Integer id : ids) {
+//         Order order;
+//         try {
+//            order = retrieveOrder(id).block();
+//         } catch (Exception e) {
+//            order = retrieveOrderBackup(id).block();
+//         }
+//
+//         orders.add(order);
+//      }
+//      return Mono.just(orders);
    }
 
    //========================================================================================
