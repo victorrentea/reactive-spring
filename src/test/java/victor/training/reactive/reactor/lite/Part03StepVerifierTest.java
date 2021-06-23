@@ -95,8 +95,9 @@ public class Part03StepVerifierTest {
 		AlertService alertService = Mockito.mock(AlertService.class);
 		TestPublisher<Void> alertPublisher = TestPublisher.createCold();
 		Mockito.when(alertService.raise(4)).thenReturn(alertPublisher.mono());
+		alertPublisher.complete();
 
-		Mono.just("init")
+		Mono.just("test")
 			.flatMap(s -> stringService.parse(s))
 			.doOnNext(i -> {
 				if (i <= 4) {
