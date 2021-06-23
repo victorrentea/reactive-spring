@@ -18,6 +18,11 @@ import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -73,9 +78,22 @@ public class StarterApp {
          // TODO make this guy drink earlier
 
 
+         Connection connection = null;
+
+
+//         PreparedStatement aa;
+//         try (FileInputStream is = new FileInputStream("file")) {
+//            // BLOB
+//            aa = connection.prepareStatement("INSERT into X values (1, ?)");
+//            aa.setBlob(is);
+//            aa.executeUpdate();
+//         }
+
+
+
 //         CompletableFuture<Void>
 
-         Mono<Beer> futureBeer = barman.pourBeer();
+         Mono<Beer> futureBeer = barman.pourBeer().delayElement(Duration.ofMillis(100));
          Mono<Vodka> futureVodka = barman.pourVodka(); // ONLY ALLOWED IF I ONLY DO CPU work !!!
          // NOT REST, DB, FILES, logging ?
 

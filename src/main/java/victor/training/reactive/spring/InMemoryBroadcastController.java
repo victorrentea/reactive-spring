@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -28,6 +29,10 @@ public class InMemoryBroadcastController {
    public Flux<ServerSentEvent<CustomerDto>> messageStream() {
       return flux.map(CustomerDto::new).map(dto -> ServerSentEvent.builder(dto).build());
    }
+//   @GetMapping(value = "message/stream")
+//   public Flux<ServerSentEvent<List<CustomerDto>>> messageStream233(Flux<SomeDto> s) {
+//
+//   }
    @GetMapping(value = "message/stream-page", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public Flux<ServerSentEvent<List<CustomerDto>>> messageStream2() {
       return pageflux.map(this::convertPage)

@@ -19,6 +19,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import victor.training.reactive.reactor.game.SillyRxScheduler;
 
@@ -56,6 +57,7 @@ public class BugsLifeGame extends Application {
         Scene scene = new Scene(root);
 
         root.getChildren().add(createSky());
+
 
 
         // TODO create an observer that fires every 10ms on the computation() thread,
