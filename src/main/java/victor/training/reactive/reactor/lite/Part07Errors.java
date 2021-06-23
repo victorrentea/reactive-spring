@@ -124,6 +124,7 @@ public class Part07Errors {
    public Mono<List<Order>> catchRethrow(List<Integer> ids) {
       return Flux.fromIterable(ids)
           .flatMap(id -> retrieveOrder(id))
+
           .collectList()
           .onErrorMap(originalException -> new CustomException(originalException)) // returns a Mono.error(CustomException(originalexcept)
           ;
