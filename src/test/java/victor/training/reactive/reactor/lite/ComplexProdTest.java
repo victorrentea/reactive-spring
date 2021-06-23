@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
@@ -46,7 +47,7 @@ public class ComplexProdTest {
       alertTestMono.complete();
       Mockito.when(alertService.raise(1)).thenReturn(alertTestMono.mono());
 
-      Mono<Integer> resultMono = bizLogic.bizLogic(just("test"));
+      Mono<Integer> resultMono = bizLogic.bizLogic(just("test").publishOn(Schedulers.single()));
 
       StepVerifier.create(resultMono)
           .expectNext(1)
@@ -68,7 +69,7 @@ class BizLogic {
    }
 
    private Mono<Void> alertIfNecessary(Integer i) {
-      if (i <= -1) {
+      if (i <= 4) {
          return alertService.raise(i).log("break-when-it-trouble"/*, "debug"*/)
 //             .doOnSu
              ;

@@ -40,7 +40,7 @@ public class ReactiveUserRepository implements ReactiveRepository<User> {
 
 	@Override
 	public Mono<Void> save(Publisher<User> userPublisher) {
-		return withDelay(Flux.from(userPublisher)).doOnNext(users::add).then();
+		return withDelay(Flux.from(userPublisher)).distinct().doOnNext(users::add).then();
 	}
 
 	@Override
