@@ -3,6 +3,9 @@ package victor.training.reactive.reactor.pitfalls;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.function.TupleUtils;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 import victor.training.reactive.intro.ThreadUtils;
 
 import java.util.Objects;
@@ -14,17 +17,32 @@ import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
 public class MultipleSubscribersMono_Zip3 {
 
    public static void main(String[] args) {
-      Mono<A> aMono = getA(); // COLD PUBLISHER
+      // option3
+//      Mono<A> aMono = getA().cache();
+//      Mono<B> bMono = aMono.flatMap(a -> getB(a));
+//      Mono<B> cMono = aMono.flatMap(a -> bMono.flatMap());//flatMap(a -> getB(a));
 
-      // TODO callMe(c).subscribe();
-      // 1) zip + resubscribe
-      // 2) cache
-      // 3) zipWhen + TupleUtils
+      // option2
+      Mono<C> cMono = getA()
+          .zipWhen(a->getB(a))
+//          .map(TupleUtils.function(a,b)->new AB(a,b)) // better if "AB" makes sense
+//          .flatMap(tuple2 -> getC(tuple2.getT1(), tuple2.getT2())));
+          .flatMap(TupleUtils.function((a, b) -> getC(a, b))); // ok
+
+      // option3
+      getA()
+          .flatMap(a -> getB(a).flatMap(b-> getC(a,b))); // easy to do mistakes
+
+
+
+      cMono.subscribe(c -> callMe(c));
+
 
       waitForEnter();
    }
 
-   public Mono<Void> callMe(C c) {
+   // TASK: fettch a C and call this method with it.
+   public static Mono<Void> callMe(C c) {
       System.out.println("Got C = " + Objects.requireNonNull(c));
       return Mono.empty();
    }
