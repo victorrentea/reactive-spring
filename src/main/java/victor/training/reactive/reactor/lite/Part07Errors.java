@@ -16,6 +16,7 @@
 
 package victor.training.reactive.reactor.lite;
 
+import org.jooq.lambda.Unchecked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Exceptions;
@@ -163,13 +164,36 @@ public class Part07Errors {
    // TODO  close the writer at the end signal (error or completion)
    // TODO [pro] what if the subscriber retries? Tip: Mono.fromSupplier
    public Mono<Void> tryFinally(List<Integer> ids) throws IOException {
-      try(FileWriter writer = new FileWriter("a.txt")) {
-         for (Integer id : ids) {
-            Order order = retrieveOrder(id).block();
-            writer.write(order.toString());
+      return Mono.defer(() -> {
+         FileWriter writer;
+         try {
+            writer = new FileWriter("a.txt");
+         } catch (IOException e) {
+            throw new RuntimeException(e);
          }
-      }
-      return Mono.empty();
+         log.info("Creating file");
+
+         return Flux.fromIterable(ids)
+             .flatMap(this::retrieveOrder)
+             .map(Order::toString)
+             .doOnNext(Unchecked.consumer(writer::write))
+             .doOnTerminate(() -> {
+                log.info("Closing file");
+                try {
+                   writer.close();
+                } catch (IOException e) {
+                   e.printStackTrace();
+                }
+             })
+             .then();
+      });
+//      try(FileWriter writer = new FileWriter("a.txt")) {
+//         for (Integer id : ids) {
+//            Order order = retrieveOrder(id).block();
+//            writer.write(order.toString());
+//         }
+//      }
+//      return Mono.empty();
    }
 
 
@@ -181,10 +205,10 @@ public class Part07Errors {
 
    private Mono<Order> retrieveOrder(int id) { // imagine a network call
       if (id < 0) {
-         return Mono.error(new RuntimeException());
-      } else {
-         return Mono.just(new Order(id));
+         if (Math.random()>.5) return  Mono.error(new RuntimeException());
       }
+      return Mono.just(new Order(id));
+
    }
    private Mono<Order> retrieveOrderBackup(int id) { // imagine a local fast storage (~cache)
       return Mono.just(new Order(id).backup());

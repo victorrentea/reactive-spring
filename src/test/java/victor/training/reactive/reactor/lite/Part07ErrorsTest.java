@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.Part07Errors.CustomException;
 import victor.training.reactive.reactor.lite.Part07Errors.Order;
@@ -170,7 +171,7 @@ public class Part07ErrorsTest {
 	@Test
 	public void tryFinally() throws IOException {
 		// ERROR
-		StepVerifier.create(workshop.tryFinally(asList(1, 4)))
+		StepVerifier.create(workshop.tryFinally(asList(1, -4)).retry(2)/*subscribeOn(Schedulers.parallel())*/)
 			.verifyComplete();
 	}
 

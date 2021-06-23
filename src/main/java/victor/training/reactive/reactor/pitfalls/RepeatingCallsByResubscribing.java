@@ -15,7 +15,7 @@ public class RepeatingCallsByResubscribing {
              System.out.println("this after the completion of HTTP");
              return 1;
           }))
-//          .cache()
+          .cache()
           ;
 
 //      HttpServletRequest

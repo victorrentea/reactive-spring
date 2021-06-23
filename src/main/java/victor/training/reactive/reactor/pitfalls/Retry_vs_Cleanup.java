@@ -19,7 +19,7 @@ public class Retry_vs_Cleanup {
       observe()
           .flatMap(this::save)
           .subscribeOn(Schedulers.boundedElastic())
-          .doOnTerminate(() -> System.out.println("END")) // How many times does this print ?
+          .doOnTerminate(() -> System.out.println("~finally {  } END")) // How many times does this print ?
           .retry(2)
           .subscribe();
    }

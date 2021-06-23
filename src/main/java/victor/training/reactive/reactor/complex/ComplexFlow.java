@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +60,8 @@ public class ComplexFlow {
              .retrieve()
              .toBodilessEntity()
              .doOnSubscribe(s -> log.info("Calling Audit REST"))
+             .timeout(Duration.ofMinutes(2))
+             .retry(3)
              .then();
       } else {
          return Mono.empty();

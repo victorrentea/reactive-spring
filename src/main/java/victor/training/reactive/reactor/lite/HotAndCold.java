@@ -7,10 +7,12 @@ import victor.training.reactive.intro.ThreadUtils;
 
 import java.time.Duration;
 
+import static victor.training.reactive.intro.ThreadUtils.sleep;
+
 public class HotAndCold {
    public static void main(String[] args) {
       new HotAndCold().met();
-      ThreadUtils.sleep(2000);
+      sleep(2000);
    }
 
    public void met() {
@@ -24,11 +26,17 @@ public class HotAndCold {
 
       Flux<String> f = Flux.just("a","b").delayElements(Duration.ofMillis(100));//~mongo.query();
 
-		Flux<String> conn = f.publish().autoConnect(2);
-		conn.subscribe(d->team1Func(d)); // might miss the data.
-//		sleep(1);
-		conn.subscribe(d->team2Func(d)); // might miss the data.
-//		conn.connect();
+		ConnectableFlux<String> conn = f.publish();
+		conn.subscribe(d->team1Func(d).subscribe());
+		sleep(100);
+		conn.subscribe(d->team2Func(d).subscribe());// never misses
+		conn.connect();
+
+
+		Flux<String> autoConnect = f.publish().autoConnect(2);
+		autoConnect.subscribe(d->team1Func(d).subscribe());
+		sleep(100);
+		autoConnect.subscribe(d->team2Func(d).subscribe());
 
       f.delayUntil(this::team1Func)
           .delayUntil(this::team2Func)
