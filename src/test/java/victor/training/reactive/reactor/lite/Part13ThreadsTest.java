@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import victor.training.reactive.intro.ThreadUtils;
 import victor.training.reactive.reactor.lite.Part13Threads.BlockingService;
@@ -38,7 +39,7 @@ public class Part13ThreadsTest {
          return "text";
       };
 
-      Mono<String> mono = workshop.subscribe(readTask);
+      Mono<String> mono = workshop.subscribe(readTask).subscribeOn(Schedulers.parallel());
 
       StepVerifier.create(mono)
           .expectNext("text")

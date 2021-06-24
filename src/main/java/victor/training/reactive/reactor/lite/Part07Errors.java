@@ -22,6 +22,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
+import victor.training.reactive.intro.ThreadUtils;
 import victor.training.reactive.reactor.lite.domain.User;
 
 import java.io.File;
@@ -29,6 +32,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static java.util.Collections.emptyList;
 
@@ -40,7 +44,9 @@ import static java.util.Collections.emptyList;
  */
 public class Part07Errors {
    private static final Logger log = LoggerFactory.getLogger(Part07Errors.class);
-//========================================================================================
+   // imagine a network call
+   private static Scheduler rmiScheduler = Schedulers.newBoundedElastic(4, 500, "RMI-");
+   //========================================================================================
 
    // TODO Return a Mono<User> containing User.SAUL when an error occurs in the input Mono, else do not change the input Mono.
    Mono<User> betterCallSaulForBogusMono(Mono<User> mono) {
@@ -101,10 +107,12 @@ public class Part07Errors {
    }
 
    //========================================================================================
-   // TODO return the items that were retrieve, never request further items (==> no async prefetch)
+   // TODO return the items that were retrieved, never request further items after a failure (==> no async prefetch)
    public Mono<List<Order>> catchAndStop(List<Integer> ids) {
       return Flux.fromIterable(ids)
-          .flatMap(id -> retrieveOrder(id))
+          .flatMap(id -> retrieveOrder(id)) // scrambles order
+//          .flatMapSequential(id -> retrieveOrder(id)) // eats memory
+//          .concatMap(id -> retrieveOrder(id)) // slow
           .onErrorResume(t -> Mono.empty()) // replaces the error singlal with a completion signal
           .collectList()
           ;
@@ -124,7 +132,6 @@ public class Part07Errors {
    public Mono<List<Order>> catchRethrow(List<Integer> ids) {
       return Flux.fromIterable(ids)
           .flatMap(id -> retrieveOrder(id))
-
           .collectList()
           .onErrorMap(originalException -> new CustomException(originalException)) // returns a Mono.error(CustomException(originalexcept)
           ;
@@ -169,6 +176,13 @@ public class Part07Errors {
 
       return Flux.fromIterable(ids)
           .flatMap(id -> retrieveOrder(id) .onErrorResume(e -> retrieveOrderBackup(id))     )
+
+          .publishOn(Schedulers.parallel())
+          .flatMap(o -> {
+             log.info("Stuff");
+             return Mono.just(o);
+          })
+
           .collectList()
           ;
 
@@ -229,15 +243,26 @@ public class Part07Errors {
       }
    }
 
-   private Mono<Order> retrieveOrder(int id) { // imagine a network call
-      if (id < 0) {
-         if (Math.random()>.5) return  Mono.error(new RuntimeException());
-      }
-      return Mono.just(new Order(id));
-
+   private Mono<Order> retrieveOrder(int id) {
+//      return Mono.defer(() -> {
+      return Mono.fromSupplier(() -> {
+         log.info("RETRIEVE ORDER " + id);
+         ThreadUtils.sleep(10 + new Random().nextInt(100));// blocking call you can't really make unblokcing. (reactive) ~ JDBC, Spring Remoting, CORBA, EJB, RMI,
+         if (id < 0) {
+//            if (Math.random() > .5)
+            throw new RuntimeException();
+         }
+         return new Order(id);
+      })
+          .subscribeOn(rmiScheduler)
+          .publishOn(Schedulers.boundedElastic());
    }
    private Mono<Order> retrieveOrderBackup(int id) { // imagine a local fast storage (~cache)
-      return Mono.just(new Order(id).backup());
+      return Mono.fromSupplier(() -> {
+         log.info("Calling backup CORBA");
+         ThreadUtils.sleep(1000);
+         return new Order(id).backup();
+      }).subscribeOn(Schedulers.boundedElastic());
    }
 
    public static class Order {

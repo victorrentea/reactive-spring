@@ -29,6 +29,7 @@ import victor.training.reactive.reactor.lite.domain.User;
 import victor.training.util.CaptureSystemOutput;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -119,6 +120,7 @@ public class Part07ErrorsTest {
 	@Test
 	public void catchStop() {
 		// ERROR
+//		workshop.catchAndStop(asList(1,2,-1,4)).delayElement(Duration.ofMillis(10)).subscribeOn(Schedulers.parallel()).subscribe();
 		StepVerifier.create(workshop.catchAndStop(asList(1,2,-1,4)))
 			.expectNextMatches(productsWithIds(1, 2))
 			.verifyComplete();

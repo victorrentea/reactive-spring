@@ -1,5 +1,6 @@
 package victor.training.reactive.reactor.lite;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -7,20 +8,26 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Slf4j
 public class Part13Threads {
 
    //========================================================================================
 
    // TODO Run readTask on the Schedulers#boundedElastic, and return a mono of the returned value in UPPERCASE
    public Mono<String> subscribe(Supplier<String> readTask) {
-      return null;
+      return Mono.fromSupplier(readTask).subscribeOn(Schedulers.boundedElastic());
    }
 
    //========================================================================================
 
    // TODO Run readTask on the Schedulers#boundedElastic followed by the cpuTask on the Schedulers#parallel
    public Mono<Void> ioVsCpu(Runnable ioTask, Runnable cpuTask) {
-      return null;
+      return Mono.fromRunnable(ioTask)
+          .subscribeOn(Schedulers.boundedElastic())
+//          .publishOn(Schedulers.parallel())
+          .then(Mono.fromRunnable(cpuTask).subscribeOn(Schedulers.parallel()))
+          .then()
+          ;
    }
 
    //========================================================================================

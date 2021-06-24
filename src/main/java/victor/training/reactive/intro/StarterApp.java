@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -121,6 +122,7 @@ public class StarterApp {
 @Service
 @RequiredArgsConstructor
 class Barman {
+//   @Async("beerPool")
    public Mono<Beer> pourBeer() {// IF a function declares to return Mono or Flux, it must NEVER BLOCK and it should never THROW\
       return Mono.fromSupplier(() -> {
          log.info("Start pour beer");
