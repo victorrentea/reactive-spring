@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import reactor.blockhound.BlockHound;
 
 @Slf4j
 @EnableAsync
@@ -19,6 +20,13 @@ public class StarterApp implements CommandLineRunner {
 
    public static void main(String[] args) {
       SpringApplication.run(StarterApp.class, args);
+   }
+
+   //   @EventListener(ApplicationStartedEvent.class) // TODO uncomment
+   public void installBlockHound() {
+      log.info("--- App Started ---");
+      log.warn("Installing BlockHound to detect I/O in non-blocking threads");
+      BlockHound.install();
    }
 
    @Bean
