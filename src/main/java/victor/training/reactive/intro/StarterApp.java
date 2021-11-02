@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.blockhound.BlockHound;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 @Slf4j
 @EnableAsync
 @SpringBootApplication
@@ -37,14 +40,6 @@ public class StarterApp implements CommandLineRunner {
       BlockHound.install();
    }
 
-   // Block hound this:
-   @GetMapping("cache")
-   @Cacheable("cache")
-   public String method() {
-      log.info("In method");
-      return "A";
-   }
-
    @Bean
    public ThreadPoolTaskExecutor pool() {
       ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -62,6 +57,11 @@ public class StarterApp implements CommandLineRunner {
 
    @Override
    public void run(String... args) throws Exception {
+   }
+
+   @GetMapping("drink")
+   public void drink() {
+
       log.info("Sending orders calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
 
