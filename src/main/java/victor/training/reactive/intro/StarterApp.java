@@ -6,27 +6,43 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.blockhound.BlockHound;
 
 @Slf4j
 @EnableAsync
 @SpringBootApplication
+@RestController
 @RequiredArgsConstructor
+@EnableCaching
 public class StarterApp implements CommandLineRunner {
 
    public static void main(String[] args) {
       SpringApplication.run(StarterApp.class, args);
    }
 
-   //   @EventListener(ApplicationStartedEvent.class) // TODO uncomment
+//   @EventListener(ApplicationStartedEvent.class) // TODO uncomment
    public void installBlockHound() {
       log.info("--- App Started ---");
       log.warn("Installing BlockHound to detect I/O in non-blocking threads");
       BlockHound.install();
+   }
+
+   // Block hound this:
+   @GetMapping("cache")
+   @Cacheable("cache")
+   public String method() {
+      log.info("In method");
+      return "A";
    }
 
    @Bean
