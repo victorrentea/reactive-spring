@@ -38,9 +38,11 @@ public class MissingSignals {
    public Mono<Void> losingSignals(int customerId) {
       String currentUser = "gigi";// from Reactor context
       System.out.println(redis.getClass());
+
       return mySqlRepo.findCustomer(customerId)
           .flatMap(c -> cassandraRepo.save(c))
           .flatMap(c -> redis.increaseApiUsageCounter(currentUser))
+
           // also consider doOnNext
           ;
    }
