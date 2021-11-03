@@ -7,7 +7,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
@@ -18,8 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.blockhound.BlockHound;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 @Slf4j
 @EnableAsync
@@ -33,7 +34,7 @@ public class StarterApp implements CommandLineRunner {
       SpringApplication.run(StarterApp.class, args);
    }
 
-//   @EventListener(ApplicationStartedEvent.class) // TODO uncomment
+   @EventListener(ApplicationStartedEvent.class) // TODO uncomment
    public void installBlockHound() {
       log.info("--- App Started ---");
       log.warn("Installing BlockHound to detect I/O in non-blocking threads");
@@ -60,19 +61,36 @@ public class StarterApp implements CommandLineRunner {
    }
 
    @GetMapping("drink")
-   public void drink() {
-
+   public CompletableFuture<DillyDilly> drink() throws ExecutionException, InterruptedException {
       log.info("Sending orders calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
+//      ForkJoinPool.commonPool() = #CPU
+//      Schedulers.parallel = #CPU
+//       Dispatchers.Default = #CPU
 
-      // TODO make this guy drink earlier
-      Beer beer = barman.pourBeer();
-      Vodka vodka = barman.pourVodka();
+      // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
+      CompletableFuture<Beer> futureBeer = supplyAsync(barman::pourBeer/*, threadPoolulMeu*/); // ~ promise ~Mono ~Single ~async.kt
+      CompletableFuture<Vodka> futureVodka = supplyAsync(barman::pourVodka);
 
-      log.debug("Drinking: " + beer + vodka);
 
-      long t1 = System.currentTimeMillis();
-      log.debug("Time= " + (t1 - t0));
+//      Beer beer = futureBeer.get();
+//      Vodka vodka = futureVodka.get();
+
+//      log.debug("Drinking: " + beer + vodka);
+
+//      CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureBeer, futureVodka);
+      CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka,
+          (b, v) -> new DillyDilly(b, v))
+
+          ;// Mono.zip
+
+//      DillyDilly dilly = futureDilly.get();
+//      long t1 = System.currentTimeMillis();
+//      log.debug("Time= " + (t1 - t0));
+//      return dilly;
+
+      log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis()- t0);
+      return futureDilly;
    }
 }
 
@@ -119,7 +137,7 @@ class DillyDilly {
       this.beer = beer;
       this.vodka = vodka;
       log.debug("Mixing {} with {}...", beer, vodka);
-      ThreadUtils.sleep(1000);
+      ThreadUtils.sleep(500);
    }
 }
 
