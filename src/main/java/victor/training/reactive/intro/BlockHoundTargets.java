@@ -1,9 +1,11 @@
 package victor.training.reactive.intro;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,10 +17,10 @@ public class BlockHoundTargets {
    // Block hound this:
    @GetMapping("cache")
    @Cacheable("cachex")
-   public String cache() {
+   public Mono<String> cache() {
       log.info("In method");
       ThreadUtils.sleep(1000);
-      return "A";
+      return Mono.just("A");
    }
 
 
