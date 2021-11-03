@@ -23,6 +23,7 @@ import victor.training.reactive.reactor.complex.Product;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -128,16 +129,32 @@ public class StarterApp implements CommandLineRunner {
 @RequiredArgsConstructor
 class Barman {
    public Mono<Beer> pourBeer() {
+
+      List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+//      numbers.stream()
+//          .filter(n -> n%2 == 1)
+//          .map(n -> n * 2)
+//          .collect(Collectors.toList());
+
       log.info("Start pour beer");
       return WebClient.create()
           .get()
           .uri("http://localhost:9999/api/product/13")
           // aka gata retrieve
           .retrieve()
+
           .bodyToMono(Product.class)
           .map(p -> new Beer(p.getName()))
+
           .doOnNext(b -> log.info("end pour beer: " + b))
+
           ;
+
+
+
+
+//      return Mono.just(new Beer("bruna"));
 //
 //
 //

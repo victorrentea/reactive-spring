@@ -32,6 +32,11 @@ public class CompletableFutures {
 
    @Test
    public void test() {
+      // CErinta: adu GET ID-uri (blocant)  > List<String> si apoi
+      // pt fiecare id adu GET nume (blocante) si GET status (blocante)
+
+
+
       CompletableFuture<List<String>> ids = fetchIds();
 
       CompletableFuture<List<String>> result = ids.thenComposeAsync(l -> {
