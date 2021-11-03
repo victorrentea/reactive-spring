@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 import victor.training.reactive.reactor.complex.Product;
 
 import java.sql.Connection;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +53,7 @@ public class StarterApp implements CommandLineRunner {
 
 //      WebClient.create().get().uri("http://localhost/").retrieve().bodyToMono(String.class).block();
       BlockHound.install();
+
 //      BlockHound.builder()
 //          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
 //          .install();
@@ -137,24 +139,24 @@ class Barman {
 //          .map(n -> n * 2)
 //          .collect(Collectors.toList());
 
-      log.info("Start pour beer");
-      return WebClient.create()
-          .get()
-          .uri("http://localhost:9999/api/product/13")
-          // aka gata retrieve
-          .retrieve()
-
-          .bodyToMono(Product.class)
-          .map(p -> new Beer(p.getName()))
-
-          .doOnNext(b -> log.info("end pour beer: " + b))
-
-          ;
-
-
+//      log.info("Start pour beer");
+//      return WebClient.create()
+//          .get()
+//          .uri("http://localhost:9999/api/product/13")
+//          // aka gata retrieve
+//          .retrieve()
+//
+//          .bodyToMono(Product.class)
+//          .map(p -> new Beer(p.getName()))
+//
+//          .doOnNext(b -> log.info("end pour beer: " + b))
+//
+//          ;
 
 
-//      return Mono.just(new Beer("bruna"));
+
+
+      return Mono.just(new Beer("bruna"));
 //
 //
 //
