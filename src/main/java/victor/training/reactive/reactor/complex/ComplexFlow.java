@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static java.util.stream.Collectors.toList;
+
 @Slf4j
 public class ComplexFlow {
 
    public static void main(String[] args) {
-      List<Long> productIds = LongStream.rangeClosed(1, 10).boxed().collect(Collectors.toList());
+      List<Long> productIds = LongStream.rangeClosed(1, 10).boxed().collect(toList());
 
       Mono<List<Product>> listMono = mainFlow(productIds);
 

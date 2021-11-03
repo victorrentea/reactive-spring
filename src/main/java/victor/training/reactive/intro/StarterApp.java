@@ -15,12 +15,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.blockhound.BlockHound;
+import reactor.blockhound.BlockHound.Builder;
+import reactor.blockhound.integration.BlockHoundIntegration;
 
+import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.in;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static victor.training.reactive.intro.ThreadUtils.sleep;
 
 @Slf4j
 @EnableAsync
@@ -38,59 +48,27 @@ public class StarterApp implements CommandLineRunner {
    public void installBlockHound() {
       log.info("--- App Started ---");
       log.warn("Installing BlockHound to detect I/O in non-blocking threads");
-      BlockHound.install();
-   }
 
-   @Bean
-   public ThreadPoolTaskExecutor pool() {
-      ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-      executor.setCorePoolSize(2);
-      executor.setMaxPoolSize(2);
-      executor.setQueueCapacity(500);
-      executor.setThreadNamePrefix("bar-");
-      executor.initialize();
-      executor.setWaitForTasksToCompleteOnShutdown(true);
-      return executor;
+      Builder builder = BlockHound.builder();
+      ServiceLoader.load(BlockHoundIntegration.class).forEach(integration -> integration.applyTo(builder));
+      builder
+          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
+          .install();
    }
 
    private final Barman barman;
 
-
    @Override
    public void run(String... args) throws Exception {
-   }
+      log.info("Talking to proxied barman: " + barman.getClass());
 
-   @GetMapping("drink")
-   public CompletableFuture<DillyDilly> drink() throws ExecutionException, InterruptedException {
-      log.info("Sending orders calls to the barman : " + barman.getClass());
-      long t0 = System.currentTimeMillis();
-//      ForkJoinPool.commonPool() = #CPU
-//      Schedulers.parallel = #CPU
-//       Dispatchers.Default = #CPU
+      long t0 = currentTimeMillis();
 
-      // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
-      CompletableFuture<Beer> futureBeer = supplyAsync(barman::pourBeer/*, threadPoolulMeu*/); // ~ promise ~Mono ~Single ~async.kt
-      CompletableFuture<Vodka> futureVodka = supplyAsync(barman::pourVodka);
+      Beer beer = barman.pourBeer();
+      Vodka vodka = barman.pourVodka();
 
-
-//      Beer beer = futureBeer.get();
-//      Vodka vodka = futureVodka.get();
-
-//      log.debug("Drinking: " + beer + vodka);
-
-//      CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureBeer, futureVodka);
-      CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka,
-          (b, v) -> new DillyDilly(b, v))
-
-          ;// Mono.zip
-
-//      DillyDilly dilly = futureDilly.get();
-//      long t1 = System.currentTimeMillis();
-//      log.debug("Time= " + (t1 - t0));
-//      return dilly;
-
-      log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis()- t0);
-      return futureDilly;
+      log.info("Drinks ready: {}", List.of(beer, vodka));
+      log.debug("Time= " + (currentTimeMillis() - t0));
    }
 }
 
@@ -100,15 +78,15 @@ public class StarterApp implements CommandLineRunner {
 class Barman {
    public Beer pourBeer() {
       log.info("Start pour beer");
-      ThreadUtils.sleep(1000); // blocking REST call
-      log.info("end pour beer");
+      sleep(1000); // imagine blocking REST call
+      log.info("End pour beer");
       return new Beer();
    }
 
    public Vodka pourVodka() {
       log.info("Start pour vodka");
-      ThreadUtils.sleep(1000);  // blocking DB call
-      log.info("end pour vodka");
+      sleep(1000);  // imagine blocking DB call
+      log.info("End pour vodka");
       return new Vodka();
    }
 }
@@ -136,8 +114,8 @@ class DillyDilly {
    public DillyDilly(Beer beer, Vodka vodka) {
       this.beer = beer;
       this.vodka = vodka;
-      log.debug("Mixing {} with {}...", beer, vodka);
-      ThreadUtils.sleep(500);
+      log.debug("Mixing {} with {} (takes time) ...", beer, vodka);
+      sleep(500);
    }
 }
 
