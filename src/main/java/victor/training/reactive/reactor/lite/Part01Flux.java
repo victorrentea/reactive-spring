@@ -65,6 +65,7 @@ public class Part01Flux {
 	// sau @Daniel:
 		return 		Flux.interval(ofMillis(0), ofMillis(100))
 			.take(10)
+			.doOnSubscribe(subscription -> subscription.cancel())
 			.doOnEach(e -> log.debug("elem: " + e))
 			.doOnSubscribe(e -> log.debug("Incep efectiv iterarea"))
 			;
