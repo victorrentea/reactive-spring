@@ -1,1 +1,1 @@
-java -jar %USERPROFILE%\.m2\repository\com\github\tomakehurst\wiremock-standalone\2.27.2\wiremock-standalone-2.27.2.jar --port 9999 --root-dir src\test\resources --global-response-templating
+java -jar %USERPROFILE%\.m2\repository\com\github\tomakehurst\wiremock-standalone\2.27.2\wiremock-standalone-2.27.2.jar --port 9999 --root-dir src\test\resources --global-response-templating --container-threads 1000
