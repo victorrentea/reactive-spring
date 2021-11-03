@@ -112,8 +112,11 @@
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.8.1</version>
+        </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -156,6 +159,19 @@
 <!--            <artifactId>guava</artifactId>-->
 <!--            <version>29.0-jre</version>-->
 <!--        </dependency>-->
+
+        <!-- non-blocking rate limiter as in https://stackoverflow.com/questions/50387584/how-to-limit-the-request-second-with-webclient -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-reactor</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-ratelimiter</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
