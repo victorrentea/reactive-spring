@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import reactor.blockhound.BlockHound;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.reactor.complex.Product;
 
 import java.net.ServerSocket;
@@ -24,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static reactor.core.scheduler.Schedulers.boundedElastic;
 
 @Slf4j
 @EnableAsync
@@ -67,21 +70,17 @@ public class StarterApp implements CommandLineRunner {
    public CompletableFuture<DillyDilly> drink() throws ExecutionException, InterruptedException {
       log.info("Sending orders calls to the barman : " + barman.getClass());
       long t0 = System.currentTimeMillis();
-//      ForkJoinPool.commonPool() = #CPU
-//      Schedulers.parallel = #CPU
-//       Dispatchers.Default = #CPU
 
-
-//      ServerSocket s;
-//      s.accept()
       // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
-      CompletableFuture<Beer> futureBeer = supplyAsync(barman::pourBeer/*, threadPoolulMeu*/); // ~ promise ~Mono ~Single ~async.kt
-      CompletableFuture<Vodka> futureVodka = supplyAsync(barman::pourVodka);
+      Mono<Beer> beerMono = Mono.fromSupplier(barman::pourBeer)
+          .subscribeOn(boundedElastic());
+      Mono<Vodka> vodkaMono = Mono.fromSupplier(barman::pourVodka)
+          .subscribeOn(boundedElastic());
 
-//      CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureBeer, futureVodka);
-      CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka,
-          (b, v) -> new DillyDilly(b, v))
-          ;
+
+      Mono<DillyDilly> monoDilly = beerMono.zipWith(vodkaMono, (beer, vodka) -> new DillyDilly(beer, vodka));
+
+      CompletableFuture<DillyDilly> futureDilly = monoDilly.toFuture(); // porneste efectiv munca in paralel aici
 
 
       log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis()- t0);
