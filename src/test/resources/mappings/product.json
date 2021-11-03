@@ -13,7 +13,7 @@
         "active": true,
         "resealed": true
       },
-    "fixedDelayMilliseconds": 100,
+    "fixedDelayMilliseconds": 30000,
 
     "headers": {
       "Content-Type": "application/json"

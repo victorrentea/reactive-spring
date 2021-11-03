@@ -15,8 +15,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import reactor.blockhound.BlockHound;
+import victor.training.reactive.reactor.complex.Product;
 
+import java.net.ServerSocket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -68,26 +71,18 @@ public class StarterApp implements CommandLineRunner {
 //      Schedulers.parallel = #CPU
 //       Dispatchers.Default = #CPU
 
+
+//      ServerSocket s;
+//      s.accept()
       // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
       CompletableFuture<Beer> futureBeer = supplyAsync(barman::pourBeer/*, threadPoolulMeu*/); // ~ promise ~Mono ~Single ~async.kt
       CompletableFuture<Vodka> futureVodka = supplyAsync(barman::pourVodka);
 
-
-//      Beer beer = futureBeer.get();
-//      Vodka vodka = futureVodka.get();
-
-//      log.debug("Drinking: " + beer + vodka);
-
 //      CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(futureBeer, futureVodka);
       CompletableFuture<DillyDilly> futureDilly = futureBeer.thenCombine(futureVodka,
           (b, v) -> new DillyDilly(b, v))
+          ;
 
-          ;// Mono.zip
-
-//      DillyDilly dilly = futureDilly.get();
-//      long t1 = System.currentTimeMillis();
-//      log.debug("Time= " + (t1 - t0));
-//      return dilly;
 
       log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis()- t0);
       return futureDilly;
@@ -100,9 +95,13 @@ public class StarterApp implements CommandLineRunner {
 class Barman {
    public Beer pourBeer() {
       log.info("Start pour beer");
-      ThreadUtils.sleep(1000); // blocking REST call
+
+
+      RestTemplate rest = new RestTemplate(); // blocant !!
+      Product product = rest.getForObject("http://localhost:9999/api/product/13", Product.class);
+
       log.info("end pour beer");
-      return new Beer();
+      return new Beer(product.getName());
    }
 
    public Vodka pourVodka() {
@@ -116,7 +115,7 @@ class Barman {
 
 @Data
 class Beer {
-   private final String type = "blond";
+   private final String type;
 }
 
 @Data
