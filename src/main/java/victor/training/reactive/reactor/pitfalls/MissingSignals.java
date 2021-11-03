@@ -35,6 +35,7 @@ public class MissingSignals {
    }
    private Redis redis = new Redis();
 
+   // TODO fix the tests
    public Mono<Void> losingSignals(int customerId) {
       String currentUser = "gigi";// from Reactor context
       System.out.println(redis.getClass());
