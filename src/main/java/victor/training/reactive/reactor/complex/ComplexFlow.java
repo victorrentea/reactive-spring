@@ -45,7 +45,8 @@ public class ComplexFlow {
 //          .doOnNext( p-> ExternalAPIs.auditResealedProduct(p)
 //              .doOnError(t -> log.error("BUM", t)) // daca nu pui e ca un catch() {}
 //              .subscribe())
-          .delayUntil(ComplexFlow::auditProduct)
+          .flatMap(p -> ComplexFlow.auditProduct(p).thenReturn(p))
+//          .delayUntil(ComplexFlow::auditProduct)
           .collectList();
    }
 
