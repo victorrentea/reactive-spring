@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.ThreadUtils;
+import victor.training.reactive.intro.Utils;
 
 @RequiredArgsConstructor
 public class Retry_vs_Cleanup {
@@ -12,7 +12,7 @@ public class Retry_vs_Cleanup {
 
    public static void main(String[] args) {
       new Retry_vs_Cleanup().longRunningProblem();
-      ThreadUtils.sleep(2000);
+      Utils.sleep(2000);
    }
 
    public void longRunningProblem() {

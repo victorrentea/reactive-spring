@@ -1,7 +1,7 @@
 package victor.training.reactive.intro.whyreactive;
 
 import org.junit.jupiter.api.Test;
-import victor.training.reactive.intro.ThreadUtils;
+import victor.training.reactive.intro.Utils;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -14,19 +14,19 @@ public class CompletableFutures {
 
    public static CompletableFuture<List<String>> fetchIds() {
       // pretend time passes
-      ThreadUtils.sleep(10);
+      Utils.sleep(10);
       return CompletableFuture.completedFuture(Data.IDS);
    }
 
    public static CompletableFuture<Integer> fetchStat(String id) {
       // pretend time passes
-      ThreadUtils.sleep(10);
+      Utils.sleep(10);
       return CompletableFuture.completedFuture(Data.STATS.get(id));
    }
 
    public static CompletableFuture<String> fetchName(String id) {
       // pretend time passes
-      ThreadUtils.sleep(10);
+      Utils.sleep(10);
       return CompletableFuture.completedFuture(Data.NAMES.get(id));
    }
 

@@ -8,29 +8,22 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.blockhound.BlockHound;
 import reactor.blockhound.BlockHound.Builder;
 import reactor.blockhound.integration.BlockHoundIntegration;
+import reactor.util.function.Tuples;
 
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.lang.System.currentTimeMillis;
-import static java.lang.System.in;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static victor.training.reactive.intro.ThreadUtils.sleep;
+import static victor.training.reactive.intro.Utils.installBlockHound;
+import static victor.training.reactive.intro.Utils.sleep;
 
 @Slf4j
 @EnableAsync
@@ -44,16 +37,9 @@ public class StarterApp implements CommandLineRunner {
       SpringApplication.run(StarterApp.class, args);
    }
 
-   @EventListener(ApplicationStartedEvent.class) // TODO uncomment
-   public void installBlockHound() {
-      log.info("--- App Started ---");
-      log.warn("Installing BlockHound to detect I/O in non-blocking threads");
-
-      Builder builder = BlockHound.builder();
-      ServiceLoader.load(BlockHoundIntegration.class).forEach(integration -> integration.applyTo(builder));
-      builder
-          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
-          .install();
+   //@EventListener(ApplicationStartedEvent.class) // TODO uncomment
+   public void setupBlockingDetection() {
+      installBlockHound(List.of(Tuples.of("io.netty.resolver.HostsFileParser", "parse")));
    }
 
    private final Barman barman;

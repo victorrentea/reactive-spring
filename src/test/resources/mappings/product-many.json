@@ -1,24 +1,29 @@
 {
   "request": {
     "method": "POST",
-    "urlPathPattern": "/api/product/many"
+    "urlPathPattern": "/api/product/many",
+    "bodyPatterns" : [
+      {"matchesJsonPath" : "$[0]"},
+      {"matchesJsonPath" : "$[1]"}
+    ]
   },
   "response": {
     "status": 200,
     "jsonBody": [
       {
-        "id": 1,
+        "id": "{{jsonPath request.body '$[0]'}}",
         "name": "Product1",
         "active": true,
         "resealed": true
       },
       {
-        "id": 2,
+        "id": "{{jsonPath request.body '$[1]'}}",
         "name": "Product2",
         "active": true,
         "resealed": false
       }
     ],
+    "transformers": ["response-template"],
     "fixedDelayMilliseconds": 100,
     "headers": {
       "Content-Type": "application/json"

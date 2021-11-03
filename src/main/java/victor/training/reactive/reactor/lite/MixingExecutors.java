@@ -1,12 +1,9 @@
 package victor.training.reactive.reactor.lite;
 
 import lombok.extern.slf4j.Slf4j;
-import victor.training.reactive.intro.ThreadUtils;
 
-import java.util.Scanner;
-
-import static victor.training.reactive.intro.ThreadUtils.sleep;
-import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
+import static victor.training.reactive.intro.Utils.sleep;
+import static victor.training.reactive.intro.Utils.waitForEnter;
 
 @Slf4j
 public class MixingExecutors {

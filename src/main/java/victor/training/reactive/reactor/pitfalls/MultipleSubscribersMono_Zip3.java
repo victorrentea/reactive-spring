@@ -2,13 +2,11 @@ package victor.training.reactive.reactor.pitfalls;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.ThreadUtils;
 
 import java.util.Objects;
 
-import static victor.training.reactive.intro.ThreadUtils.sleep;
-import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
+import static victor.training.reactive.intro.Utils.sleep;
+import static victor.training.reactive.intro.Utils.waitForEnter;
 
 @Slf4j
 public class MultipleSubscribersMono_Zip3 {

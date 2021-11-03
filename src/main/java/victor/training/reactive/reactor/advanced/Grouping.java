@@ -3,10 +3,7 @@ package victor.training.reactive.reactor.advanced;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.ThreadUtils;
-
-import java.util.List;
+import victor.training.reactive.intro.Utils;
 
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
@@ -22,7 +19,7 @@ public class Grouping {
           .flatMap(Grouping::sendOdd)
           .subscribe();
 
-      ThreadUtils.sleep(2000);
+      Utils.sleep(2000);
    }
 
    public static NumberType getType(int number) {

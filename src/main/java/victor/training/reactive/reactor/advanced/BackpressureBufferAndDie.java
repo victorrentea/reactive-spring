@@ -1,13 +1,12 @@
 package victor.training.reactive.reactor.advanced;
 
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.Many;
 import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.ThreadUtils;
+import victor.training.reactive.intro.Utils;
 
-import static victor.training.reactive.intro.ThreadUtils.sleep;
+import static victor.training.reactive.intro.Utils.sleep;
 
 @Slf4j
 public class BackpressureBufferAndDie {
@@ -31,6 +30,6 @@ public class BackpressureBufferAndDie {
          log.info("Received " + e);
       });
 
-      ThreadUtils.sleep(10000);
+      Utils.sleep(10000);
    }
 }

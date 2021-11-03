@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import victor.training.reactive.intro.ThreadUtils;
+import victor.training.reactive.intro.Utils;
 
 import java.time.Duration;
 import java.util.List;
@@ -43,7 +43,7 @@ public class Part12AdvancedTest {
 
       assertThat(timedFlux.take(3).collectList().block()).containsExactly("Large", "systems", "are");
 
-      ThreadUtils.sleep(600);
+      Utils.sleep(600);
       assertThat(timedFlux.take(3).collectList().block()).containsExactly("Large", "systems", "are");
    }
 

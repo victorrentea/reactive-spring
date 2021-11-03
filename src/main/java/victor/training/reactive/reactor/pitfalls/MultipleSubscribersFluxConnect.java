@@ -7,7 +7,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.List;
 import java.util.Objects;
 
-import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
+import static victor.training.reactive.intro.Utils.waitForEnter;
 
 @Slf4j
 public class MultipleSubscribersFluxConnect {

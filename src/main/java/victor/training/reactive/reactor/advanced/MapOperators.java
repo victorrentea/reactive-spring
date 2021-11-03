@@ -3,7 +3,7 @@ package victor.training.reactive.reactor.advanced;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import victor.training.reactive.intro.ThreadUtils;
+import victor.training.reactive.intro.Utils;
 
 import java.time.Duration;
 import java.util.Random;
@@ -21,7 +21,7 @@ public class MapOperators {
 //          .concatMap(n -> oneCall(n))
           .subscribe(log::info);
 
-      ThreadUtils.sleep(3000);
+      Utils.sleep(3000);
    }
 
    public static final Random r = new Random();

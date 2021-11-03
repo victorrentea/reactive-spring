@@ -25,7 +25,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static victor.training.reactive.intro.ThreadUtils.sleep;
+import static victor.training.reactive.intro.Utils.sleep;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodName.class)

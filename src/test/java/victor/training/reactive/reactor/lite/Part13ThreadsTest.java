@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import victor.training.reactive.intro.ThreadUtils;
+import victor.training.reactive.intro.Utils;
 import victor.training.reactive.reactor.lite.Part13Threads.BlockingService;
 import victor.training.reactive.reactor.lite.Part13Threads.RxService;
 
@@ -73,14 +73,14 @@ public class Part13ThreadsTest {
       Runnable ioTask = () -> {
          steps.add(captureThread("IO"));
          log.debug("Start IO");
-         ThreadUtils.sleep(500);
+         Utils.sleep(500);
          log.debug("End IO");
       };
 
       Runnable cpuTask = () -> {
          steps.add(captureThread("CPU"));
          log.debug("Start CPU");
-         ThreadUtils.sleep(500);
+         Utils.sleep(500);
          log.debug("End CPU");
       };
 
