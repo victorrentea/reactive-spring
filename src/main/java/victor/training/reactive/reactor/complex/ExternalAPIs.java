@@ -20,11 +20,10 @@ class ExternalAPIs {
    @SneakyThrows
    public static Mono<Void> auditResealedProduct(Product product) {
       // TODO only audit resealed products !
-      return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product)
+      return WebClient.create().get().uri("http://localhoxxxst:9999/api/audit-resealed/" + product)
           .retrieve()
           .toBodilessEntity()
-          .doOnSubscribe(s -> log.info("Calling Audit REST"))
-          .then();
+          .then()          ;
    }
 
    @SneakyThrows

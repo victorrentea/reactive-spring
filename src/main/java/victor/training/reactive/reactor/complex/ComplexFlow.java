@@ -2,12 +2,9 @@ package victor.training.reactive.reactor.complex;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -24,6 +21,7 @@ public class ComplexFlow {
       Mono<List<Product>> listMono = mainFlow(productIds);
       List<Product> products = listMono.block(); // unusual, only here to stop main thread from exiting
       long t1 = System.currentTimeMillis();
+
 
       log.info("Took {}" , t1-t0);
       log.info("Done. Got {} products: {}", products.size(), products);
@@ -42,16 +40,21 @@ public class ComplexFlow {
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
 
       return Flux.fromIterable(productIds)
-          .flatMap(ComplexFlow::retrieveProductById, 10)
+          .buffer(2)
+          .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
+          .doOnNext( p-> ExternalAPIs.auditResealedProduct(p)
+              .doOnError(t -> log.error("BUM", t)) // daca nu pui e ca un catch() {}
+              .subscribe())
           .collectList();
    }
 
-   private static Mono<Product> retrieveProductById(Long productId) {
+   private static Flux<Product> retrieveProductByIdInPages(List<Long> productIds) {
       return WebClient.create()
-          .get()
-          .uri("http://localhost:9999/api/product/" + productId)
+          .post()
+          .uri("http://localhost:9999/api/product/many")
+          .body(Mono.just(productIds.toString()), String.class)
           .retrieve()
-          .bodyToMono(ProductDetailsResponse.class)
+          .bodyToFlux(ProductDetailsResponse.class)
           .map(ProductDetailsResponse::toEntity)
           ;
    }
