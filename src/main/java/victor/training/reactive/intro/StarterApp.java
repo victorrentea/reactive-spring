@@ -15,17 +15,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import victor.training.reactive.reactor.complex.Product;
 
-import java.net.ServerSocket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
 @Slf4j
@@ -44,8 +41,14 @@ public class StarterApp implements CommandLineRunner {
    public void installBlockHound() {
       log.info("--- App Started ---");
       log.warn("Installing BlockHound to detect I/O in non-blocking threads");
-      BlockHound.install();
+
+//      WebClient.create().get().uri("http://localhost/").retrieve().bodyToMono(String.class).block();
+
+      BlockHound.builder()
+          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
+          .install();
    }
+
 
    @Bean
    public ThreadPoolTaskExecutor pool() {
@@ -72,8 +75,7 @@ public class StarterApp implements CommandLineRunner {
       long t0 = System.currentTimeMillis();
 
       // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
-      Mono<Beer> beerMono = Mono.fromSupplier(barman::pourBeer)
-          .subscribeOn(boundedElastic());
+      Mono<Beer> beerMono = barman.pourBeer();
       Mono<Vodka> vodkaMono = Mono.fromSupplier(barman::pourVodka)
           .subscribeOn(boundedElastic());
 
@@ -83,7 +85,7 @@ public class StarterApp implements CommandLineRunner {
       CompletableFuture<DillyDilly> futureDilly = monoDilly.toFuture(); // porneste efectiv munca in paralel aici
 
 
-      log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis()- t0);
+      log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis() - t0);
       return futureDilly;
    }
 }
@@ -92,15 +94,25 @@ public class StarterApp implements CommandLineRunner {
 @Service
 @RequiredArgsConstructor
 class Barman {
-   public Beer pourBeer() {
+   public Mono<Beer> pourBeer() {
       log.info("Start pour beer");
-
-
-      RestTemplate rest = new RestTemplate(); // blocant !!
-      Product product = rest.getForObject("http://localhost:9999/api/product/13", Product.class);
-
-      log.info("end pour beer");
-      return new Beer(product.getName());
+      return WebClient.create()
+          .get()
+          .uri("http://localhost:9999/api/product/13")
+          // aka gata retrieve
+          .retrieve()
+          .bodyToMono(Product.class)
+          .map(p -> new Beer(p.getName()))
+          .doOnNext(b -> log.info("end pour beer: " + b))
+          ;
+//
+//
+//
+//      RestTemplate rest = new RestTemplate(); // blocant !!
+//      Product product = rest.getForObject("http://localhost:9999/api/product/13", Product.class);
+//
+//      log.info("end pour beer");
+//      return new Beer(product.getName());
    }
 
    public Vodka pourVodka() {
