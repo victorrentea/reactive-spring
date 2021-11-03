@@ -42,10 +42,26 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-          .doOnNext( p-> ExternalAPIs.auditResealedProduct(p)
-              .doOnError(t -> log.error("BUM", t)) // daca nu pui e ca un catch() {}
-              .subscribe())
+//          .doOnNext( p-> ExternalAPIs.auditResealedProduct(p)
+//              .doOnError(t -> log.error("BUM", t)) // daca nu pui e ca un catch() {}
+//              .subscribe())
+          .delayUntil(ComplexFlow::auditProduct)
           .collectList();
+   }
+
+   // equivalent coroutine
+   // for (id in productIds) {
+   //  val p = async { getProduct }
+   //  if (p.resealed) audit (p)
+   // }
+
+
+   private static Mono<Void> auditProduct(Product product) {
+      if (product.isResealed())
+        return ExternalAPIs.auditResealedProduct(product);
+      else {
+         return Mono.empty();
+      }
    }
 
    private static Flux<Product> retrieveProductByIdInPages(List<Long> productIds) {
