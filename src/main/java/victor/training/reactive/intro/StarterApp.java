@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.blockhound.BlockHound;
+import reactor.blockhound.BlockHound.Builder;
+import reactor.blockhound.integration.BlockHoundIntegration;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import victor.training.reactive.reactor.complex.Product;
@@ -26,10 +28,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 import static reactor.core.scheduler.Schedulers.parallel;
@@ -52,11 +57,18 @@ public class StarterApp implements CommandLineRunner {
       log.warn("Installing BlockHound to detect I/O in non-blocking threads");
 
 //      WebClient.create().get().uri("http://localhost/").retrieve().bodyToMono(String.class).block();
-      BlockHound.install();
+//      BlockHound.install();
 
-//      BlockHound.builder()
-//          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
-//          .install();
+
+      Builder builder = BlockHound.builder();
+      ServiceLoader<BlockHoundIntegration> serviceLoader = ServiceLoader.load(BlockHoundIntegration.class);
+      Stream
+          .concat(StreamSupport.stream(serviceLoader.spliterator(), false), Stream.of())
+          .sorted()
+          .forEach(builder::with);
+
+       builder.allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
+          .install();
    }
 
 
