@@ -17,13 +17,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.blockhound.BlockHound;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import victor.training.reactive.reactor.complex.Product;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static reactor.core.scheduler.Schedulers.boundedElastic;
+import static reactor.core.scheduler.Schedulers.parallel;
 
 @Slf4j
 @EnableAsync
@@ -43,10 +50,28 @@ public class StarterApp implements CommandLineRunner {
       log.warn("Installing BlockHound to detect I/O in non-blocking threads");
 
 //      WebClient.create().get().uri("http://localhost/").retrieve().bodyToMono(String.class).block();
+      BlockHound.install();
+//      BlockHound.builder()
+//          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
+//          .install();
+   }
 
-      BlockHound.builder()
-          .allowBlockingCallsInside("io.netty.resolver.HostsFileParser", "parse")
-          .install();
+
+   @Data
+   static class UnDtoCuOListaBabana {
+      List<String> babana = new ArrayList<>();
+   }
+
+
+   @GetMapping("flood")
+   public Flux<String> daiFrate() {
+      return Flux.range(1, 1_000_000_000).map(n -> "y".repeat(1000));
+   }
+   @GetMapping("unu-da-mare")
+   public Mono<UnDtoCuOListaBabana> unuDaMare() {
+      UnDtoCuOListaBabana dto = new UnDtoCuOListaBabana();
+      dto.getBabana().addAll(IntStream.range(1, 15_000_000).mapToObj(i -> "x").collect(Collectors.toList()));
+      return Mono.just(dto);
    }
 
 
@@ -59,6 +84,14 @@ public class StarterApp implements CommandLineRunner {
       executor.setThreadNamePrefix("bar-");
       executor.initialize();
       executor.setWaitForTasksToCompleteOnShutdown(true);
+
+
+//      HttServReq
+
+//      Connection conn; // din conn pool
+//      conn.setAutoCommit(false); // ~= START TRANSACTION ==== @Transactional asta face
+//      conn.prepareStatement().execute()
+//       conn.commit();; // o face tot aspectul @Transacatipn
       return executor;
    }
 
@@ -77,13 +110,13 @@ public class StarterApp implements CommandLineRunner {
       // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
       Mono<Beer> beerMono = barman.pourBeer();
       Mono<Vodka> vodkaMono = Mono.fromSupplier(barman::pourVodka)
-          .subscribeOn(boundedElastic());
-
+          .subscribeOn(parallel())
+//          .subscribeOn(boundedElastic())
+          ;
 
       Mono<DillyDilly> monoDilly = beerMono.zipWith(vodkaMono, (beer, vodka) -> new DillyDilly(beer, vodka));
 
       CompletableFuture<DillyDilly> futureDilly = monoDilly.toFuture(); // porneste efectiv munca in paralel aici
-
 
       log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis() - t0);
       return futureDilly;
@@ -121,7 +154,24 @@ class Barman {
       log.info("end pour vodka");
       return new Vodka();
    }
+
+//   {
+//      Mono<> m("a")
+//   }
+//   // aspect:
+//   return redisMono.defaultIfEmpty(::m)
+//   @Cacheable
+//   fun m(String s): Mono<String>
+//   fun m(String s): String
+
 }
+
+// caching pe :
+// rezultate ale fct pure => memoization > poate fi si in ConcurrentHashMap
+// data mutable externe ==> caching ttl expiration si alte dureri
+
+
+
 
 
 @Data

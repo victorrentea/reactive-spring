@@ -14,11 +14,24 @@ public class BlockHoundTargets {
 
    // Block hound this:
    @GetMapping("cache")
-   @Cacheable("cache")
+   @Cacheable("cachex")
    public String cache() {
       log.info("In method");
+      ThreadUtils.sleep(1000);
       return "A";
    }
+
+
+
+
+
+
+
+
+
+
+
+
    @GetMapping("log")
    public String log() throws IOException {
       log.info("Logging is safe (non-blocking)");
