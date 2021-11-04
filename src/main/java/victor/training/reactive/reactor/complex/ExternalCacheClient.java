@@ -20,9 +20,9 @@ public class ExternalCacheClient {
 
    public static Mono<Void> putInCache(Long productId, ProductRatingResponse rating) {
       log.info("Put in cache " + productId);
-      if (true) {
-         throw new RuntimeException("buba");
-      }
+//      if (true) {
+//         throw new RuntimeException("buba");
+//      }
       return Mono.empty();//.delayElement(ofMillis(10)).then();
    }
 }

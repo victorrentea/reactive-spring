@@ -1,10 +1,12 @@
 package victor.training.reactive.reactor.complex;
 
 import lombok.extern.slf4j.Slf4j;
+import org.reactivestreams.Publisher;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -44,17 +46,35 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
+
+
+          .groupBy(p -> p.isResealed())
+          .flatMap(groupedFlux -> {
+             if (groupedFlux.key()) {
+                return groupedFlux.buffer(2).flatMap(paginaDeProduseDeAudit -> dummy(paginaDeProduseDeAudit));
+             } else {
+                return groupedFlux;
+             }
+          })
+
+//          .scan(Collections.emptyMap(), (map, product) -> map  . contcat (product.key , produs))
+//          .scan
+
           .delayUntil(ComplexFlow::auditProduct) // e mai lenta daca audit dureaza timp: trage pe rand (singe threaded)
           .flatMap(product -> fetchCachedRating(product)
               .map(product::withRating))
           .collectList();
    }
 
+   private static Flux<Product> dummy(List<Product> pagina) {
+      System.out.println("Cica auditez doar cate 2 produse resealed: " + pagina);
+      return Flux.fromIterable(pagina);
+   }
+
    private static Mono<ProductRatingResponse> fetchCachedRating(Product product) {
-      // return lookupInCache(id) ?.
-      // if (valoare==null) {
-      //    valoare = fetchProductRating(id) ?.also { launch {  ExternalCacheClient.putInCache(id, valoare) } }
-      //   }
+      // return lookupInCache(id) ?:
+      //    fetchProductRating(id)
+      //    ?.also { FireAndForget.launch {  ExternalCacheClient.putInCache(id, valoare) } }
       return
           lookupInCache(product.getId())
               .switchIfEmpty(
@@ -62,9 +82,7 @@ public class ComplexFlow {
                       .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating)./*doOnError().*/subscribe())
 
               );
-
    }
-
 
    private static Mono<Void> auditProduct(Product product) {
       if (product.isResealed())
