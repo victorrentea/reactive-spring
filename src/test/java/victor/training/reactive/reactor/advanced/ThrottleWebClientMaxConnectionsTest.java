@@ -24,10 +24,10 @@ public class ThrottleWebClientMaxConnectionsTest {
     public static final int MAX_CONNECTIONS = 5;
 
     @Rule
-    public WireMockRule wireMock = new WireMockRule(9999);
+    public WireMockRule wireMock = new WireMockRule(9998);
 
     public ThrottleWebClientMaxConnections target = new ThrottleWebClientMaxConnections(
-        "http://localhost:9999/testing", MAX_CONNECTIONS);
+        "http://localhost:9998/testing", MAX_CONNECTIONS);
 
     @Test
     public void throttleMaxConcurentHttpCalls() {

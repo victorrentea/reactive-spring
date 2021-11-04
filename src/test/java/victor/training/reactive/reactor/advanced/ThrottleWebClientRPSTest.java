@@ -19,22 +19,22 @@ public class ThrottleWebClientRPSTest {
 
     public static final int MAX_RPS = 3;
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(9999);
+    public WireMockRule wireMockRule = new WireMockRule(9998);
     private ThrottleWebClientRPS target = new ThrottleWebClientRPS(
-        "http://localhost:9999/testing", MAX_RPS);
+        "http://localhost:9998/testing", MAX_RPS);
 
     @Test
-    public void whyDoesntThisWorkQuestionMarkQuestionMark() {
+    public void maxRPS() {
         // Given
 
         wireMockRule.addStubMapping(stubFor(post(urlPathEqualTo("/testing"))
                 .willReturn(aResponse()
                     .withStatus(200)
                     .withBody("Hello!")
-                    .withFixedDelay(1000))));
+                    .withFixedDelay(100))));
 
         // When
-        int NUMBER_OF_REQUESTS = 30;
+        int NUMBER_OF_REQUESTS = 9;
         Flux<String> flux =
             Flux.interval(Duration.ofMillis(1))
                 .doOnNext(e -> log.info("Incoming request " + e))
@@ -51,6 +51,6 @@ public class ThrottleWebClientRPSTest {
 
         assertThat(endTime - startTime)
                 .describedAs("I don't understand why this is not taking longer than this")
-                .isGreaterThanOrEqualTo((NUMBER_OF_REQUESTS / MAX_RPS) * 1000);
+                .isGreaterThanOrEqualTo(3 * 1000);
     }
 }
