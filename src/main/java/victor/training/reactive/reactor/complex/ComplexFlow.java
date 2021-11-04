@@ -46,7 +46,6 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-
           .groupBy(p -> p.isResealed())
           .flatMap(groupedFlux -> {
              if (groupedFlux.key()) {
