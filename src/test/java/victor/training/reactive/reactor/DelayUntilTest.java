@@ -22,6 +22,7 @@ public class DelayUntilTest {
       List<Long> list = Flux.interval(Duration.ofMillis(100))
           .take(2)
           .delayUntil(t -> expensiveMustHaveFunction())
+//          .doOnNext(t -> expensiveMustHaveFunction().subscribe()) // rateaza erori
           .collectList()
           .block();
       long t1 = currentTimeMillis();
@@ -43,7 +44,7 @@ public class DelayUntilTest {
 
       log.debug("List: " + list);
       log.debug("Took {}", t1-t0);
-      Assertions.assertThat(t1 - t0).isLessThan(2000);
+      Assertions.assertThat(t1 - t0).isLessThan(1500);
    }
 
    private Mono<Long> expensiveMustHaveFunction() {
