@@ -1,12 +1,22 @@
 package victor.training.reactive.reactor.complex;
 
 import lombok.Data;
+import lombok.Value;
+import lombok.With;
 
-@Data
+@Value
 public class Product {
-   private Long id;
-   private String name;
-   private boolean active;
-   private boolean resealed;
-   private ProductRatingResponse rating;
+   Long id;
+   String name;
+   boolean active;
+   boolean resealed;
+   @With
+   ProductRatingResponse rating;
+}
+
+
+@Value
+class ProductWithRating {
+   Product product;
+   ProductRatingResponse rating;
 }

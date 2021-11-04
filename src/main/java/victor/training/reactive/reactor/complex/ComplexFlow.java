@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static victor.training.reactive.reactor.complex.ExternalCacheClient.lookupInCache;
+
 @Slf4j
 public class ComplexFlow {
 
@@ -42,19 +44,26 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-//          .doOnNext( p-> ExternalAPIs.auditResealedProduct(p)
-//              .doOnError(t -> log.error("BUM", t)) // daca nu pui e ca un catch() {}
-//              .subscribe())
-          .flatMap(p -> ComplexFlow.auditProduct(p).thenReturn(p))
-//          .delayUntil(ComplexFlow::auditProduct)
+          .delayUntil(ComplexFlow::auditProduct) // e mai lenta daca audit dureaza timp: trage pe rand (singe threaded)
+          .flatMap(product -> fetchCachedRating(product)
+              .map(product::withRating))
           .collectList();
    }
 
-   // equivalent coroutine
-   // for (id in productIds) {
-   //  val p = async { getProduct }
-   //  if (p.resealed) audit (p)
-   // }
+   private static Mono<ProductRatingResponse> fetchCachedRating(Product product) {
+      // return lookupInCache(id) ?.
+      // if (valoare==null) {
+      //    valoare = fetchProductRating(id) ?.also { launch {  ExternalCacheClient.putInCache(id, valoare) } }
+      //   }
+      return
+          lookupInCache(product.getId())
+              .switchIfEmpty(
+                  ExternalAPIs.fetchProductRating(product.getId())
+                      .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating)./*doOnError().*/subscribe())
+
+              );
+
+   }
 
 
    private static Mono<Void> auditProduct(Product product) {
