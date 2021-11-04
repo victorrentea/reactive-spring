@@ -2,6 +2,7 @@ package victor.training.reactive.spring.r2dbc;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,14 @@ public class R2DBCController {
       return userRepository.findAll().map(User::getName);
    }
    @GetMapping("create")
+   @Transactional
    public Mono<User> create() {
+
+
+//      var idInseratInTranzactie = async(couroutineScope + tranzactie) {
+//         suspendFunction()
+//      }
+
 //      userRepository.saveAll()
       String id = UUID.randomUUID().toString();
       String name = "User " + now().format(ofPattern("mm:ss"));

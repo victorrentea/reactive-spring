@@ -1,12 +1,17 @@
 package victor.training.reactive.reactor.pitfalls;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.lambda.tuple.Tuple2;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.ThreadUtils;
+import reactor.function.TupleUtils;
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
 
+import java.time.LocalDate;
+import java.util.Map;
 import java.util.Objects;
 
+import static reactor.function.TupleUtils.function;
 import static victor.training.reactive.intro.ThreadUtils.sleep;
 import static victor.training.reactive.intro.ThreadUtils.waitForEnter;
 
@@ -24,9 +29,29 @@ public class MultipleSubscribersMono_Zip3 {
       waitForEnter();
    }
 
-   public Mono<Void> callMe(C c) {
+   public Mono<C> callMe(C c) {
       System.out.println("Got C = " + Objects.requireNonNull(c));
-      return Mono.empty();
+
+
+      // solutia1L cache
+//      Mono<A> aMono = getA().cache();
+//      Mono<B> bMono = aMono.flatMap(a -> getB(a));
+//      return aMono.zipWith(bMono, (a, b) -> getC(a, b)).flatMap(Function.identity());
+
+      // Solutia2: .connect()
+
+//      Tuple2<Tuple3<String, Integer, Map<String, Integer>>, LocalDate> doamneMiluieste;
+
+      // Cuplu doamneMiluieste; {
+      //         Copil copil;
+      //         LocalDateTime dataCasatoriei;
+      //      }
+
+      // solutia3:
+      return getA()
+          .flatMap(a -> getB(a).map(b -> Tuples.of(a, b)))
+          .flatMap(function((a, b) -> getC(a, b)));
+
    }
 
    public static Mono<A> getA() {
@@ -38,7 +63,7 @@ public class MultipleSubscribersMono_Zip3 {
    }
 
    public static Mono<B> getB(A a) {
-      return Mono.fromCallable(()-> {
+      return Mono.fromCallable(() -> {
          log.info("getB({})", a);
          return new B();
       });
