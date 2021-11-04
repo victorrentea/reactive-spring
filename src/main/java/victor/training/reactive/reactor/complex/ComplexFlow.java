@@ -1,14 +1,12 @@
 package victor.training.reactive.reactor.complex;
 
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
+import reactor.core.publisher.Sinks;
 
-import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,26 +43,74 @@ public class ComplexFlow {
    }
 
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
-//      return mainFlowOriginal(productIds);
-      return mainFlowOptimizat(productIds);
+      return mainFlowOriginal_BUN(productIds);
+//      return mainFlowOptimizatCuCache(productIds);
+//      return mainFlowOptimizatCuConnecableFlux(productIds);
+//      return mainFlowOptimizatCuPublishPeSinkSeparat_NU_MERGE(productIds);
    }
-   private static Mono<List<Product>> mainFlowOptimizat(List<Long> productIds) {
+   private static Mono<List<Product>> mainFlowOptimizatCuPublishPeSinkSeparat_NU_MERGE(List<Long> productIds) {
+      Sinks.Many<Product> sink = Sinks.many().unicast().onBackpressureBuffer();
+
+      Flux<Product> resealedFlux = sink.asFlux();
+
       Flux<Product> productFlux = Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
           .flatMap(product -> fetchCachedRating(product)
               .map(product::withRating))
-          .cache();
+          .doOnNext(p -> {
+             if (p.isResealed()) sink.tryEmitNext(p);
+          });
+
+      Mono<Void> resealedProductsDoneMono = resealedFlux
+          .buffer(2)
+          .flatMap(ComplexFlow::auditInPagesPretend)
+          .then();
+
+
+      return resealedProductsDoneMono.thenMany(productFlux).collectList();
+   }
+   private static Mono<List<Product>> mainFlowOptimizatCuConnecableFlux(List<Long> productIds) {
+      ConnectableFlux<Product> productFlux = Flux.fromIterable(productIds)
+          .buffer(2)
+          .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
+          .flatMap(product -> fetchCachedRating(product)
+              .map(product::withRating))
+          .publish()
+//          .autoConnect(3) ==> BUG ca nu porneste sa emita de loc
+          ; // ai "suspenda" publicarea pana cand dai "connect"
 
       Flux<Product> resealedProductsFlux = productFlux.filter(Product::isResealed)
           .buffer(2)
-          .flatMap(ComplexFlow::dummy);
+          .flatMap(ComplexFlow::auditInPagesPretend);
+//      productFlux.connect(); // bug daca pun aici : poti rata emisii de date
+
+      Mono<List<Product>> regularProducts = resealedProductsFlux
+          .mergeWith(productFlux.filter(Predicate.not(Product::isResealed)))
+          .collectList();
+      productFlux.connect();
+
+      return regularProducts;
+   }
+   private static Mono<List<Product>> mainFlowOptimizatCuCache(List<Long> productIds) {
+      Flux<Product> productFlux = Flux.fromIterable(productIds)
+          .buffer(2)
+          .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
+          .flatMap(product -> fetchCachedRating(product)
+              .map(product::withRating))
+//          .share() --------- e ceva putred (poti sa pierzi emisii dupa primul subsriber
+          .cache()
+          ;
+
+      Flux<Product> resealedProductsFlux = productFlux.filter(Product::isResealed)
+          .buffer(2)
+          .flatMap(ComplexFlow::auditInPagesPretend);
 
       return resealedProductsFlux
           .mergeWith(productFlux.filter(Predicate.not(Product::isResealed)))
           .collectList();
    }
-   private static Mono<List<Product>> mainFlowOriginal(List<Long> productIds) {
+   private static Mono<List<Product>> mainFlowOriginal_BUN(List<Long> productIds) {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
@@ -73,14 +119,14 @@ public class ComplexFlow {
           .groupBy(p -> p.isResealed())
           .flatMap(groupedFlux -> {
              if (groupedFlux.key()) {
-                return groupedFlux.buffer(2).flatMap(paginaDeProduseDeAudit -> dummy(paginaDeProduseDeAudit));
+                return groupedFlux.buffer(2).flatMap(paginaDeProduseDeAudit -> auditInPagesPretend(paginaDeProduseDeAudit));
              } else {
                 return groupedFlux;
              }
           }).collectList();
    }
 
-   private static Flux<Product> dummy(List<Product> pagina) {
+   private static Flux<Product> auditInPagesPretend(List<Product> pagina) {
       System.out.println("Cica auditez doar cate 2 produse resealed: " + pagina);
       return Flux.fromIterable(pagina)
           .flatMap(p -> auditProduct(p).thenReturn(p));
