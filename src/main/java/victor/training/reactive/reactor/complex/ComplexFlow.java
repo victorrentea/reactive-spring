@@ -56,8 +56,7 @@ public class ComplexFlow {
       Flux<Product> productFlux = Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-          .flatMap(product -> fetchCachedRating(product)
-              .map(product::withRating))
+          .flatMap(product -> enhanceWithRating(product))
           .doOnNext(p -> {
              if (p.isResealed()) sink.tryEmitNext(p);
           });
@@ -74,8 +73,7 @@ public class ComplexFlow {
       ConnectableFlux<Product> productFlux = Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-          .flatMap(product -> fetchCachedRating(product)
-              .map(product::withRating))
+          .flatMap(product -> enhanceWithRating(product))
           .publish()
 //          .autoConnect(3) ==> BUG ca nu porneste sa emita de loc
           ; // ai "suspenda" publicarea pana cand dai "connect"
@@ -96,8 +94,7 @@ public class ComplexFlow {
       Flux<Product> productFlux = Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-          .flatMap(product -> fetchCachedRating(product)
-              .map(product::withRating))
+          .flatMap(product -> enhanceWithRating(product))
 //          .share() --------- e ceva putred (poti sa pierzi emisii dupa primul subsriber
           .cache()
           ;
@@ -114,9 +111,8 @@ public class ComplexFlow {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
-          .flatMap(product -> fetchCachedRating(product)
-              .map(product::withRating))
-          .groupBy(p -> p.isResealed())
+          .flatMap(ComplexFlow::enhanceWithRating)
+          .groupBy(Product::isResealed)
           .flatMap(groupedFlux -> {
              if (groupedFlux.key()) {
                 return groupedFlux.buffer(2).flatMap(paginaDeProduseDeAudit -> auditInPagesPretend(paginaDeProduseDeAudit));
@@ -124,6 +120,10 @@ public class ComplexFlow {
                 return groupedFlux;
              }
           }).collectList();
+   }
+
+   private static Mono<Product> enhanceWithRating(Product product) {
+      return fetchCachedRating(product).map(product::withRating);
    }
 
    private static Flux<Product> auditInPagesPretend(List<Product> pagina) {

@@ -4,6 +4,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -57,7 +58,11 @@ public class Part12Advanced {
    // TODO The returned Mono emits after 1 second "Hello " + the current username got from Reactor Context
    // Hint: Mono.deferContextual allows access to context propagated from downstream
    public Mono<String> reactorContext() {
-      return null;
+      // aici nu am reactor context
+      return Mono.deferContextual(context -> {
+         // am reactor context doar LA SUBSCRIERE ca vine propagat in sus de la subscriber
+         return Mono.just("Hello " + context.get("username"));
+      }).delayElement(Duration.ofSeconds(1));
    }
 
    //========================================================================================

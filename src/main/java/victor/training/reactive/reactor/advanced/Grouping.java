@@ -37,6 +37,9 @@ public class Grouping {
           // antipattern pe java 17
           .flatMap(groupedFlux -> groupedFlux.key().processFunction.apply(this, groupedFlux))
 
+//          .doOnNext(p -> p<0 ? :)
+//          .doOnNext(p -> p%2 ==0 ? :)
+
           // java 17:
 //          .flatMap(groupedFlux -> switch (groupedFlux.key()) {
 //                 case EVEN -> processEven(groupedFlux);
@@ -91,7 +94,7 @@ public class Grouping {
    enum NumberType {
       ODD(Grouping::processOdd),
       EVEN(Grouping::processEven)
-      //NEGATIVE
+//      NEGATIVE_ODD, NEGATIVE_EVEN
       ;
 
       public final BiFunction<Grouping, Flux<Integer>, Mono<Void>> processFunction;
