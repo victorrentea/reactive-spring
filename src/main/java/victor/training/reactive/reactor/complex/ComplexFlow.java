@@ -5,9 +5,12 @@ import org.reactivestreams.Publisher;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -34,7 +37,7 @@ public class ComplexFlow {
    private static void heatupWebClient() {
       WebClient.create()
           .get()
-          .uri("http://localhost:9999/api/product/" + 1)
+          .uri("http://localhost:9999/api/product/-9999")
           .retrieve()
           .bodyToMono(ProductDetailsResponse.class)
           .map(ProductDetailsResponse::toEntity)
@@ -42,10 +45,31 @@ public class ComplexFlow {
    }
 
    private static Mono<List<Product>> mainFlow(List<Long> productIds) {
+//      return mainFlowOriginal(productIds);
+      return mainFlowOptimizat(productIds);
+   }
+   private static Mono<List<Product>> mainFlowOptimizat(List<Long> productIds) {
+      Flux<Product> productFlux = Flux.fromIterable(productIds)
+          .buffer(2)
+          .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
+          .flatMap(product -> fetchCachedRating(product)
+              .map(product::withRating))
+          .cache();
 
+      Flux<Product> resealedProductsFlux = productFlux.filter(Product::isResealed)
+          .buffer(2)
+          .flatMap(ComplexFlow::dummy);
+
+      return resealedProductsFlux
+          .mergeWith(productFlux.filter(Predicate.not(Product::isResealed)))
+          .collectList();
+   }
+   private static Mono<List<Product>> mainFlowOriginal(List<Long> productIds) {
       return Flux.fromIterable(productIds)
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
+          .flatMap(product -> fetchCachedRating(product)
+              .map(product::withRating))
           .groupBy(p -> p.isResealed())
           .flatMap(groupedFlux -> {
              if (groupedFlux.key()) {
@@ -53,19 +77,15 @@ public class ComplexFlow {
              } else {
                 return groupedFlux;
              }
-          })
-
-          .delayUntil(ComplexFlow::auditProduct) // e mai lenta daca audit dureaza timp: trage pe rand (singe threaded)
-          .flatMap(product -> fetchCachedRating(product)
-              .map(product::withRating))
-
-          .collectList();
+          }).collectList();
    }
 
    private static Flux<Product> dummy(List<Product> pagina) {
       System.out.println("Cica auditez doar cate 2 produse resealed: " + pagina);
-      return Flux.fromIterable(pagina);
+      return Flux.fromIterable(pagina)
+          .flatMap(p -> auditProduct(p).thenReturn(p));
    }
+
 
    private static Mono<ProductRatingResponse> fetchCachedRating(Product product) {
       // return lookupInCache(id) ?:
@@ -75,6 +95,8 @@ public class ComplexFlow {
           lookupInCache(product.getId())
               .switchIfEmpty(
                   ExternalAPIs.fetchProductRating(product.getId())
+//                      .retry(2)
+//                      .retryWhen(Retry.backoff(3, Duration.ofMillis(5)))
                       .doOnNext(rating -> ExternalCacheClient.putInCache(product.getId(), rating)./*doOnError().*/subscribe())
 
               );
