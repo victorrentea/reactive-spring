@@ -47,7 +47,6 @@ public class ComplexFlow {
           .buffer(2)
           .flatMap(ComplexFlow::retrieveProductByIdInPages, 10)
 
-
           .groupBy(p -> p.isResealed())
           .flatMap(groupedFlux -> {
              if (groupedFlux.key()) {
@@ -57,12 +56,10 @@ public class ComplexFlow {
              }
           })
 
-//          .scan(Collections.emptyMap(), (map, product) -> map  . contcat (product.key , produs))
-//          .scan
-
           .delayUntil(ComplexFlow::auditProduct) // e mai lenta daca audit dureaza timp: trage pe rand (singe threaded)
           .flatMap(product -> fetchCachedRating(product)
               .map(product::withRating))
+
           .collectList();
    }
 
