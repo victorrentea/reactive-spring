@@ -123,7 +123,8 @@ public class StarterApp implements CommandLineRunner {
       long t0 = System.currentTimeMillis();
 
       // !!! Important AICI se incepe executia (unlike a Mono/Flux care asteapta subscribe)
-      Mono<Beer> beerMono = barman.pourBeer();
+      Mono<Beer> beerMono = barman.pourBeer()
+          .onErrorReturn(new Beer("Neumarkt"));
       Mono<Vodka> vodkaMono = Mono.fromSupplier(barman::pourVodka)
           .subscribeOn(parallel())
 //          .subscribeOn(boundedElastic())
@@ -136,6 +137,9 @@ public class StarterApp implements CommandLineRunner {
       log.info("Thradul tomcatului iese aici dupa {}", System.currentTimeMillis() - t0);
       return futureDilly;
    }
+
+
+
 }
 
 @Slf4j
@@ -168,7 +172,8 @@ class Barman {
 
 
 
-      return Mono.just(new Beer("bruna"));
+//      return Mono.just(new Beer("Heineken"));
+      return Mono.error(new IllegalStateException("NU MAI E BERE !"));
 //
 //
 //

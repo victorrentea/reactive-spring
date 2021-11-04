@@ -1,37 +1,43 @@
 package victor.training.reactive.reactor.pitfalls;
 
 import lombok.RequiredArgsConstructor;
-import org.jooq.lambda.fi.util.function.CheckedConsumer;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ServiceLoader.Provider;
+import java.util.concurrent.Callable;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.jooq.lambda.fi.util.function.CheckedConsumer.unchecked;
 
 public class RaceArguments {
    @RequiredArgsConstructor
    class Foo {
       private final UploadService service;
 
-      Mono<Void> tryUpload(InputStream in) {
-         return service.doUpload(in).doFinally(CheckedConsumer.unchecked(x -> in.close()));
+      Mono<Void> tryUpload(Callable<InputStream> inProvider) {
+         return Mono.using(
+             inProvider,
+             service::doUpload,
+             unchecked(InputStream::close)
+         );
       }
 
+
       Mono<Void> problem(byte[] data) {
-         return tryUpload(new BufferedInputStream(new ByteArrayInputStream(data)))
+         return tryUpload(()->new BufferedInputStream(new ByteArrayInputStream(data)))
              .doOnError(t -> System.out.println("Saw " + t))
-             .retry(5);
+             .retry(5)
+             ;
       }
    }
 
    static class UploadService {
       boolean firstRun = true;
+
       Mono<Void> doUpload(InputStream in) {
          return Mono.defer(() -> {
             if (firstRun) {

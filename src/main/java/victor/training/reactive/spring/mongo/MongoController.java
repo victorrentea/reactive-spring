@@ -1,6 +1,7 @@
 package victor.training.reactive.spring.mongo;
 
 import lombok.RequiredArgsConstructor;
+import org.reactivestreams.Subscription;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +49,9 @@ public class MongoController {
    @GetMapping("create")
    public Mono<String> sendMessage() {
       Event event = new Event("Aloha " + LocalDateTime.now());
-      return rxRepo.save(event).map(Event::getId);
+//      rxRepo.saveAll()
+      return rxRepo.save(event)
+          .map(Event::getId);
    }
 }
 

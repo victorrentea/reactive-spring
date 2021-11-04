@@ -129,7 +129,9 @@ public class ComplexFlow {
    private static Flux<Product> auditInPagesPretend(List<Product> pagina) {
       System.out.println("Cica auditez doar cate 2 produse resealed: " + pagina);
       return Flux.fromIterable(pagina)
-          .flatMap(p -> auditProduct(p).thenReturn(p));
+          .flatMap(p -> auditProduct(p).thenReturn(p))
+          ;
+
    }
 
 
