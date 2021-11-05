@@ -9,11 +9,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.solved.Part05MergeSolved;
 
-/**
- * Learn how to merge flux.
- *
- * @author Sebastien Deleuze
- */
 public class Part05MergeTest {
 
 	Part05Merge workshop = new Part05Merge();

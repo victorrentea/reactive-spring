@@ -30,17 +30,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-/**
- * Learn how to adapt from/to RxJava 3 Observable/Single/Flowable and Java 8+ CompletableFuture.
- *
- * Mono and Flux already implements Reactive Streams interfaces so they are natively
- * Reactive Streams compliant + there are {@link Mono#from(Publisher)} and {@link Flux#from(Publisher)}
- * factory methods.
- *
- * For RxJava 3, you should not use Reactor Adapter but only RxJava 3 and Reactor Core.
- *
- * @author Sebastien Deleuze
- */
 public class Part09AdaptTest {
 
 	Part09Adapt workshop = new Part09Adapt();

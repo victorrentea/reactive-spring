@@ -37,12 +37,6 @@ import static java.time.Duration.ofMillis;
 import static java.util.Collections.emptyList;
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
-/**
- * Learn how to deal with errors.
- *
- * @author Sebastien Deleuze
- * @author Victor Rentea
- */
 public class Part07Errors {
    private static final Logger log = LoggerFactory.getLogger(Part07Errors.class);
 //========================================================================================

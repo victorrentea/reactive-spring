@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  *  - RxJava subscribeOn = Reactor subscribeOn
  *  - RxJava observeOn = Reactor publishOn
  *
- * @author Sebastien Deleuze
  * @see Flux#subscribeOn(Scheduler)
  * @see Flux#publishOn(Scheduler)
  * @see Schedulers

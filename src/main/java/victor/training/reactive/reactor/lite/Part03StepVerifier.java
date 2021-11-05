@@ -30,12 +30,6 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-/**
- * Learn how to use StepVerifier to test Mono, Flux or any other kind of Reactive Streams Publisher.
- *
- * @author Sebastien Deleuze
- * @see <a href="https://projectreactor.io/docs/test/release/api/reactor/test/StepVerifier.html">StepVerifier Javadoc</a>
- */
 public class Part03StepVerifier {
 
 //========================================================================================

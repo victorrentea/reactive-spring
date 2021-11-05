@@ -44,12 +44,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static reactor.core.scheduler.Schedulers.parallel;
 
-/**
- * Learn how to deal with errors.
- *
- * @author Sebastien Deleuze
- * @author Victor Rentea
- */
 @Slf4j
 public class Part07ErrorsTest {
 

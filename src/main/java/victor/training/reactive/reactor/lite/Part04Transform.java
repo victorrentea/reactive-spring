@@ -4,11 +4,6 @@ import victor.training.reactive.reactor.lite.domain.User;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * Learn how to transform values.
- *
- * @author Sebastien Deleuze
- */
 public class Part04Transform {
 
 //========================================================================================

@@ -9,11 +9,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.solved.Part04TransformSolved;
 
-/**
- * Learn how to transform values.
- *
- * @author Sebastien Deleuze
- */
 public class Part04TransformTest {
 
 	Part04Transform workshop = new Part04Transform();

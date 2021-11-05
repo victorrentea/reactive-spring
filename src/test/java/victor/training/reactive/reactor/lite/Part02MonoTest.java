@@ -7,12 +7,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import victor.training.reactive.reactor.lite.solved.Part02MonoSolved;
 
-/**
- * Learn how to create Mono instances.
- *
- * @author Sebastien Deleuze
- * @see <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html">Mono Javadoc</a>
- */
 public class Part02MonoTest {
 
 	Part02Mono workshop = new Part02Mono();

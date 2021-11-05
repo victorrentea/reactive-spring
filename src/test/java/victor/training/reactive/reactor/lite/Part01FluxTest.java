@@ -10,12 +10,6 @@ import java.util.List;
 import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.*;
 
-/**
- * Learn how to create Flux instances.
- *
- * @author Sebastien Deleuze
- * @see <a href="https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html">Flux Javadoc</a>
- */
 public class Part01FluxTest {
 
 	Part01Flux workshop = new Part01Flux();

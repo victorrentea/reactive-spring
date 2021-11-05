@@ -12,11 +12,6 @@ import reactor.test.publisher.PublisherProbe;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Learn how to use various other operators.
- *
- * @author Sebastien Deleuze
- */
 public class Part08OtherOperationsTest {
 
 	Part08OtherOperations workshop = new Part08OtherOperations();

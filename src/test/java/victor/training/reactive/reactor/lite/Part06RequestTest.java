@@ -23,11 +23,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Learn how to control the demand.
- *
- * @author Sebastien Deleuze
- */
 public class Part06RequestTest {
 
    Part06Request workshop = new Part06Request();

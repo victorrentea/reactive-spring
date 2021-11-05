@@ -6,11 +6,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-/**
- * Learn how to use various other operators.
- *
- * @author Sebastien Deleuze
- */
 public class Part08OtherOperations {
 
 //========================================================================================

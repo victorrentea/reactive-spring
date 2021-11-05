@@ -6,11 +6,6 @@ import victor.training.reactive.reactor.lite.repository.ReactiveUserRepository;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-/**
- * Learn how to control the demand.
- *
- * @author Sebastien Deleuze
- */
 public class Part06Request {
 
 	public ReactiveRepository<User> repository = new ReactiveUserRepository();

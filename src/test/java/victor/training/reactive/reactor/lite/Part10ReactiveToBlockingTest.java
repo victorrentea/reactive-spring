@@ -11,11 +11,6 @@ import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Learn how to turn Reactive API to blocking one.
- *
- * @author Sebastien Deleuze
- */
 public class Part10ReactiveToBlockingTest {
 
 	Part10ReactiveToBlocking workshop = new Part10ReactiveToBlocking();
