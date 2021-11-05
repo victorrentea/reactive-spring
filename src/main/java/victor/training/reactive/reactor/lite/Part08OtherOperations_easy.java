@@ -6,54 +6,54 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public class Part08OtherOperations {
+public class Part08OtherOperations_easy {
 
 //========================================================================================
 
 	// TODO Create a Flux of user from Flux of username, firstname and lastname.
-	Flux<User> userFluxFromStringFlux(Flux<String> usernameFlux, Flux<String> firstnameFlux, Flux<String> lastnameFlux) {
+	public Flux<User> userFluxFromStringFlux(Flux<String> usernameFlux, Flux<String> firstnameFlux, Flux<String> lastnameFlux) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Return the mono which returns its value faster
-	Mono<User> useFastestMono(Mono<User> mono1, Mono<User> mono2) {
+	public Mono<User> useFastestMono(Mono<User> mono1, Mono<User> mono2) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Return the flux which returns the first value faster
-	Flux<User> useFastestFlux(Flux<User> flux1, Flux<User> flux2) {
+	public Flux<User> useFastestFlux(Flux<User> flux1, Flux<User> flux2) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Convert the input Flux<User> to a Mono<Void> that represents the complete signal of the flux
-	Mono<Void> fluxCompletion(Flux<User> flux) {
+	public Mono<Void> fluxCompletion(Flux<User> flux) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Return a valid Mono of user for null input and non null input user (hint: Reactive Streams do not accept null values)
-	Mono<User> nullAwareUserToMono(User user) {
+	public Mono<User> nullAwareUserToMono(User user) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Return the same mono passed as input parameter, expect that it will emit User.SKYLER when empty
-	Mono<User> emptyToSkyler(Mono<User> mono) {
+	public Mono<User> emptyToSkyler(Mono<User> mono) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Convert the input Flux<User> to a Mono<List<User>> containing list of collected flux values
-	Mono<List<User>> fluxCollection(Flux<User> flux) {
+	public Mono<List<User>> fluxCollection(Flux<User> flux) {
 		return null;
 	}
 
