@@ -8,12 +8,14 @@ import victor.training.reactive.reactor.lite.repository.ReactiveUserRepository;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import victor.training.reactive.reactor.lite.solved.Part10ReactiveToBlockingSolved;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Part10ReactiveToBlockingTest {
 
 	Part10ReactiveToBlocking workshop = new Part10ReactiveToBlocking();
+//	Part10ReactiveToBlocking workshop = new Part10ReactiveToBlockingSolved();
 	ReactiveRepository<User> repository = new ReactiveUserRepository();
 
 //========================================================================================

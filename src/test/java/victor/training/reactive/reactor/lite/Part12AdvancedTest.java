@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import victor.training.reactive.intro.Utils;
+import victor.training.reactive.reactor.lite.solved.Part12AdvancedSolved;
 
 import java.time.Duration;
 import java.util.List;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.*;
 public class Part12AdvancedTest {
 
    private Part12Advanced workshop = new Part12Advanced();
+//   private Part12Advanced workshop = new Part12AdvancedSolved();
 
    @Test
    public void defer() {
@@ -31,20 +33,24 @@ public class Part12AdvancedTest {
       assertThat(workshop.hotPublisher().blockFirst()).isLessThan(2);
 
       Flux<Long> hot = workshop.hotPublisher();
-      Thread.sleep(400);
+      Thread.sleep(410);
       assertThat(hot.blockFirst()).isGreaterThan(3);
    }
    
    @Test
    public void replay() {
       String reactiveManifesto = "Large systems are composed of smaller ones and therefore " +
-                                 "depend on the Reactive properties of their constituents. [...] ";
-      Flux<String> timedFlux = workshop.replay(Flux.interval(Duration.ofMillis(100)), reactiveManifesto);
+                                 "depend on the Reactive properties of their constituents.";
+      Flux<String> timedFlux = workshop.replay(Flux.interval(Duration.ofMillis(10)), reactiveManifesto);
+      System.out.println("0");
 
       assertThat(timedFlux.take(3).collectList().block()).containsExactly("Large", "systems", "are");
+      System.out.println("1");
 
-      Utils.sleep(600);
+      Utils.sleep(60);
       assertThat(timedFlux.take(3).collectList().block()).containsExactly("Large", "systems", "are");
+      System.out.println("2");
+      assertThat(timedFlux.collectList().block()).containsExactly(reactiveManifesto.split("\\s"));
    }
 
    @Test

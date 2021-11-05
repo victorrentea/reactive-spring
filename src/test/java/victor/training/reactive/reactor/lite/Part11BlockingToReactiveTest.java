@@ -12,6 +12,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.solved.Part11BlockingToReactiveSolved;
+import victor.training.util.NonBlocking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,10 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class Part11BlockingToReactiveTest {
 
 	Part11BlockingToReactive workshop = new Part11BlockingToReactive();
+//	Part11BlockingToReactive workshop = new Part11BlockingToReactiveSolved();
 
 //========================================================================================
 
 	@Test
+	@NonBlocking
 	public void blockingRepositoryToFlux() {
 		BlockingUserRepository repository = new BlockingUserRepository();
 		Flux<User> flux = workshop.blockingRepositoryToFlux(repository);
@@ -46,13 +50,22 @@ public class Part11BlockingToReactiveTest {
 //========================================================================================
 
 	@Test
-	public void fluxToBlockingRepository() {
+	@NonBlocking
+	public void fluxToBlockingRepository_nonBlocking() {
 		ReactiveRepository<User> reactiveRepository = new ReactiveUserRepository();
 		BlockingUserRepository blockingRepository = new BlockingUserRepository(new User[]{});
 		Mono<Void> complete = workshop.fluxToBlockingRepository(reactiveRepository.findAll(), blockingRepository);
 		assertThat(blockingRepository.getCallCount()).isEqualTo(0);
 		StepVerifier.create(complete)
 				.verifyComplete();
+	}
+	@Test
+	public void fluxToBlockingRepository_data() {
+		ReactiveRepository<User> reactiveRepository = new ReactiveUserRepository();
+		BlockingUserRepository blockingRepository = new BlockingUserRepository(new User[]{});
+
+		workshop.fluxToBlockingRepository(reactiveRepository.findAll(), blockingRepository).block();
+
 		Iterator<User> it = blockingRepository.findAll().iterator();
 		assertThat(it.next()).isEqualTo(User.SKYLER);
 		assertThat(it.next()).isEqualTo(User.JESSE);

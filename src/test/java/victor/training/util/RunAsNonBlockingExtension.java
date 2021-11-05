@@ -1,9 +1,11 @@
 package victor.training.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
+import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
@@ -18,6 +20,9 @@ public class RunAsNonBlockingExtension implements InvocationInterceptor {
       if (!invocationContext.getExecutable().isAnnotationPresent(NonBlocking.class)) {
          invocation.proceed();
       } else {
+         log.warn("Installing BlockHound to detect blocking code [irreversible operation for this JVM] ...");
+         BlockHound.install();
+
          Mono.fromRunnable(() -> {
                 try {
                    invocation.proceed();

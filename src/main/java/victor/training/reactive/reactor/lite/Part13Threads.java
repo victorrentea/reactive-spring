@@ -3,7 +3,6 @@ package victor.training.reactive.reactor.lite;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -33,36 +32,31 @@ public class Part13Threads {
 
    //========================================================================================
 
-   interface RxService {
+   public interface RxService {
       Mono<String> readData();
       Mono<Integer> cpuTask(String data);
       Mono<Void> writeData(Integer i);
    }
 
-   // TODO Run readTask and writeTask on the Schedulers#boundedElastic and cpuTask on the Schedulers#parallel
-   public Mono<?> threadHopping(RxService service) {
+   // TODO Run in order:
+   // 1) readTask Schedulers#boundedElastic
+   // 2) cpuTask on the Schedulers#parallel
+   // 3) writeTask Schedulers#boundedElastic
+   public Mono<?> threadHopping(RxService rxService) {
       return null;
+
    }
 
    //========================================================================================
-   interface BlockingService {
+   public interface BlockingService {
       String readData();
       Integer cpuTask(String data);
       void writeData(Integer i);
    }
 
-   // TODO Same as above, but with non-reactive APIs
-   public Mono<?> threadHoppingNonMonoApi(BlockingService service) {
+   // TODO Same as above, but calling a with non-reactive APIs
+   public Mono<?> threadHoppingBlockingApi(BlockingService service) {
       return null;
    }
 
-
-   //========================================================================================
-
-   // TODO the same as above, but the read and write happen in the caller (before and after you are invoked) - see the test
-   public Mono<Integer> threadHoppingHard(Mono<String> sourceMono, Function<String, Mono<Integer>> cpuTask) {
-      return sourceMono
-          .flatMap(s -> cpuTask.apply(s))
-          ;
-   }
 }

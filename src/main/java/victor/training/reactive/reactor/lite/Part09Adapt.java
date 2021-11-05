@@ -40,48 +40,48 @@ public class Part09Adapt {
 //========================================================================================
 
 	// TODO Adapt Flux to RxJava Flowable
-	Flowable<User> fromFluxToFlowable(Flux<User> flux) {
+	public Flowable<User> fromFluxToFlowable(Flux<User> flux) {
 		return null;
 	}
 
 	// TODO Adapt RxJava Flowable to Flux
-	Flux<User> fromFlowableToFlux(Flowable<User> flowable) {
+	public Flux<User> fromFlowableToFlux(Flowable<User> flowable) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Adapt Flux to RxJava Observable
-	Observable<User> fromFluxToObservable(Flux<User> flux) {
+	public Observable<User> fromFluxToObservable(Flux<User> flux) {
 		return null;
 	}
 
 	// TODO Adapt RxJava Observable to Flux
-	Flux<User> fromObservableToFlux(Observable<User> observable) {
+	public Flux<User> fromObservableToFlux(Observable<User> observable) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Adapt Mono to RxJava Single
-	Single<User> fromMonoToSingle(Mono<User> mono) {
+	public Single<User> fromMonoToSingle(Mono<User> mono) {
 		return null;
 	}
 
 	// TODO Adapt RxJava Single to Mono
-	Mono<User> fromSingleToMono(Single<User> single) {
+	public Mono<User> fromSingleToMono(Single<User> single) {
 		return null;
 	}
 
 //========================================================================================
 
 	// TODO Adapt Mono to Java 8+ CompletableFuture
-	CompletableFuture<User> fromMonoToCompletableFuture(Mono<User> mono) {
+	public CompletableFuture<User> fromMonoToCompletableFuture(Mono<User> mono) {
 		return null;
 	}
 
 	// TODO Adapt Java 8+ CompletableFuture to Mono
-	Mono<User> fromCompletableFutureToMono(CompletableFuture<User> future) {
+	public Mono<User> fromCompletableFutureToMono(CompletableFuture<User> future) {
 		return null;
 	}
 

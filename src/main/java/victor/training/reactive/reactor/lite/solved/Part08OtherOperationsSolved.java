@@ -8,7 +8,7 @@ import victor.training.reactive.reactor.lite.domain.User;
 
 import java.util.List;
 
-public class Part08OtherOperationsSolutions extends Part08OtherOperations_easy {
+public class Part08OtherOperationsSolved extends Part08OtherOperations_easy {
    @Override
    public Flux<User> userFluxFromStringFlux(Flux<String> usernameFlux, Flux<String> firstnameFlux, Flux<String> lastnameFlux) {
       return Flux.zip(usernameFlux, firstnameFlux, lastnameFlux)

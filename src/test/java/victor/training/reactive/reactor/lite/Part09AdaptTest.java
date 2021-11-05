@@ -29,10 +29,12 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.solved.Part09AdaptSolved;
 
 public class Part09AdaptTest {
 
 	Part09Adapt workshop = new Part09Adapt();
+//	Part09Adapt workshop = new Part09AdaptSolved();
 	ReactiveRepository<User> repository = new ReactiveUserRepository();
 
 //========================================================================================

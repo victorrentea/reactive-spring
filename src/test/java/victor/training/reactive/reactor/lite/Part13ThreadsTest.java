@@ -9,6 +9,7 @@ import reactor.test.StepVerifier;
 import victor.training.reactive.intro.Utils;
 import victor.training.reactive.reactor.lite.Part13Threads.BlockingService;
 import victor.training.reactive.reactor.lite.Part13Threads.RxService;
+import victor.training.reactive.reactor.lite.solved.Part13ThreadsSolved;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.when;
 public class Part13ThreadsTest {
 
    private Part13Threads workshop = new Part13Threads();
+//   private Part13Threads workshop = new Part13ThreadsSolved();
 
    private String captureThread(String workType) {
       return workType + ":" + Thread.currentThread().getName();
@@ -41,7 +43,7 @@ public class Part13ThreadsTest {
       Mono<String> mono = workshop.subscribe(readTask);
 
       StepVerifier.create(mono)
-          .expectNext("text")
+          .expectNext("TEXT")
           .verifyComplete();
 
       Assertions.assertThat(steps.toString())
@@ -125,7 +127,7 @@ public class Part13ThreadsTest {
    }
 
    @Test
-   public void threadHoppingNonMonoApi() {
+   public void threadHoppingBlockingApi() {
       List<String> steps =new ArrayList<>();
 
       BlockingService service = Mockito.mock(BlockingService.class);
@@ -142,37 +144,9 @@ public class Part13ThreadsTest {
          return null;
       }).when(service).writeData(1);
 
-      Mono<?> mono = workshop.threadHoppingNonMonoApi(service);
+      Mono<?> mono = workshop.threadHoppingBlockingApi(service);
 
       StepVerifier.create(mono).verifyComplete();
-
-      Assertions.assertThat(steps.toString())
-          .contains("READ:boundedElastic")
-          .contains("CPU:parallel")
-          .contains("WRITE:boundedElastic");
-   }
-
-   @Test
-   public void threadHoppingHard() {
-      List<String> steps =new ArrayList<>();
-
-      Supplier<String> readTask = () -> {
-          steps.add(captureThread("READ"));
-          return "1";
-      };
-      Function<String, Mono<Integer>> cpuTask = s -> {
-          steps.add(captureThread("CPU"));
-          return Mono.just(parseInt(s));
-      };
-      Runnable writeTask = () -> steps.add(captureThread("WRITE"));
-
-      Mono<String> sourceMono = Mono.fromSupplier(readTask); // READ
-
-      Mono<Integer> mono = workshop.threadHoppingHard(sourceMono, cpuTask); // prod
-
-      Mono<Void> finalMono = mono.then(Mono.fromRunnable(writeTask)); // WRITE
-
-      StepVerifier.create(finalMono).verifyComplete();
 
       Assertions.assertThat(steps.toString())
           .contains("READ:boundedElastic")

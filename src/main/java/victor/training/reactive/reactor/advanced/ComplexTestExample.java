@@ -1,4 +1,4 @@
-package victor.training.reactive.reactor.lite;
+package victor.training.reactive.reactor.advanced;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
 
 @ExtendWith(MockitoExtension.class)
-public class Part14ComplexProdTest {
+public class ComplexTestExample {
    @InjectMocks
    private BizLogic bizLogic;
    @Mock
@@ -57,9 +57,7 @@ class BizLogic {
 
    private Mono<Void> alertIfNecessary(Integer i) {
       if (i <= 4) {
-         return alertService.raise(i).log("break-when-it-trouble"/*, "debug"*/)
-//             .doOnSu
-             ;
+         return alertService.raise(i).log("break-when-it-trouble"/*, "debug"*/);
       } else {
          return empty();
       }

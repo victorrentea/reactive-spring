@@ -8,15 +8,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.PublisherProbe;
-import victor.training.reactive.reactor.lite.solved.Part08OtherOperationsSolutions;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class Part08OtherOperationsTest {
 
-	Part08OtherOperations workshop = new Part08OtherOperations();
-//	Part08OtherOperations_easy workshop = new Part08OtherOperationsSolutions();
+	Part08OtherOperations_easy workshop = new Part08OtherOperations_easy();
+//	Part08OtherOperations_easy workshop = new Part08OtherOperationsSolved();
 
 	final static User MARIE = new User("mschrader", "Marie", "Schrader");
 	final static User MIKE = new User("mehrmantraut", "Mike", "Ehrmantraut");

@@ -50,12 +50,6 @@ public class Part07ErrorsTest {
    Part07Errors workshop = new Part07Errors();
 //	Part07Errors workshop = new Part07ErrorsSolved();
 
-   @BeforeAll
-   public static void setupBlockHound() {
-      log.warn("Installing BlockHound to detect blocking code [irreversible operation for this JVM] ...");
-      BlockHound.install();
-   }
-
 //========================================================================================
 
    @Test
