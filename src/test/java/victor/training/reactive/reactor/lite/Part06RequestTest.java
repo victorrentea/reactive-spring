@@ -1,5 +1,6 @@
 package victor.training.reactive.reactor.lite;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -14,9 +15,13 @@ import victor.training.reactive.reactor.lite.solved.Part06RequestSolved;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Learn how to control the demand.
@@ -55,18 +60,15 @@ public class Part06RequestTest {
 //========================================================================================
 
    @Test
-   public void requestAllExpectThree() {
-      Flux<User> flux = repository.findAll();
-      StepVerifier verifier = workshop.requestAllExpectThree(flux);
+   public void requestAllExpectThree_when3Given() {
+      Flux<User> flux = Flux.just(User.SKYLER, User.JESSE, User.WALTER);
+      StepVerifier verifier = workshop.requestExpectThreeOrMore(flux);
       verifier.verify();
    }
-
-//========================================================================================
-
    @Test
-   public void requestOneExpectSkylerThenRequestOneExpectJesse() {
-      Flux<User> flux = repository.findAll();
-      StepVerifier verifier = workshop.requestOneExpectSkylerThenRequestOneExpectJesse(flux);
+   public void requestAllExpectThree_when4Given() {
+      Flux<User> flux = Flux.just(User.SKYLER, User.JESSE, User.WALTER, User.SAUL);
+      StepVerifier verifier = workshop.requestExpectThreeOrMore(flux);
       verifier.verify();
    }
 
@@ -89,21 +91,12 @@ public class Part06RequestTest {
           .expectNextMatches(u -> true)
           .verifyComplete();
 
-      String log = Arrays.stream(logConsole.toString().split("\n"))
-          .filter(s -> s.contains("] INFO"))
-          .map(s -> s.replaceAll(".*] INFO .* - ", ""))
-          .collect(Collectors.joining("\n"));
 
-      assertThat(log)
-          .contains("onSubscribe(FluxZip.ZipCoordinator)\n"
-                    + "request(1)\n"
-                    + "onNext(Person{username='swhite', firstname='Skyler', lastname='White'})\n"
-                    + "request(1)\n"
-                    + "onNext(Person{username='jpinkman', firstname='Jesse', lastname='Pinkman'})\n"
-                    + "request(2)\n"
-                    + "onNext(Person{username='wwhite', firstname='Walter', lastname='White'})\n"
-                    + "onNext(Person{username='sgoodman', firstname='Saul', lastname='Goodman'})\n"
-                    + "onComplete()");
+      Assertions.assertThat(logConsole.toString())
+          .contains("onSubscribe")
+          .contains("onNext")
+          .contains("request(1)")
+          .contains("onComplete");
    }
 
 //========================================================================================
@@ -121,12 +114,29 @@ public class Part06RequestTest {
           .verifyComplete();
 
       assertThat(logConsole.toString())
-          .isEqualTo("Starring:\n"
+          .isEqualToIgnoringNewLines("Starring:\n"
                      + "Skyler White\n"
                      + "Jesse Pinkman\n"
                      + "Walter White\n"
                      + "Saul Goodman\n"
                      + "The end!\n");
+   }
+
+//========================================================================================
+
+   @Test
+   public void requestOne_oneMore_thenCancel() {
+      TestPublisher<User> publisher = TestPublisher.createCold();
+
+      publisher.next(User.SKYLER);
+      publisher.next(User.JESSE);
+      publisher.next(User.WALTER);
+
+      Flux<User> flux = publisher.flux().log();
+      StepVerifier verifier = workshop.requestOne_oneMore_thenCancel(flux);
+      verifier.verify();
+
+      publisher.assertCancelled();
    }
 
    //========================================================================================
