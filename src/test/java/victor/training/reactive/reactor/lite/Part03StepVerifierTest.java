@@ -17,11 +17,15 @@
 package victor.training.reactive.reactor.lite;
 
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import victor.training.reactive.reactor.lite.Part03StepVerifier.TestedProdClass;
 import victor.training.reactive.reactor.lite.domain.User;
 
 import java.time.Duration;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Learn how to use StepVerifier to test Mono, Flux or any other kind of Reactive Streams Publisher.
@@ -32,6 +36,7 @@ import java.time.Duration;
 public class Part03StepVerifierTest {
 
    Part03StepVerifier workshop = new Part03StepVerifier();
+//   Part03StepVerifier workshop = new Part03StepVerifierSolved();
 
 //========================================================================================
 
@@ -57,8 +62,8 @@ public class Part03StepVerifierTest {
 //========================================================================================
 
    @Test
-   public void expect10Elements() {
-      workshop.expect10Elements(Flux.interval(Duration.ofSeconds(1)).take(10));
+   public void expect5Elements() {
+      workshop.expect5Elements(Flux.interval(Duration.ofSeconds(1)).take(5));
    }
 
 //========================================================================================
@@ -68,7 +73,51 @@ public class Part03StepVerifierTest {
       workshop.expectDelayedElement();
    }
 
-//========================================================================================
+   //========================================================================================
+   @Test
+   public void verifySubscribedOnce_ok() {
+      workshop.verifySubscribedOnce(TestedProdClass::correct);
+   }
+
+   @Test
+   public void verifySubscribedOnceFails_failsNoSubscribe() {
+      assertThatThrownBy(() ->
+          workshop.verifySubscribedOnce(testedProdClass -> {
+             testedProdClass.noSubscribe();
+             return Mono.empty();
+          }))
+          .isInstanceOf(AssertionFailedError.class)
+          .hasMessageContaining("<0L>");
+   }
+
+   @Test
+   public void verifySubscribedOnceFails_doOnNext_noSubscribe() {
+      assertThatThrownBy(() ->
+          workshop.verifySubscribedOnce(TestedProdClass::doOnNext_noSubscribe))
+          .isInstanceOf(AssertionFailedError.class)
+          .hasMessageContaining("<0L>");
+   }
+
+   @Test
+   public void verifySubscribedOnceFails_noDataSignal_noSubscribe() {
+      assertThatThrownBy(() ->
+          workshop.verifySubscribedOnce(TestedProdClass::noDataSignal_noSubscribe))
+          .isInstanceOf(AssertionFailedError.class)
+          .hasMessageContaining("<0L>");
+   }
+
+   @Test
+   public void verifySubscribedOnceOK_correct_chained() {
+      workshop.verifySubscribedOnce(TestedProdClass::correct_chained);
+   }
+
+   @Test
+   public void verifySubscribedOnceFails_twice_resubscribe() {
+      assertThatThrownBy(() ->
+          workshop.verifySubscribedOnce(TestedProdClass::twice_resubscribe))
+          .isInstanceOf(AssertionFailedError.class)
+          .hasMessageContaining("<2L>");
+   }
 }
 
 

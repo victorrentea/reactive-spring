@@ -5,6 +5,7 @@ import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.solved.Part02MonoSolved;
 
 /**
  * Learn how to create Mono instances.
@@ -15,6 +16,7 @@ import reactor.test.StepVerifier;
 public class Part02MonoTest {
 
 	Part02Mono workshop = new Part02Mono();
+//	Part02Mono workshop = new Part02MonoSolved();
 
 //========================================================================================
 

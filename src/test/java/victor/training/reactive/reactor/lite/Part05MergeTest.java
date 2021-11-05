@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.solved.Part05MergeSolved;
 
 /**
  * Learn how to merge flux.
@@ -16,6 +17,7 @@ import reactor.test.StepVerifier;
 public class Part05MergeTest {
 
 	Part05Merge workshop = new Part05Merge();
+//	Part05Merge workshop = new Part05MergeSolved();
 
 	final static User MARIE = new User("mschrader", "Marie", "Schrader");
 	final static User MIKE = new User("mehrmantraut", "Mike", "Ehrmantraut");

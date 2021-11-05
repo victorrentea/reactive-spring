@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.solved.Part04TransformSolved;
 
 /**
  * Learn how to transform values.
@@ -16,6 +17,7 @@ import reactor.test.StepVerifier;
 public class Part04TransformTest {
 
 	Part04Transform workshop = new Part04Transform();
+//	Part04Transform workshop = new Part04TransformSolved();
 	ReactiveRepository<User> repository = new ReactiveUserRepository();
 
 //========================================================================================

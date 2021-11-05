@@ -9,6 +9,7 @@ import reactor.util.annotation.Nullable;
 import victor.training.reactive.reactor.lite.domain.User;
 import victor.training.reactive.reactor.lite.repository.ReactiveRepository;
 import victor.training.reactive.reactor.lite.repository.ReactiveUserRepository;
+import victor.training.reactive.reactor.lite.solved.Part06RequestSolved;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -24,7 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class Part06RequestTest {
 
-   Part06Request workshop = new Part06Request();
+//   Part06Request workshop = new Part06Request();
+   Part06Request workshop = new Part06RequestSolved();
    ReactiveRepository<User> repository = new ReactiveUserRepository();
 
    PrintStream originalConsole = System.out;
@@ -44,9 +46,18 @@ public class Part06RequestTest {
 //========================================================================================
 
    @Test
-   public void requestAllExpectFour() {
+   public void requestAllExpectFourThenComplete() {
       Flux<User> flux = repository.findAll();
-      StepVerifier verifier = workshop.requestAllExpectFour(flux);
+      StepVerifier verifier = workshop.requestAllExpectFourThenComplete(flux);
+      verifier.verify();
+   }
+
+//========================================================================================
+
+   @Test
+   public void requestAllExpectThree() {
+      Flux<User> flux = repository.findAll();
+      StepVerifier verifier = workshop.requestAllExpectThree(flux);
       verifier.verify();
    }
 
@@ -134,6 +145,7 @@ public class Part06RequestTest {
           })
           .expectNextCount(10)
           .then(() -> {
+             // actual = 8 items, things are a bit more complicated; see low tide - high tide policy
              upstream.assertMaxRequested(10);
              upstream.emit(1, 2);
           })

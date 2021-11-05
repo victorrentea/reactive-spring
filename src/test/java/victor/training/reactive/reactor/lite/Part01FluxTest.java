@@ -1,9 +1,11 @@
 package victor.training.reactive.reactor.lite;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+import victor.training.reactive.reactor.lite.solved.Part01FluxSolved;
+
+import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
 import static org.assertj.core.api.Assertions.*;
@@ -17,6 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 public class Part01FluxTest {
 
 	Part01Flux workshop = new Part01Flux();
+//	Part01Flux workshop = new Part01FluxSolved();
+
 
 //========================================================================================
 
@@ -41,8 +45,8 @@ public class Part01FluxTest {
 //========================================================================================
 
 	@Test
-	public void fooBarFluxFromList() {
-		Flux<String> flux = workshop.fooBarFluxFromList();
+	public void fluxFromList() {
+		Flux<String> flux = workshop.fluxFromList(List.of("foo", "bar"));
 		StepVerifier.create(flux)
 				.expectNext("foo", "bar")
 				.verifyComplete();
