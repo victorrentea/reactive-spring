@@ -43,4 +43,14 @@ public class Part06Request {
 		return null;
 	}
 
+//========================================================================================
+
+	// TODO no matter how many items are requested to the flux you return, the upstream should be requested at most 10 at once
+	Flux<Integer> throttleUpstreamRequest(Flux<Integer> upstream) {
+		return upstream
+			.log("Up")
+			.limitRate(10, 10)
+			.log("After");
+	}
+
 }
