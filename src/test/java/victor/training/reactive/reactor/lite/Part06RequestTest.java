@@ -30,8 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class Part06RequestTest {
 
-//   Part06Request workshop = new Part06Request();
-   Part06Request workshop = new Part06RequestSolved();
+   Part06Request workshop = new Part06Request();
+//   Part06Request workshop = new Part06RequestSolved();
    ReactiveRepository<User> repository = new ReactiveUserRepository();
 
    PrintStream originalConsole = System.out;

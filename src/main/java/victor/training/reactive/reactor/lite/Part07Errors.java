@@ -16,40 +16,46 @@
 
 package victor.training.reactive.reactor.lite;
 
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import victor.training.reactive.intro.Utils;
 import victor.training.reactive.reactor.lite.domain.User;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.time.Duration.ofMillis;
 import static java.util.Collections.emptyList;
+import static reactor.core.scheduler.Schedulers.boundedElastic;
 
 /**
  * Learn how to deal with errors.
  *
  * @author Sebastien Deleuze
- * @see Exceptions#propagate(Throwable)
+ * @author Victor Rentea
  */
 public class Part07Errors {
    private static final Logger log = LoggerFactory.getLogger(Part07Errors.class);
 //========================================================================================
 
    // TODO Return a Mono<User> containing User.SAUL when an error occurs in the input Mono, else do not change the input Mono.
-   Mono<User> betterCallSaulForBogusMono(Mono<User> mono) {
+   public Mono<User> betterCallSaulForBogusMono(Mono<User> mono) {
       return null;
    }
 
 //========================================================================================
 
    // TODO Return a Flux<User> containing User.SAUL and User.JESSE when an error occurs in the input Flux, else do not change the input Flux.
-   Flux<User> betterCallSaulAndJesseForBogusFlux(Flux<User> flux) {
+   public Flux<User> betterCallSaulAndJesseForBogusFlux(Flux<User> flux) {
       return null;
    }
 
@@ -57,20 +63,24 @@ public class Part07Errors {
 
    // TODO Implement a method that capitalizes each user of the incoming flux using the
    // #capitalizeUser method and emits an error containing a GetOutOfHereException error
-   Flux<User> capitalizeMany(Flux<User> flux) {
+   public Flux<User> capitalizeMany(Flux<User> flux) {
       return null;
    }
 
-   User capitalizeUser(User user) throws GetOutOfHereException {
+   protected User capitalizeUser(User user) throws GetOutOfHereException {
       if (user.equals(User.SAUL)) {
          throw new GetOutOfHereException();
       }
       return new User(user.getUsername(), user.getFirstname(), user.getLastname());
    }
 
+   protected static final class GetOutOfHereException extends Exception {
+      private static final long serialVersionUID = 0L;
+   }
 //========================================================================================
-   // TODO retrieve all Orders with retrieveOrder. In case any fails, return an empty list.
+   // TODO retrieve all Orders with retrieveOrder. In case **ANY** fails, return an empty list.
    public Mono<List<Order>> catchReturnDefault(List<Integer> ids) {
+      // TODO: Convert this imperative blocking code to reactive
       try {
          List<Order> orders = new ArrayList<>();
          for (Integer id : ids) {
@@ -85,12 +95,14 @@ public class Part07Errors {
    //========================================================================================
    // TODO return those items that were retrieve successfully
    public Mono<List<Order>> catchReturnBestEffort(List<Integer> ids) {
+      // TODO: Convert this imperative blocking code to reactive
       List<Order> orders = new ArrayList<>();
       for (Integer id : ids) {
          try {
             Order order = retrieveOrder(id).block();// TODO REMOVE blocking
             orders.add(order);
-         } catch (Exception e) {
+         } catch (IllegalArgumentException e) {
+            // ignore
          }
       }
       return Mono.just(orders);
@@ -99,13 +111,14 @@ public class Part07Errors {
    //========================================================================================
    // TODO return the items that were retrieve, never request further items (==> no async prefetch)
    public Mono<List<Order>> catchAndStop(List<Integer> ids) {
+      // TODO: Convert this imperative blocking code to reactive : tip: use concatMap as the traveral needs to be sequential
       List<Order> orders = new ArrayList<>();
       try {
          for (Integer id : ids) {
             Order order = retrieveOrder(id).block();// TODO REMOVE blocking
             orders.add(order);
          }
-      } catch (Exception e) {
+      } catch (IllegalArgumentException e) {
       }
       return Mono.just(orders);
    }
@@ -113,22 +126,7 @@ public class Part07Errors {
    //========================================================================================
    // TODO fail at first error, rethrowing the exception wrapped in a CustomException
    public Mono<List<Order>> catchRethrow(List<Integer> ids) {
-//      try {
-//         List<Order> orders = new ArrayList<>();
-//         for (Integer id : ids) {
-//            Order order = retrieveOrder(id);
-//            orders.add(order);
-//         }
-//         return orders;
-//      } catch (Exception e) {
-//         throw new CustomException(e);
-//      }
-      return null;
-   }
-
-   //========================================================================================
-   // TODO fail at any error, log the error and rethrow it
-   public Mono<List<Order>> logRethrow(List<Integer> ids) {
+      // TODO: Convert this imperative blocking code to reactive
       try {
          List<Order> orders = new ArrayList<>();
          for (Integer id : ids) {
@@ -136,24 +134,40 @@ public class Part07Errors {
             orders.add(order);
          }
          return Mono.just(orders);
-      } catch (Exception e) {
+      } catch (IllegalArgumentException e) {
+         throw new CustomException(e);
+      }
+   }
+
+   //========================================================================================
+   // TODO fail at any error, log the error and rethrow it
+   public Mono<List<Order>> logRethrow(List<Integer> ids) {
+      // TODO: Convert this imperative blocking code to reactive
+      try {
+         List<Order> orders = new ArrayList<>();
+         for (Integer id : ids) {
+            Order order = retrieveOrder(id).block();
+            orders.add(order);
+         }
+         return Mono.just(orders);
+      } catch (IllegalArgumentException e) {
          log.error("BOOM", e);
          throw e;
       }
    }
 
    //========================================================================================
-   // TODO for any item, if an error occurs fall back by calling another storage (blocking) - "retrieveOrderBackup"
-   public Mono<List<Order>> recover(List<Integer> ids) {
+   // TODO for any item, if an error occurs fall back by calling retrieveOrderBackup (blocking)
+   public Mono<List<Order>> recoverResumeAnotherMono(List<Integer> ids) {
+      // TODO: Convert this imperative blocking code to reactive
       List<Order> orders = new ArrayList<>();
       for (Integer id : ids) {
          Order order;
          try {
-            order = retrieveOrder(id).block();
+            order = retrieveOrder(id).block(); // TODO remove block
          } catch (Exception e) {
-            order = retrieveOrderBackup(id).block();
+            order = retrieveOrderBackup(id).block(); // TODO remove block
          }
-
          orders.add(order);
       }
       return Mono.just(orders);
@@ -179,28 +193,23 @@ public class Part07Errors {
       }
    }
 
-   private Mono<Order> retrieveOrder(int id) { // imagine a network call
-      if (id < 0) {
-         return Mono.error(new RuntimeException());
-      } else {
-         return Mono.just(new Order(id));
-      }
+   protected Mono<Order> retrieveOrder(int id) { // imagine a network call
+      return Mono.fromCallable(() -> {
+         if (id < 0) {
+            throw new IllegalArgumentException("intentional");
+         } else {
+            return new Order(id);
+         }
+      }).subscribeOn(boundedElastic()); // moving the mono to another scheduler makes .block() on it offend BlockHound
    }
-   private Mono<Order> retrieveOrderBackup(int id) { // imagine a local fast storage (~cache)
-      return Mono.just(new Order(id).backup());
+   protected Mono<Order> retrieveOrderBackup(int id) { // imagine a local fast storage (~cache)
+      return Mono.just(new Order(id).backup()).subscribeOn(boundedElastic());
    }
 
+   @Data
    public static class Order {
       private final Integer id;
-      private boolean backup; // mutable data, God help us all
-
-      public Order(Integer id) {
-         this.id = id;
-      }
-
-      public Integer getId() {
-         return id;
-      }
+      private boolean backup; // mutable data in multithreaded context, God help us all !
 
       public Order backup() {
          this.backup = true;
@@ -210,18 +219,8 @@ public class Part07Errors {
       public boolean isBackup() {
          return backup;
       }
-
-      @Override
-      public String toString() {
-         return "Order{" +
-                "id=" + id +
-                '}';
-      }
    }
 
-   protected final class GetOutOfHereException extends Exception {
-      private static final long serialVersionUID = 0L;
-   }
 
 
 }
