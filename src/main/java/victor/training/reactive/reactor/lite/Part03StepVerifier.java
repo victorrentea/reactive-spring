@@ -19,8 +19,12 @@ package victor.training.reactive.reactor.lite;
 import lombok.Data;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import reactor.test.StepVerifierOptions;
 import reactor.test.publisher.TestPublisher;
+import reactor.test.scheduler.VirtualTimeScheduler;
 import victor.training.reactive.reactor.lite.domain.User;
 
 import java.time.Duration;
@@ -34,31 +38,38 @@ public class Part03StepVerifier {
 
 //========================================================================================
 
-   // TODO Use StepVerifier to check that the flux parameter emits "foo" and "bar" elements then completes successfully.
+   // Use StepVerifier to check that the flux parameter emits "foo" and "bar" elements then completes successfully.
    public void expectFooBarComplete(Flux<String> flux) {
-      fail();
+      StepVerifier.create(flux).expectNext("foo").expectNext("bar").expectComplete().verify();
    }
 
 //========================================================================================
 
-   // TODO Use StepVerifier to check that the flux parameter emits "foo" and "bar" elements then a RuntimeException error.
+   //  Use StepVerifier to check that the flux parameter emits "foo" and "bar" elements then a RuntimeException error.
    public void expectFooBarError(Flux<String> flux) {
-      fail();
+      StepVerifier.create(flux).expectNext("foo").expectNext("bar").expectError(RuntimeException.class).verify();
    }
 
 //========================================================================================
 
-   // TODO Use StepVerifier to check that the flux parameter emits a User with "swhite" username
+   // Use StepVerifier to check that the flux parameter emits a User with "swhite" username
    // and another one with "jpinkman" then completes successfully.
    public void expectSkylerJesseComplete(Flux<User> flux) {
-      fail();
+      StepVerifier.create(flux)
+              .assertNext(user -> assertThat("swhite").isEqualTo(user.getUsername()))
+              .assertNext(user -> assertThat("jpinkman").isEqualTo(user.getUsername()))
+              .verifyComplete();
    }
 
 //========================================================================================
 
-   // TODO Expect 5 elements then complete and notice how long the test takes.
+   // Expect 5 elements then complete and notice how long the test takes.
    public void expect5Elements(Flux<Long> flux) {
-      fail();
+      StepVerifier.withVirtualTime(() -> flux)
+              .expectSubscription()
+              .thenRequest(Long.MAX_VALUE)
+              .expectNextCount(5)
+              .expectComplete();
    }
 
 //========================================================================================
@@ -66,10 +77,13 @@ public class Part03StepVerifier {
    // TODO Expect the value "later" to arrive 1 hour after subscribe(). Make the test complete in <1 second
    // Manipiulate virtual with StepVerifier#withVirtualTime/.thenAwait
    // TODO expect no signal for 30 minutes
+   // Victor, please review specially this one ...
    public void expectDelayedElement() {
-      StepVerifier.create(timeBoundFlow())
-          // TODO
-      ;
+      StepVerifier.withVirtualTime(()->timeBoundFlow())
+              .thenAwait(Duration.ofMinutes(60))
+              .expectNext("later")
+              .expectNoEvent(Duration.ofMinutes(30))
+              .expectComplete();
    }
 
    public Mono<String> timeBoundFlow() {
@@ -89,7 +103,9 @@ public class Part03StepVerifier {
       SomeRxRepo mockRepo = mock(SomeRxRepo.class);
       TestedProdClass testedObject = new TestedProdClass(mockRepo);
 
+
       // 1: create a TestPublisher that tracks subscribe signals
+      TestPublisher testPublisher = TestPublisher.create();
       // 2. complete it
       // 3. program the repoMock to return the stubbed mono
 
