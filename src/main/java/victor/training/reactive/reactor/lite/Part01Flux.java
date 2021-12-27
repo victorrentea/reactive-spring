@@ -9,37 +9,37 @@ public class Part01Flux {
 
 //========================================================================================
 
-	// TODO Return an empty Flux
+	// Return an empty Flux
 	public Flux<String> emptyFlux() {
-		return null;
+		return Flux.empty();
 	}
 
 //========================================================================================
 
-	// TODO Return a Flux that contains 2 values "foo" and "bar" without using an array or a collection
+	// Return a Flux that contains 2 values "foo" and "bar" without using an array or a collection
 	public Flux<String> fooBarFluxFromValues() {
-		return null;
+		return Flux.just("foo","bar");
 	}
 
 //========================================================================================
 
-	// TODO Create a Flux from a List that contains 2 values "foo" and "bar"
+	// Create a Flux from a List that contains 2 values "foo" and "bar"
 	public Flux<String> fluxFromList(List<String> list) {
-		return null;
+		return Flux.fromIterable(list);
 	}
 
 //========================================================================================
 
-	// TODO Create a Flux that emits an IllegalStateException
+	// Create a Flux that emits an IllegalStateException
 	public Flux<String> errorFlux() {
-		return null;
+		return Flux.error(new IllegalStateException("Exception launch ... "));
 	}
 
 //========================================================================================
 
-		// TODO Create a Flux that emits increasing values from 0 to 9 each 100ms
+	// Create a Flux that emits increasing values from 0 to 9 each 100ms
 	public Flux<Long> countEach100ms() {
-		return null;
+		return Flux.interval(Duration.ofMillis(100)).take(10);
 	}
 
 }
