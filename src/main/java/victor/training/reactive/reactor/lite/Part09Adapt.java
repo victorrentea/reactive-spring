@@ -18,6 +18,7 @@ package victor.training.reactive.reactor.lite;
 
 import java.util.concurrent.CompletableFuture;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import victor.training.reactive.reactor.lite.domain.User;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
@@ -41,48 +42,48 @@ public class Part09Adapt {
 
 	// TODO Adapt Flux to RxJava Flowable
 	public Flowable<User> fromFluxToFlowable(Flux<User> flux) {
-		return null;
+		return Flowable.fromPublisher(flux);
 	}
 
 	// TODO Adapt RxJava Flowable to Flux
 	public Flux<User> fromFlowableToFlux(Flowable<User> flowable) {
-		return null;
+		return Flux.from(flowable);
 	}
 
 //========================================================================================
 
 	// TODO Adapt Flux to RxJava Observable
 	public Observable<User> fromFluxToObservable(Flux<User> flux) {
-		return null;
+		return Observable.fromPublisher(flux);
 	}
 
 	// TODO Adapt RxJava Observable to Flux
 	public Flux<User> fromObservableToFlux(Observable<User> observable) {
-		return null;
+		return Flux.from(observable.toFlowable(BackpressureStrategy.LATEST));
 	}
 
 //========================================================================================
 
 	// TODO Adapt Mono to RxJava Single
 	public Single<User> fromMonoToSingle(Mono<User> mono) {
-		return null;
+		return Single.fromPublisher(mono);
 	}
 
 	// TODO Adapt RxJava Single to Mono
 	public Mono<User> fromSingleToMono(Single<User> single) {
-		return null;
+		return Mono.from(single.toFlowable());
 	}
 
 //========================================================================================
 
 	// TODO Adapt Mono to Java 8+ CompletableFuture
 	public CompletableFuture<User> fromMonoToCompletableFuture(Mono<User> mono) {
-		return null;
+		return mono.toFuture();
 	}
 
 	// TODO Adapt Java 8+ CompletableFuture to Mono
 	public Mono<User> fromCompletableFutureToMono(CompletableFuture<User> future) {
-		return null;
+		return Mono.fromFuture(future);
 	}
 
 }

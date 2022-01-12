@@ -14,7 +14,11 @@ public class Part06Request {
 
 	// TODO Create a StepVerifier that initially requests all values and expect 4 values to be received then a COMPLETION
 	public StepVerifier requestAllExpectFourThenComplete(Flux<User> flux) {
-		return null;
+		return StepVerifier.create(flux)
+				.expectSubscription()
+				.thenRequest(Long.MAX_VALUE)
+				.expectNextCount(4)
+				.expectComplete();
 	}
 
 //========================================================================================
@@ -22,20 +26,27 @@ public class Part06Request {
 	// TODO [HARD] Create a StepVerifier that initially requests all values and expect 3 values to be received
 	// Note: don't wait for COMPLETION (as a matter of fact there could be 4 elements emitted).
 	public StepVerifier requestExpectThreeOrMore(Flux<User> flux) {
-		return null;
+		return StepVerifier.create(flux)
+				.expectSubscription()
+				.expectNext(User.SKYLER)
+				.expectNext(User.JESSE)
+				.thenCancel();
 	}
 
 //========================================================================================
 	// TODO Return a Flux with all users stored in the repository that prints "Starring:" on subscribe, "firstname lastname" for all values and "The end!" on complete
 	public Flux<User> fluxWithDoOnPrintln() {
-		return null;
+		return Flux.from(repository.findAll()).doOnSubscribe(unused -> System.out.println("Starring:"))
+				.doOnNext(usr ->
+						System.out.println(usr.getFirstname()+" "+usr.getLastname()))
+				.doOnComplete(() -> System.out.println("The end!"));
 	}
 
 //========================================================================================
 
 	// TODO Return a Flux with all users stored in the repository that prints automatically logs for all Reactive Streams signals
 	public Flux<User> fluxWithLog() {
-		return null;
+		return Flux.from(repository.findAll()).log();
 	}
 
 //========================================================================================
