@@ -19,18 +19,14 @@ package victor.training.reactive.reactor.lite;
 import lombok.Data;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
-import reactor.test.StepVerifierOptions;
 import reactor.test.publisher.TestPublisher;
-import reactor.test.scheduler.VirtualTimeScheduler;
 import victor.training.reactive.reactor.lite.domain.User;
 
 import java.time.Duration;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
+import static java.time.Duration.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -80,14 +76,14 @@ public class Part03StepVerifier {
    // Victor, please review specially this one ...
    public void expectDelayedElement() {
       StepVerifier.withVirtualTime(()->timeBoundFlow())
-              .thenAwait(Duration.ofMinutes(60))
+              .thenAwait(ofMinutes(60))
               .expectNext("later")
-              .expectNoEvent(Duration.ofMinutes(30))
+              .expectNoEvent(ofMinutes(30))
               .expectComplete();
    }
 
    public Mono<String> timeBoundFlow() {
-      return Mono.just("later").delayElement(Duration.ofHours(1));
+      return Mono.just("later").delayElement(ofHours(1));
    }
 
    private void fail() {
@@ -97,12 +93,30 @@ public class Part03StepVerifier {
 
 //========================================================================================
 
+//   prodMethod()
+
    // 🎖🌟🌟🌟🌟 WARNING HARD CORE 🌟🌟🌟🌟
    public void verifySubscribedOnce(Function<TestedProdClass, Mono<Void>> testedRxCode) {
       // given
       SomeRxRepo mockRepo = mock(SomeRxRepo.class);
       TestedProdClass testedObject = new TestedProdClass(mockRepo);
 
+      // the goal of the test: make sure the Mono returned from save() is .sucbecribe to!
+
+//      Flux.interval(ofSeconds(1))`;
+
+
+      // TASK
+      // I get from FE a req to create an order.
+      // My app POSTs to another system. and returns to my client a number (an request ID).
+      // I need a Rabbit listener + a way to store the 'request being waited'
+      //
+
+
+//      TestPublisher.
+//      when(mockRepo.save(any())).thenReturn()
+
+      // - data item, comp/err
 
       // 1: create a TestPublisher that tracks subscribe signals
       TestPublisher testPublisher = TestPublisher.create();
@@ -112,7 +126,8 @@ public class Part03StepVerifier {
       // when
       testedObject.correct().block();
       // TODO uncomment and make pass
-      // testedRxCode.apply(testedObject).block();
+      Mono<Void> publisher = testedRxCode.apply(testedObject);
+      publisher.block();
 
       // then
       // 4. assert the number of times the TestPublisher was subscribed to = 1
@@ -125,35 +140,46 @@ public class Part03StepVerifier {
    //region tested production code
    @Data
    public static class TestedProdClass {
-      private final SomeRxRepo repo;
+      private final SomeRxRepo mockRepo;
 
       public Mono<Void> correct() { // <-- first test this
-         return repo.save(User.SKYLER);
+         return mockRepo.save(User.SKYLER);
       }
       // try to test manually these or just use the
+
       public void noSubscribe() {
-         repo.save(User.SKYLER);
+         mockRepo.save(User.SKYLER);
       }
+
       public Mono<Void> doOnNext_noSubscribe() {
          return Mono.<Void>fromRunnable(() -> {
                 System.out.println("Pretend some remote work");
              })
-             .doOnNext(x -> repo.save(User.SKYLER));
+             .doOnNext(x ->
+                 mockRepo.save(User.SKYLER) // bad
+//                 auditRepo.save(User.SKYLER).subscribe()
+             );
       }
       public Mono<Void> noDataSignal_noSubscribe() {
          return Mono.<Void>fromRunnable(() -> {
                 System.out.println("Pretend some remote work");
              })
-             .flatMap(x -> repo.save(User.SKYLER));
+             .flatMap(x -> mockRepo.save(User.SKYLER));
       }
+
       public Mono<Void> correct_chained() {
          return Mono.<Void>fromRunnable(() -> {
                 System.out.println("Pretend some remote work");
              })
-             .then(repo.save(User.SKYLER));
+             .then(mockRepo.save(User.SKYLER)); // no need to subscribe because I return the publisher.
+//         someone else will subsscribe to it later (90% SPring when you return fromaa RestController a Mono/Flux)
+
+// in fully-reactive app, you don't see .subscribe()
+
       }
+
       public Mono<Void> twice_resubscribe() {
-         Mono<Void> save = repo.save(User.SKYLER);
+         Mono<Void> save = mockRepo.save(User.SKYLER);
          save.subscribe();
          return save;
       }
