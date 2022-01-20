@@ -19,6 +19,7 @@ package victor.training.reactive.reactor.lite;
 import lombok.Data;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 import victor.training.reactive.reactor.lite.domain.User;
@@ -80,6 +81,8 @@ public class Part03StepVerifier {
               .expectNext("later")
               .expectNoEvent(ofMinutes(30))
               .expectComplete();
+
+
    }
 
    public Mono<String> timeBoundFlow() {
