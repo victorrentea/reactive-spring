@@ -50,7 +50,8 @@ public class ReactiveUserRepository implements ReactiveRepository<User> {
 
 	@Override
 	public Flux<User> findAll() {
-		return withDelay(Flux.fromIterable(users));
+		return withDelay(Flux.fromIterable(users))
+			;
 	}
 
 	@Override

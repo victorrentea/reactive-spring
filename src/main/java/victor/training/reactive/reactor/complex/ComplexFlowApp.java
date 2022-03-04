@@ -12,9 +12,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.LongStream;
@@ -67,16 +67,34 @@ public class ComplexFlowApp implements CommandLineRunner {
 //                  .bodyToMono(ProductDetailsResponse.class)
 //                  .map(e -> e.toEntity())
 //          ).collectList();
-      List<Product> products = new ArrayList<>();
-      for (Long productId : productIds) {
+      return Flux.fromIterable(productIds)
+          .flatMap(id -> loadProductDto(id))
+          .doOnNext(dto -> log.info("Got product response " + dto))
+          .map(dto -> dto.toEntity())
+          .collectList();
+//
+//      products.add(dto.toEntity());
+//
+//      ;
+//
+//      List<Product> products = new ArrayList<>();
+//      for (Long productId : productIds) {
+//         ProductDetailsResponse dto = loadProductDto(productId);
+//         log.info("Got product response " + dto);
+//         products.add(dto.toEntity());
+//      }
+//      return Mono.just(products);
+   }
 
-
+   private static Mono<ProductDetailsResponse> loadProductDto(Long productId) {
+      return Mono.fromCallable(() -> {
          RestTemplate rest = new RestTemplate();
-         ProductDetailsResponse dto = rest.getForObject("http://localhost:9999/api/product/" + productId, ProductDetailsResponse.class);
-         log.info("Got product response " + dto);
-         products.add(dto.toEntity());
-      }
-      return Mono.just(products);
+         return rest.getForObject("http://localhost:9999/api/product/" + productId, ProductDetailsResponse.class);
+      })
+          .subscribeOn(Schedulers.boundedElastic())
+//          .publishOn(Schedulers.boundedElastic())
+
+          ;
    }
 
 }

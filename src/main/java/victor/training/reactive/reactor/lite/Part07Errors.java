@@ -19,21 +19,15 @@ package victor.training.reactive.reactor.lite;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import victor.training.reactive.intro.Utils;
 import victor.training.reactive.reactor.lite.domain.User;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.time.Duration.ofMillis;
 import static java.util.Collections.emptyList;
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
@@ -74,16 +68,12 @@ public class Part07Errors {
 //========================================================================================
    // TODO retrieve all Orders with retrieveOrder. In case **ANY** fails, return an empty list.
    public Mono<List<Order>> catchReturnDefault(List<Integer> ids) {
-      // TODO: Convert this imperative blocking code to reactive
-//      try {
-         Mono<List<Order>> listMono = Flux.fromIterable(ids)
-             .flatMap(id -> retrieveOrder(id))
-             .collectList()
-             .onErrorReturn(emptyList());
-         return listMono;
-//      } catch (Exception e) {
-//         return Mono.just(emptyList());
-//      }
+      Mono<List<Order>> listMono = Flux.fromIterable(ids)
+          .flatMap(id -> retrieveOrder(id))
+          .collectList();
+
+      return listMono
+          .onErrorReturn(emptyList());
    }
 
    //========================================================================================
@@ -109,6 +99,7 @@ public class Part07Errors {
       List<Order> orders = new ArrayList<>();
       try {
          for (Integer id : ids) {
+//            Order order = restTemplate.getForObject(..)
             Order order = retrieveOrder(id).block();// TODO REMOVE blocking
             orders.add(order);
          }
@@ -188,14 +179,27 @@ public class Part07Errors {
    }
 
    protected Mono<Order> retrieveOrder(int id) { // imagine a network call
-      return Mono.fromCallable(() -> {
-         if (id < 0) {
-            throw new IllegalArgumentException("intentional");
-         } else {
-            return new Order(id);
-         }
-      }).subscribeOn(boundedElastic()); // moving the mono to another scheduler makes .block() on it offend BlockHound
+//      Mono.create(sink -> {
+//         try {
+//            sink.success(someClassicLibraryThrowing(id));
+//         } catch (Exception e) {
+//            sink.error(e);
+//         }
+//      });
+
+      return Mono.fromCallable(() -> someClassicLibraryThrowing(id))
+          .subscribeOn(boundedElastic()); // moving the mono to another scheduler makes .block() on it offend BlockHound
    }
+
+   private Order someClassicLibraryThrowing(int id) {
+      if (id < 0) {
+         throw new IllegalArgumentException("intentional");
+      } else {
+//         restCall   blocking the current thread
+         return new Order(id);
+      }
+   }
+
    protected Mono<Order> retrieveOrderBackup(int id) { // imagine a local fast storage (~cache)
       return Mono.just(new Order(id).backup()).subscribeOn(boundedElastic());
    }
