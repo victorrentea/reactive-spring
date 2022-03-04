@@ -58,19 +58,20 @@ public class ComplexFlowApp implements CommandLineRunner {
 
 
    public static Mono<List<Product>> mainFlow(List<Long> productIds) {
-//      new AsyncRestTemplate()
-//          .exchange()
-//          .
       return Flux.fromIterable(productIds)
-          .doOnNext(id -> log.debug("ID is fired" + id))
+//          .doOnNext(id -> log.debug("ID is fired" + id))
           .buffer(2)
-
-//          .flatMap(idList -> loadProductDto(idList), 10) // scrambled elements
-//          .flatMapSequential(idList -> loadProductDto(idList), 10) // CONS: accumulates in memory early results
           .concatMap(idList -> loadProductDto(idList), 10) // CONS: can finish all data SLOWER
-
-          .doOnNext(dto -> log.info("Got product response " + dto))
+//          .doOnNext(dto -> log.info("Got product response " + dto))
           .map(dto -> dto.toEntity())
+          .doOnNext(p -> {
+             if (p.isResealed()) ExternalAPIs.auditResealedProduct(p)
+                 .subscribe(
+                     data -> {
+                     },
+                     error -> log.error(error.getMessage(), error)
+                 );
+          })
           .collectList();
    }
 
@@ -79,7 +80,7 @@ public class ComplexFlowApp implements CommandLineRunner {
           .post()
           .uri("http://localhost:9999/api/product/many")
           .bodyValue(productId)
-          .retrieve()
+           .retrieve()
           .bodyToFlux(ProductDetailsResponse.class);
    }
 

@@ -18,14 +18,32 @@ class ExternalAPIs {
    }
 
    @SneakyThrows
+   // because the method took time to complete> return MOno
+   // because it does not give me anything back > returns a Mono<Void>
    public static Mono<Void> auditResealedProduct(Product product) {
-      // TODO only audit resealed products !
-      return WebClient.create().get().uri("http://localhost:9999/api/audit-resealed/" + product)
+      return WebClient.create().get()
+          .uri("http://localhost:9999/apiXX/audit-resealed/" + product)
           .retrieve()
           .toBodilessEntity()
-          .doOnSubscribe(s -> log.info("Calling Audit REST"))
-          .then();
+          .then()
+      ;
+//          .doOnSubscribe(s -> log.info("Calling Audit REST"))
+//          .then();
    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    @SneakyThrows
    public static Mono<ProductRatingResponse> fetchProductRating(long productId) {

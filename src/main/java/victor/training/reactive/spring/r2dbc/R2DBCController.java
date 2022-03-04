@@ -23,6 +23,7 @@ public class R2DBCController {
    public Flux<String> flux() {
       return userRepository.findAll().map(User::getName);
    }
+
    @GetMapping("create")
    public Mono<User> create() {
       String id = UUID.randomUUID().toString();
