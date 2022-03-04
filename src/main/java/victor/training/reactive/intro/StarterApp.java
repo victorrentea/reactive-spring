@@ -44,6 +44,8 @@ public class StarterApp implements CommandLineRunner {
 
    private final Barman barman;
 
+
+
    @Override
    public void run(String... args) throws Exception {
       log.info("Talking to proxied barman: " + barman.getClass());

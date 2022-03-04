@@ -59,42 +59,21 @@ public class ComplexFlowApp implements CommandLineRunner {
    }
 
 
-   public static Mono<List<Product>> mainFlow(List<Long> productIds) {
-//      return Flux.fromIterable(productIds)
-//          .flatMap(productId ->
-//              WebClient.create().get().uri("http://localhost:9999/api/product/" + productId)
-//                  .retrieve()
-//                  .bodyToMono(ProductDetailsResponse.class)
-//                  .map(e -> e.toEntity())
-//          ).collectList();
-      return Flux.fromIterable(productIds)
-          .flatMap(id -> loadProductDto(id))
+   public static Mono<List<Product>> mainFlow(List<Long> product10_000_000Ids) {
+      return Flux.fromIterable(product10_000_000Ids)
+          .doOnNext(id -> log.debug("ID is fired" + id))
+          .flatMap(id -> loadProductDto(id), 10) // good practice, limit concurrency to avoid killing them
           .doOnNext(dto -> log.info("Got product response " + dto))
           .map(dto -> dto.toEntity())
           .collectList();
-//
-//      products.add(dto.toEntity());
-//
-//      ;
-//
-//      List<Product> products = new ArrayList<>();
-//      for (Long productId : productIds) {
-//         ProductDetailsResponse dto = loadProductDto(productId);
-//         log.info("Got product response " + dto);
-//         products.add(dto.toEntity());
-//      }
-//      return Mono.just(products);
    }
 
    private static Mono<ProductDetailsResponse> loadProductDto(Long productId) {
-      return Mono.fromCallable(() -> {
-         RestTemplate rest = new RestTemplate();
-         return rest.getForObject("http://localhost:9999/api/product/" + productId, ProductDetailsResponse.class);
-      })
-          .subscribeOn(Schedulers.boundedElastic())
-//          .publishOn(Schedulers.boundedElastic())
-
-          ;
+      return WebClient.create()
+          .get()
+          .uri("http://localhost:9999/api/product/" + productId)
+          .retrieve()
+          .bodyToMono(ProductDetailsResponse.class);
    }
 
 }
