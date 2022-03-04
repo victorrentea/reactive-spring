@@ -8,14 +8,12 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.LongStream;
 
@@ -59,22 +57,36 @@ public class ComplexFlowApp implements CommandLineRunner {
    }
 
 
-   public static Mono<List<Product>> mainFlow(List<Long> product10_000_000Ids) {
-      return Flux.fromIterable(product10_000_000Ids)
+   public static Mono<List<Product>> mainFlow(List<Long> productIds) {
+//      new AsyncRestTemplate()
+//          .exchange()
+//          .
+      return Flux.fromIterable(productIds)
           .doOnNext(id -> log.debug("ID is fired" + id))
-          .flatMap(id -> loadProductDto(id), 10) // good practice, limit concurrency to avoid killing them
+          .buffer(2)
+
+//          .flatMap(idList -> loadProductDto(idList), 10) // scrambled elements
+//          .flatMapSequential(idList -> loadProductDto(idList), 10) // CONS: accumulates in memory early results
+          .concatMap(idList -> loadProductDto(idList), 10) // CONS: can finish all data SLOWER
+
           .doOnNext(dto -> log.info("Got product response " + dto))
           .map(dto -> dto.toEntity())
           .collectList();
    }
 
-   private static Mono<ProductDetailsResponse> loadProductDto(Long productId) {
+   private static Flux<ProductDetailsResponse> loadProductDto(List<Long> productId) {
       return WebClient.create()
-          .get()
-          .uri("http://localhost:9999/api/product/" + productId)
+          .post()
+          .uri("http://localhost:9999/api/product/many")
+          .bodyValue(productId)
           .retrieve()
-          .bodyToMono(ProductDetailsResponse.class);
+          .bodyToFlux(ProductDetailsResponse.class);
    }
+
+
+   // 1: do you want me to go a) slower b) same c) faster.
+
+   // 2: do you want: x) code y) theory
 
 }
 
