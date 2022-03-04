@@ -8,7 +8,7 @@ public class Part02Mono {
 
 	// TODO Return an empty Mono
 	public Mono<String> emptyMono() {
-		return null;
+		return Mono.empty();
 	}
 
 //========================================================================================
@@ -22,14 +22,28 @@ public class Part02Mono {
 
 	// TODO Return a Mono that contains a "foo" value
 	public Mono<String> fooMono() {
-		return null;
+		return Mono.just("foo");
 	}
 
 //========================================================================================
 
+	public Mono<Void> methodReturningVoid() {
+		// stuff
+		return Mono.empty();
+	}
+	public Mono<Integer> methodThrowing(boolean b) {
+		// stuff
+		if (b) {
+//			throw new IllegalArgumentException();
+			return Mono.error(new IllegalArgumentException());
+		}
+		return Mono.just(1);
+	}
+
 	// TODO Return a Mono of data. data can come null.
 	public Mono<String> optionalMono(String data) {
-		return null;
+
+		return Mono.empty();
 	}
 
 //========================================================================================

@@ -68,4 +68,12 @@ public class User {
 				", lastname='" + lastname + '\'' +
 				'}';
 	}
+
+	public User capitalize() {
+		return new User(
+			getUsername().toUpperCase(),
+			getFirstname().toUpperCase(),
+			getLastname().toUpperCase()
+		);
+	}
 }

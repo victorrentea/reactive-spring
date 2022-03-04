@@ -75,15 +75,15 @@ public class Part07Errors {
    // TODO retrieve all Orders with retrieveOrder. In case **ANY** fails, return an empty list.
    public Mono<List<Order>> catchReturnDefault(List<Integer> ids) {
       // TODO: Convert this imperative blocking code to reactive
-      try {
-         List<Order> orders = new ArrayList<>();
-         for (Integer id : ids) {
-            orders.add(retrieveOrder(id).block());// TODO REMOVE blocking
-         }
-         return Mono.just(orders);
-      } catch (Exception e) {
-         return Mono.just(emptyList());
-      }
+//      try {
+         Mono<List<Order>> listMono = Flux.fromIterable(ids)
+             .flatMap(id -> retrieveOrder(id))
+             .collectList()
+             .onErrorReturn(emptyList());
+         return listMono;
+//      } catch (Exception e) {
+//         return Mono.just(emptyList());
+//      }
    }
 
    //========================================================================================
