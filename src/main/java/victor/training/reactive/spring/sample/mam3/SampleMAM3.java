@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class SampleMAM3 {
    private static final Logger LOGGER = LoggerFactory.getLogger(SampleMAM3.class);
@@ -52,7 +54,7 @@ public class SampleMAM3 {
 
 //    TODO victor  Stream.of(miraklIds).map(UUID::fromString).collect(Collectors.toList()); +
       //+ Mono.defer(() -> retrieveCollectorItems)
-
+//      CompletableFuture.supplyAsync(() ->"a").thenComposeAsync(s -> funct(s)) = flatMap
       // TODO victor fragment in variables
       return Flux.fromIterable(miraklIdsList)
           .map(UUID::fromString)
@@ -76,6 +78,9 @@ public class SampleMAM3 {
              itemsOnError.add(value.toString());
           });
    }
+
+//   private CompletionStage<Integer> funct(String s) {
+//   }
 
    private Mono<ResponseEntity<ItemInfoResponse>> generateResponse(List<DetailedItemInfo> itemsWithInfo, MultiSet<String> miraklIds, HashSet<String> itemsOnError, Object o) {
       return null;

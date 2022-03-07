@@ -58,21 +58,26 @@ public class ComplexFlowApp implements CommandLineRunner {
 
 
    public static Mono<List<Product>> mainFlow(List<Long> productIds) {
+
       return Flux.fromIterable(productIds)
 //          .doOnNext(id -> log.debug("ID is fired" + id))
           .buffer(2)
           .concatMap(idList -> loadProductDto(idList), 10) // CONS: can finish all data SLOWER
 //          .doOnNext(dto -> log.info("Got product response " + dto))
           .map(dto -> dto.toEntity())
-          .doOnNext(p -> {
-             if (p.isResealed()) ExternalAPIs.auditResealedProduct(p)
-                 .subscribe(
-                     data -> {
-                     },
-                     error -> log.error(error.getMessage(), error)
-                 );
-          })
+
+//          .flatMap(p -> horrorMethod(p).thenReturn(p) ) // smart but proves how important is to know operators
+          .delayUntil(p -> horrorMethod(p)) // smart but proves how important is to know operators
+
+
           .collectList();
+   }
+
+   private static Mono<Void> horrorMethod(Product p) {
+      if (p.isResealed()) {
+         return ExternalAPIs.auditResealedProduct(p);
+      }
+      return Mono.empty();
    }
 
    private static Flux<ProductDetailsResponse> loadProductDto(List<Long> productId) {

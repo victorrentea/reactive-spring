@@ -1,5 +1,6 @@
 package victor.training.reactive.intro.whyreactive;
 
+import org.apache.kafka.common.protocol.types.Field.Str;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -11,7 +12,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ReactiveProgramming {
    @Test
    public void test() {
-      Flux<String> ids = fetchIds();
+//      Mono<>
+//      CompletableFuture
+      Flux<String > ids = fetchIds();
 
       Flux<String> combinations =
           ids.flatMap(id -> {
