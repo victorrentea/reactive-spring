@@ -23,6 +23,7 @@ public class CustomerAuditService {
    @Autowired
    private String baseUrl;
 
+   // TODO make tests happy
    public void processOrderingCustomer(Flux<Integer> customerIdFlux) {
    }
 
