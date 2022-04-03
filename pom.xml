@@ -61,6 +61,12 @@
         </dependency>
 
 
+
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jool</artifactId>
+            <version>0.9.14</version>
+        </dependency>
 <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -72,6 +78,8 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-r2dbc</artifactId>
         </dependency>
+
+        <!-- Postgres -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -81,17 +89,10 @@
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jool</artifactId>
-            <version>0.9.14</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
-        </dependency>
-        <dependency>
+
+        <!--H2-->
+      <!--  <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
@@ -100,7 +101,7 @@
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-h2</artifactId>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>io.projectreactor</groupId>
@@ -122,6 +123,7 @@
             <artifactId>assertj-core</artifactId>
         </dependency>
 
+        <!--To demonstrate integration-->
         <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
