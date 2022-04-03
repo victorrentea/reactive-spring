@@ -34,5 +34,7 @@ build/
 /download.dat
 
 
+
 prod/
 log/
+/src/main/docker/kafka/data/
