@@ -72,19 +72,32 @@ public class ComplexFlowApp implements CommandLineRunner {
 //          ).collectList();
 
       return Flux.fromIterable(productIds)
-          .flatMap(productId -> WebClient.create()
-              .get()
-              .uri("http://localhost:9999/api/product/" + productId)
-              .retrieve()
-              .bodyToMono(ProductDetailsResponse.class)
-              .map(ProductDetailsResponse::toEntity)
-              // this inner function returns a Publisher(Mono) for each item in the original flux.
-              // results emitted by all those Monos are emitted downstream in the Flux returned by flatMap
-          )
+          // Flux<List<Long>> grouping them in pages of 2
+          .buffer(2)
+          .flatMap(productIdList -> retrieveMultipleProducts(productIdList))
 
           .collectList();
 
    }
+
+   private static Flux<Product> retrieveMultipleProducts(List<Long> productIdList) {
+      return WebClient.create()
+          .post()
+          .uri("http://localhost:9999/api/product/many")
+          .body(productIdList, Long.class)
+          .retrieve()
+          .bodyToFlux(ProductDetailsResponse.class)
+          .map(ProductDetailsResponse::toEntity);
+   }
+
+//   private static Mono<Product> retrieveProduct(Long productId) {
+//      return WebClient.create()
+//          .get()
+//          .uri("http://localhost:9999/api/product/" + productId)
+//          .retrieve()
+//          .bodyToMono(ProductDetailsResponse.class)
+//          .map(ProductDetailsResponse::toEntity);
+//   }
 
 }
 
