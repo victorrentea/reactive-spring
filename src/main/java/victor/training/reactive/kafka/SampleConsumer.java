@@ -45,7 +45,10 @@ public class SampleConsumer {
           .addAssignListener(partitions -> log.debug("Partitions Assigned: {}", partitions))
           .addRevokeListener(partitions -> log.debug("Partitions Revoked: {}", partitions));
       Flux<ReceiverRecord<Integer, String>> kafkaFlux = KafkaReceiver.create(options)
+
           .receive()
+
+
           .doOnNext(this::logReceivedRecord);
 
       return kafkaFlux.subscribe(record -> {

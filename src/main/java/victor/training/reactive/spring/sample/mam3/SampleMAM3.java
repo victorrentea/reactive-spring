@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class SampleMAM3 {
    private static final Logger LOGGER = LoggerFactory.getLogger(SampleMAM3.class);
@@ -53,10 +56,12 @@ public class SampleMAM3 {
 //    TODO victor  Stream.of(miraklIds).map(UUID::fromString).collect(Collectors.toList()); +
       //+ Mono.defer(() -> retrieveCollectorItems)
 
-      // TODO victor fragment in variables
-      return Flux.fromIterable(miraklIdsList)
+      List<UUID> uuids = miraklIdsList.stream()
           .map(UUID::fromString)
-          .collectList()
+          .collect(toList());
+
+      // TODO victor fragment in variables
+      return Mono.just(uuids)
           .flatMap(collectorClient::retrieveCollectorItems)
           .flatMapMany(Flux::fromIterable)
           .filter(collectorResponse -> trackingIdNotNull(itemsOnError, collectorResponse))

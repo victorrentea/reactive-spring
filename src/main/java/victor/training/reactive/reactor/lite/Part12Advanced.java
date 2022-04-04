@@ -19,7 +19,7 @@ public class Part12Advanced {
    // Note: multiple subscribers will subscribe!
    // Use generateRandomInts()!
    public Flux<Integer> defer() {
-      return null;
+      return Flux.defer( () -> Flux.fromIterable(generate3RandomInts()) );
    }
 
    protected List<Integer> generate3RandomInts() {
