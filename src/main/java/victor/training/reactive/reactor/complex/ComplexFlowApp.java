@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuples;
 
 import java.time.Duration;
@@ -26,7 +27,7 @@ import static victor.training.reactive.intro.Utils.*;
 
 @RestController
 @Slf4j
-@SpringBootApplication
+//@SpringBootApplication
 public class ComplexFlowApp implements CommandLineRunner {
    public static void main(String[] args) {
       SpringApplication.run(ComplexFlowApp.class, "--server.port=8081");
@@ -69,15 +70,20 @@ public class ComplexFlowApp implements CommandLineRunner {
 //                  .bodyToMono(ProductDetailsResponse.class)
 //                  .map(e -> e.toEntity())
 //          ).collectList();
-      List<Product> products = new ArrayList<>();
-      for (Long productId : productIds) {
 
-         RestTemplate rest = new RestTemplate();
-         ProductDetailsResponse dto = rest.getForObject("http://localhost:9999/api/product/" + productId, ProductDetailsResponse.class);
-         log.info("Got product response " + dto);
-         products.add(dto.toEntity());
-      }
-      return Mono.just(products);
+      return Flux.fromIterable(productIds)
+          .flatMap(productId -> WebClient.create()
+              .get()
+              .uri("http://localhost:9999/api/product/" + productId)
+              .retrieve()
+              .bodyToMono(ProductDetailsResponse.class)
+              .map(ProductDetailsResponse::toEntity)
+              // this inner function returns a Publisher(Mono) for each item in the original flux.
+              // results emitted by all those Monos are emitted downstream in the Flux returned by flatMap
+          )
+
+          .collectList();
+
    }
 
 }

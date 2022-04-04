@@ -63,6 +63,7 @@ public class SampleMAM3 {
           .map(CollectorResponse::getTrackingId)
           // TODO victor break here
           .distinct()
+          //.sub
           .flatMap(miraklClient::getMiraklSyncDetails)
           .flatMap(miraklSuccessResponse -> Flux.fromIterable(miraklSuccessResponse.getProcessedItems()))
           .filter(processedItem -> miraklIds.contains(processedItem.getMiraklId()))
