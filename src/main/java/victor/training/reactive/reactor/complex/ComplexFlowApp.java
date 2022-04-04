@@ -81,7 +81,13 @@ public class ComplexFlowApp implements CommandLineRunner {
           .flatMapSequential(productIdList -> retrieveMultipleProducts(productIdList)) // one request at a time
 
 //          .flatMap(product -> auditProduct(product).thenReturn(product))
-          .delayUntil(product -> auditProduct(product))
+//          .delayUntil(product -> auditProduct(product))
+
+          .doOnNext(product -> auditProduct(product).subscribe())
+               // there are only two valid reasons to call .subscribe():
+               // 1) fire-and-forget
+               // 2) infinite (kafka) streams
+
 
           .collectList();
 
