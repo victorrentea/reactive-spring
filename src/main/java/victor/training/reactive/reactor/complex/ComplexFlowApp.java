@@ -71,13 +71,30 @@ public class ComplexFlowApp implements CommandLineRunner {
 //                  .map(e -> e.toEntity())
 //          ).collectList();
 
+//      Mono<Void> ack = Mono.just(new Void());
       return Flux.fromIterable(productIds)
           // Flux<List<Long>> grouping them in pages of 2
           .buffer(2)
-          .flatMap(productIdList -> retrieveMultipleProducts(productIdList))
+//          .flatMap(productIdList -> retrieveMultipleProducts(productIdList)) // infinite requests in parallel
+//          .flatMap(productIdList -> retrieveMultipleProducts(productIdList), 4) // max 4 calls in parallel.
+//          .concatMap(productIdList -> retrieveMultipleProducts(productIdList)) // one request at a time
+          .flatMapSequential(productIdList -> retrieveMultipleProducts(productIdList)) // one request at a time
+
+//          .flatMap(product -> auditProduct(product).thenReturn(product))
+          .delayUntil(product -> auditProduct(product))
 
           .collectList();
 
+   }
+
+   private static Mono<Void> auditProduct(Product product) {
+      if (!product.isResealed()) {
+         return Mono.empty();
+      }
+      return ExternalAPIs.auditResealedProduct(product)
+          .doOnError(e -> log.error("OMG i'm afraid", e))
+          .onErrorResume(e -> Mono.empty()) // converts an ERROR signal into a COMPLETION signal
+          ;
    }
 
    private static Flux<Product> retrieveMultipleProducts(List<Long> productIdList) {
