@@ -21,7 +21,10 @@ public class InMemoryBroadcastController {
 
    @GetMapping(value = "message/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
    public Flux<ServerSentEvent<CustomerDto>> messageStream() {
-      return sink.asFlux().map(Objects::toString).map(CustomerDto::new).map(dto -> ServerSentEvent.builder(dto).build());
+      return sink.asFlux()
+          .map(Objects::toString)
+          .map(CustomerDto::new)
+          .map(dto -> ServerSentEvent.builder(dto).build());
    }
 
    @GetMapping("message/send")

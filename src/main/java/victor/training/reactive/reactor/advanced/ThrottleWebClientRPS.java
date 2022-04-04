@@ -27,7 +27,6 @@ public class ThrottleWebClientRPS {
    }
 
    public Mono<String> makeRequest(Number id) {
-
       return WebClient.create()
           .post()
           .uri(url)

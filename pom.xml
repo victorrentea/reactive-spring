@@ -118,10 +118,6 @@
             <artifactId>junit-vintage-engine</artifactId>
             <version>5.8.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-        </dependency>
 
         <!--To demonstrate integration-->
         <dependency>
@@ -143,11 +139,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
@@ -156,6 +147,7 @@
 <!--            <artifactId>guava</artifactId>-->
 <!--            <version>29.0-jre</version>-->
 <!--        </dependency>-->
+
 
         <!-- non-blocking rate limiter as in https://stackoverflow.com/questions/50387584/how-to-limit-the-request-second-with-webclient -->
         <dependency>

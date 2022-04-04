@@ -50,6 +50,7 @@ public class ComplexFlowApp implements CommandLineRunner {
           );
       startRefreshWireMockStubsFromJsonContinuously();
    }
+
    @GetMapping("complex")
    public static Mono<String> executeAsNonBlocking() {
       List<Long> productIds = LongStream.rangeClosed(1, 1000).boxed().collect(toList());
@@ -58,6 +59,7 @@ public class ComplexFlowApp implements CommandLineRunner {
           .map(list -> "Done. Got " + size(list) + " products: " + list);
    }
 
+   // ================================== work below ====================================
 
    public static Mono<List<Product>> mainFlow(List<Long> productIds) {
 //      return Flux.fromIterable(productIds)
@@ -69,7 +71,6 @@ public class ComplexFlowApp implements CommandLineRunner {
 //          ).collectList();
       List<Product> products = new ArrayList<>();
       for (Long productId : productIds) {
-
 
          RestTemplate rest = new RestTemplate();
          ProductDetailsResponse dto = rest.getForObject("http://localhost:9999/api/product/" + productId, ProductDetailsResponse.class);

@@ -24,7 +24,6 @@ public class OnErrorResumevsContinue {
               }
 //              System.err.println("Booboo on " + criminal + " : " + ex.getMessage())
        )
-//          .subscribe(System.out::println)
           .collectList().block();
 
       System.out.println(list);

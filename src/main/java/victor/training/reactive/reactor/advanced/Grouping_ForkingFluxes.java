@@ -17,9 +17,11 @@ public class Grouping_ForkingFluxes {
       // TODO for odd numbers call preSendOdd() before sendOdd()
       // TODO negative items should not trigger any sending
 
-      Flux<Integer> infiniteStream = Flux.range(0, 100);
-      infiniteStream // imagine a stream of kafka messages
-          .flatMap(item -> {if (item % 2 == 1) return sendOdd(item); else return sendEven(item);})
+      Flux<Integer> kafkaStream = Flux.range(0, 100);
+      kafkaStream
+          .flatMap(item -> {
+             if (getType(item) == NumberType.ODD) return sendOdd(item);
+             else return sendEven(item);})
           .subscribe();
 
       Utils.sleep(2000);
@@ -32,10 +34,11 @@ public class Grouping_ForkingFluxes {
    public static Mono<Void> sendEven(Integer item) {
       return Mono.fromRunnable(() -> log.info("Sending even numbers: {}", item));
    }
+
+
    public static Mono<Void> sendEvenInPages(List<Integer> itemsPage) {
       return Mono.fromRunnable(() -> log.info("Sending even numbers page: {}", itemsPage));
    }
-
    public static Mono<Void> preSendOdd(Integer item) {
       return Mono.fromRunnable(() -> log.info("pre-send odd number: {}", item));
    }
@@ -43,7 +46,6 @@ public class Grouping_ForkingFluxes {
    public static Mono<Void> sendOdd(Integer item) {
       return Mono.fromRunnable(() -> log.info("Sending odd numbers: {}", item));
    }
-
 }
 
 enum NumberType {
