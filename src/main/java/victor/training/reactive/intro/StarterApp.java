@@ -37,10 +37,7 @@ public class StarterApp implements CommandLineRunner {
       SpringApplication.run(StarterApp.class, args);
    }
 
-   //@EventListener(ApplicationStartedEvent.class) // TODO uncomment
-   public void setupBlockingDetection() {
-      installBlockHound(List.of(Tuples.of("io.netty.resolver.HostsFileParser", "parse")));
-   }
+
 
    private final Barman barman;
 

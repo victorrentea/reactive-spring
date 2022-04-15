@@ -2,10 +2,10 @@ package victor.training.reactive.reactor.pitfalls;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
-import victor.training.reactive.reactor.exercises.customeraudit.Customer;
 
 @Slf4j
 public class MissingSignals {
+   static class Customer {}
 
    class MySqlRepo {
       public Mono<Customer> findCustomer(int customerId) {

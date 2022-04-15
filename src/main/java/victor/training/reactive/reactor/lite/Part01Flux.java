@@ -11,10 +11,8 @@ import java.util.List;
 public class Part01Flux {
 
 //========================================================================================
-EventReactiveRepo mongoRepo;
 	// TODO Return an empty Flux
 	public Flux<String> emptyFlux() {
-		Flux<Event> allEvents = mongoRepo.findAll();// Flux<> or List<> in a blocking ap
 //		return from webflux REST endpoint allEvents.map(toDto);
 //			.map(list -> list.stream)
 //		List<Event> allEvents = mongoRepo.findAll();// in a blocking ap
